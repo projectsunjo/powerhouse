@@ -1,80 +1,81 @@
-# Lightsail 배포 시 에너지 솔루션 브리핑 자동화
+# 배포 가이드 — 상시 구동 서버 (Lightsail / Oracle Cloud Always Free 등)
 
-에너지 솔루션 브리핑은 `briefings` 테이블(SQLite)에 저장되고, Market Info > 에너지 솔루션 탭에서
-목록으로 보여줍니다. 갱신 방법은 두 가지입니다: (1) cron으로 매일 자동 생성, (2) 관리자 대시보드의
-"지금생성" 버튼으로 즉시 생성. 둘 다 같은 스크립트(`scripts/run-esmi-briefing.sh`)를 실행하며,
-이 스크립트는 Claude Code CLI를 통해 실제 웹 리서치를 수행하므로 아래 설치가 반드시 필요합니다.
+이 앱은 Node.js 서버 하나가 계속 떠 있어야 하는 구조입니다. AWS Lightsail든 Oracle Cloud
+Always Free(Ampere A1)든, "24/7 켜져 있는 Ubuntu 인스턴스"라면 동일하게 적용됩니다.
 
-## 1. 서버에 Claude Code CLI 설치 및 로그인
+## 1. 서버 준비
+
+```bash
+git clone https://github.com/projectsunjo/powerhouse.git
+cd powerhouse
+npm install
+cp .env.example .env   # 값 채워넣기 (아래 참고)
+```
+
+`.env`에 최소한 다음을 채워야 합니다: `ADMIN_PASSWORD`, `JWT_SECRET`, `IP_HASH_SALT`.
+`GMAIL_USER`/`GMAIL_APP_PASSWORD`는 이메일 발송용(선택), `CLAUDE_CODE_OAUTH_TOKEN`은
+에너지 솔루션 브리핑 자동 생성용(아래 2번 참고, 이것도 선택이지만 없으면 브리핑 기능은 동작 안 함).
+
+## 2. 브리핑 자동 생성을 쓰려면 — Claude Code CLI 설치
+
+에너지 솔루션 브리핑(Market Info 탭)은 실제 웹서치를 수행하는 AI 리서치라서, 이 기능을 쓰려면
+서버에 Claude Code CLI가 설치·인증되어 있어야 합니다. 안 쓸 거면 이 섹션은 건너뛰어도 되고,
+브리핑 관련 기능만 동작하지 않습니다(나머지 게시판 기능은 무관하게 정상 동작).
 
 ```bash
 npm install -g @anthropic-ai/claude-code
-claude login   # 최초 1회, 대화형으로 인증 (또는 ANTHROPIC_API_KEY 환경변수 설정)
+claude setup-token   # 사람이 직접 실행 — 브라우저 인증 후 토큰 발급
 ```
 
-- `claude login`으로 로그인하면 해당 계정/구독으로 과금됩니다. API 키 방식(`ANTHROPIC_API_KEY`)을 쓰면 별도 API 과금입니다.
-- Enterprise 플랜처럼 별도 API 키를 안 쓰는 경우, 대화형 로그인 대신 `claude setup-token`으로 헤드리스용
-  장기 토큰을 발급받아 `CLAUDE_CODE_OAUTH_TOKEN` 환경변수로 설정하세요 (cron·서버 트리거는 브라우저
-  로그인을 할 수 없으므로 이 방식이 필요합니다). 발급은 실제 터미널(pty)에서 브라우저 인증을 거쳐야 해서
-  사람이 한 번은 직접 실행해야 합니다.
-- 이 CLI가 설치·인증되어 있지 않으면 cron도, 관리자 대시보드의 "지금생성" 버튼도 실패합니다
-  (실패 시 관리자 대시보드에 종료 코드/에러가 표시됩니다).
-- 매번 웹서치 + 긴 리서치를 도는 작업이라 자동이든 수동이든 토큰 비용이 발생합니다. 부담되면 cron 주기를
-  줄이거나(예: 평일만) "지금생성" 버튼 사용을 자제하세요.
+- `setup-token`은 실제 터미널(pty)에서 브라우저 인증을 거쳐야 해서 자동화할 수 없고, 배포할 때
+  한 번은 SSH로 접속해 사람이 직접 실행해야 합니다. 발급된 토큰을 `.env`의
+  `CLAUDE_CODE_OAUTH_TOKEN`에 넣으세요.
+- 이 CLI가 설치·인증되어 있지 않으면 예약 생성도, 관리자 대시보드의 "지금생성" 버튼도 실패합니다
+  (실패 시 브리핑 관리 탭 로그에 사유가 표시됩니다).
+- 매번 웹서치 + 긴 리서치를 도는 작업이라 자동이든 수동이든 토큰 비용이 발생합니다. 부담되면
+  관리자 대시보드에서 생성 주기를 늘리거나 자동 생성을 끄고 수동으로만 쓰세요.
+- 회사 네트워크 등 TLS 인터셉션 방화벽 뒤에서 돌린다면 `NODE_EXTRA_CA_CERTS`로 해당 네트워크의
+  루트 CA 인증서를 지정해야 `claude` CLI가 SSL 인증서 오류 없이 동작합니다(일반 클라우드 서버라면
+  보통 필요 없습니다).
 
-## 1-1. 브리핑 이메일 발송 (선택)
+## 3. 생성 스케줄 — 앱 안에서 관리자가 직접 설정
 
-`.env`에 `GMAIL_USER`, `GMAIL_APP_PASSWORD`(구글 계정 앱 비밀번호), `BRIEFING_EMAIL_TO`를 모두
-설정하면, 새 브리핑이 생성될 때마다(`scripts/insert-briefing.js`가 실행될 때) 자동으로 해당 주소로
-이메일이 발송됩니다. 셋 중 하나라도 비어 있으면 조용히 건너뜁니다(에러 아님, 로그에만 남음).
+이제 OS 레벨 cron이 아니라 **앱 자체 스케줄러**(`server/scheduler.js`)가 매분 체크하며 돕니다.
+관리자 대시보드 → "브리핑 관리" 탭에서:
 
-## 2. 실행 스크립트
+- 자동 생성 사용 여부
+- 시작 시각 (기본 08시)
+- 생성 주기 (6/8/12/24시간, 기본 24시간마다)
+- 수신 이메일 목록 (여러 개는 `;` 로 구분)
+- 메일 제목 양식 (`{날짜}` 토큰이 생성일로 치환됨)
 
-`scripts/run-esmi-briefing.sh`가 이미 준비되어 있습니다. 서버에서:
+을 저장하면 바로 반영됩니다. 서버 프로세스가 계속 떠 있기만 하면 되고, 별도 crontab 설정은
+필요 없습니다.
+
+같은 화면 또는 Market Info 페이지의 "⚡ 지금생성" 버튼으로 즉시 한 번 생성할 수도 있습니다
+(관리자 로그인 상태에서만 노출 — 비용이 발생하는 기능이라 일반 방문자에게는 숨겨져 있습니다).
+
+## 4. 서버를 계속 띄워두기 (프로세스 매니저)
+
+로컬 개발 중엔 `nodemon`으로 띄우지만, 실서버에서는 재부팅/충돌 후에도 자동으로 다시 뜨도록
+PM2나 systemd를 권장합니다. 예 (PM2):
 
 ```bash
-chmod +x scripts/run-esmi-briefing.sh
+npm install -g pm2
+pm2 start server/index.js --name powerhouse
+pm2 save
+pm2 startup   # 부팅 시 자동 시작 등록, 출력된 명령을 그대로 한 번 더 실행
 ```
-
-이 스크립트는 esmi 리서치를 수행해 임시 파일에 HTML을 쓰고, `scripts/insert-briefing.js`로
-`briefings` 테이블에 새 행을 추가합니다.
-
-⚠️ 이 스크립트는 `--dangerously-skip-permissions`를 사용합니다. cron·서버 트리거 모두 대화형 승인을
-받을 수 없기 때문에 불가피하지만, 이 옵션은 Claude가 어떤 툴 호출이든(웹검색, 파일쓰기 등) 사용자 확인
-없이 바로 실행하게 만듭니다. 반드시 이 프로젝트 디렉터리 전용 계정/권한으로, 신뢰할 수 있는 서버에서만
-사용하세요.
-
-## 3. crontab 등록 (자동 생성)
-
-```bash
-crontab -e
-```
-
-아래 줄 추가 (매일 아침 7시, 서버 로컬 시간 기준):
-
-```
-0 7 * * * cd /home/ubuntu/powerhouse && ./scripts/run-esmi-briefing.sh >> /var/log/esmi-cron.log 2>&1
-```
-
-경로(`/home/ubuntu/powerhouse`)는 실제 배포 경로에 맞게 수정하세요.
-
-## 4. 관리자 대시보드 "지금생성" (수동 생성)
-
-관리자로 로그인 후 대시보드 "브리핑 관리" 탭, 또는 Market Info 페이지의 "⚡ 지금생성" 버튼을 누르면
-서버가 `POST /api/admin/briefings/generate`를 받아 위 스크립트를 백그라운드로 실행합니다.
-생성 중에는 버튼이 비활성화되고, 완료되면 목록에 자동 반영됩니다. 이 버튼은 관리자 로그인 상태에서만
-보입니다(비용이 발생하는 기능이라 일반 방문자에게는 노출하지 않습니다).
 
 ## 5. 확인
 
-`briefings` 테이블에 새 행이 쌓이는지, Market Info 페이지의 "최종 업데이트" 표시가 갱신되는지
-확인합니다. cron 실패 시 `/var/log/esmi-cron.log`를, 수동 생성 실패 시 관리자 대시보드의
-브리핑 관리 탭 상태 메시지를 확인하세요.
+관리자 대시보드 "브리핑 관리" 탭의 실행 로그에 `HH:MM 시작 · HH:MM 생성완료 · ...이메일 발송 완료`
+형태로 한 줄씩 쌓이는지 확인합니다. 실패한 실행은 사유(타임아웃, 종료 코드 등)가 함께 표시됩니다.
 
-## Docker 배포 시 참고
+## Docker로 배포한다면
 
-이 프로젝트를 Docker로 배포한다면, `briefings` 테이블은 기존 `powerhouse-data` 볼륨(SQLite DB 파일)에
-같이 저장되므로 별도 볼륨 마운트가 필요 없습니다. 다만 `scripts/run-esmi-briefing.sh`가 컨테이너
-내부에서 `claude` CLI를 호출하려면, 컨테이너 이미지에도 Claude Code CLI를 설치하고 인증 정보를
-전달해야 합니다 — 컨테이너 안에서 cron을 돌리는 대신, **호스트에서 cron으로 스크립트를 실행하고
-컨테이너의 DB 볼륨 경로를 직접 바라보게 하는 방식**이 더 간단합니다.
+`briefings`/`briefing_runs`/`settings` 테이블은 모두 기존 `powerhouse-data` 볼륨(SQLite DB
+파일) 안에 저장되므로 추가 볼륨 마운트는 필요 없습니다. 다만 컨테이너 이미지(`node:20-slim`
+베이스)에는 Claude Code CLI가 없으므로, 브리핑 자동 생성 기능을 쓰려면 Dockerfile에
+`npm install -g @anthropic-ai/claude-code` 설치 단계를 추가하고 `CLAUDE_CODE_OAUTH_TOKEN`을
+컨테이너 환경변수로 전달해야 합니다.
