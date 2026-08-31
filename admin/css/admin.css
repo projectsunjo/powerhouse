@@ -1,0 +1,121 @@
+.login-wrap {
+  max-width: 380px;
+  margin: 12vh auto 0;
+  padding: 32px;
+}
+
+.login-wrap h1 {
+  text-align: center;
+  margin-bottom: 4px;
+}
+.login-wrap p.sub {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+}
+
+.admin-container {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  padding: 18px;
+  text-align: center;
+}
+.stat-card .num { font-size: 1.7rem; font-weight: 800; color: var(--primary); }
+.stat-card .label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  padding: 10px 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active { color: var(--primary); border-color: var(--primary); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+th { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+tr:last-child td { border-bottom: none; }
+td.title-cell { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.title-cell a { color: var(--primary); }
+td.title-cell a:hover { text-decoration: underline; }
+td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.tag.notice { background: #fff3cd; color: #a67c00; }
+.tag.hidden { background: var(--danger-soft); color: var(--danger); }
+
+.banned-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.banned-word-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+.banned-word-chip button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.briefing-settings-card { padding: 20px; margin-bottom: 20px; }
+.checkbox-row { display: flex; align-items: center; gap: 6px; height: 44px; font-size: 0.92rem; }
+.checkbox-row input { width: 16px; height: 16px; }
+
+@media (max-width: 700px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  table { display: block; overflow-x: auto; }
+}

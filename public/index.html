@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PowerHouse 익명게시판</title>
+<link rel="icon" href="/img/logo.png" type="image/png" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</div>
+      <nav class="nav-menu">
+        <a class="nav-link active" href="/">익명게시판</a>
+        <a class="nav-link" href="/market-info.html">Market Info</a>
+        <a class="nav-link" href="/lunch-map.html">점심지도</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="board-tabs">
+      <button class="board-tab active" data-sort="latest">최신순</button>
+      <button class="board-tab" data-sort="best">Best글</button>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="search-row">
+        <input type="text" class="input" id="searchInput" placeholder="제목 또는 내용을 검색하세요" />
+        <button class="btn btn-ghost" id="searchBtn">검색</button>
+      </div>
+      <a href="/write.html"><button class="btn btn-primary">✏️ 글쓰기</button></a>
+    </div>
+
+    <div class="board-table">
+      <div class="board-row board-head">
+        <div class="col-title">제목</div>
+        <div class="col-num">조회</div>
+        <div class="col-num">좋아요</div>
+        <div class="col-num">댓글</div>
+      </div>
+      <div id="postList"></div>
+    </div>
+    <div id="pagination" class="pagination"></div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  powerhouse:
+    build: .
+    container_name: powerhouse-board
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - IP_HASH_SALT=${IP_HASH_SALT}
+      - DB_PATH=/app/data/powerhouse.db
+    volumes:
+      - powerhouse-data:/app/data
+
+volumes:
+  powerhouse-data:
