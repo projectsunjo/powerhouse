@@ -3,7 +3,7 @@ let polling = false;
 const indexState = { page: 1 };
 
 function formatUpdatedAt(iso) {
-  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  const d = new Date(iso);
   return `최종 업데이트 · ${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
@@ -44,7 +44,7 @@ async function loadIndex() {
     const row = document.createElement('a');
     row.href = '#';
     row.className = 'board-row';
-    const d = new Date(b.created_at.replace(' ', 'T') + 'Z');
+    const d = new Date(b.created_at);
     row.innerHTML = `<div class="col-title">${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} 생성</div>`;
     row.onclick = (e) => {
       e.preventDefault();

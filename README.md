@@ -1,119 +1,67 @@
 # PowerHouse 익명게시판
 
-가볍게 로컬에서 개발하고 그대로 AWS Lightsail에 올릴 수 있도록 만든 익명 게시판입니다.
-Node.js + Express + SQLite(better-sqlite3)만 사용해서 별도 DB 서버 없이 동작하고,
-프론트엔드는 빌드 과정 없는 순수 HTML/CSS/JS로 구성했습니다.
+Node.js + Express + Postgres(Supabase)로 만든 익명 게시판. 프론트엔드는 빌드 과정 없는
+순수 HTML/CSS/JS로 구성했고, Vercel(서버리스) + Supabase(DB) + GitHub Actions(예약 작업)
+조합으로 배포합니다.
 
 ## 주요 기능
 
 **일반 사용자**
-- 게시글 목록 (검색, 페이지네이션, 공지 고정 표시)
-- 글쓰기 / 조회수 / 추천(IP 기준 중복 방지) / 댓글
+- 게시글 목록 (검색, 페이지네이션, 최신순/Best글, 공지 고정 표시)
+- 글쓰기 / 조회수 / 추천(IP 기준 중복 방지) / 댓글·대댓글(1단계까지)
 - 글·댓글은 비밀번호로만 본인 수정·삭제 가능 (로그인 없는 익명 게시판)
 - 게시글·댓글 신고 기능
 - 금지어 자동 차단 (관리자가 등록)
-- 반응형 + 라이트/다크 모드 자동 대응 UI
+- 파워 테마 랜덤 닉네임 자동 생성
+- Market Info: 에너지 솔루션(SOFC/반도체 전력/데이터센터 등) 브리핑을 예약/수동 생성해 목록으로 제공
 
 **관리자 (`/admin`)**
 - 별도 로그인 (환경변수 비밀번호 + JWT httpOnly 쿠키)
-- 대시보드 통계 (전체 글/댓글 수, 오늘 작성 글, 대기중 신고 수)
-- 게시글 관리: 검색, 공지 설정/해제, 숨김 처리, 강제 삭제
-- 댓글 관리: 강제 삭제
-- 신고 관리: 대기중/처리완료 목록, 처리 완료 처리
-- 금지어 관리: 추가/삭제
+- 대시보드 통계, 게시글/댓글 관리, 신고 처리, 금지어 관리
+- 브리핑 관리: 생성 주기/시각/수신 이메일/메일 제목 설정, "지금생성" 수동 실행, 실행 로그
 
-## 로컬 개발 (isolated, localhost)
+## 로컬 개발
 
 ```bash
 npm install
 cp .env.example .env
-# .env 안의 ADMIN_PASSWORD, JWT_SECRET, IP_HASH_SALT 값을 변경하세요
+# DATABASE_URL(Supabase), ADMIN_PASSWORD, JWT_SECRET, IP_HASH_SALT 값을 채우세요
 npm run dev
 ```
 
 브라우저에서 `http://localhost:3000` 접속, 관리자는 `http://localhost:3000/admin`.
+로컬 전용 DB는 없고 `.env`에 설정한 Supabase Postgres에 그대로 연결됩니다 — 테이블은
+첫 실행 시 자동 생성됩니다.
 
-DB 파일은 `data/powerhouse.db` 에 생성됩니다 (git에는 포함되지 않음).
+## 배포
 
-## Docker로 격리 실행 (로컬 검증 & 배포 동일 환경)
-
-```bash
-cp .env.example .env
-# .env 값 수정 후
-docker compose up -d --build
-```
-
-`http://localhost:3000` 으로 접속해 확인합니다. 데이터는 named volume(`powerhouse-data`)에 유지되어
-컨테이너를 내렸다 올려도 사라지지 않습니다.
-
-## AWS Lightsail 배포
-
-가장 간단한 방법은 Lightsail 인스턴스에 Docker를 올려 위 `docker-compose.yml`을 그대로 쓰는 것입니다.
-
-1. **인스턴스 생성**: Lightsail 콘솔 → Instances → Create instance → Linux/Unix → OS Only (Ubuntu 22.04) →
-   가장 저렴한 플랜(512MB~1GB)으로도 충분합니다.
-2. **고정 IP 연결**: Networking 탭에서 Static IP를 생성해 인스턴스에 연결합니다.
-3. **방화벽 설정**: 인스턴스의 Networking 탭에서 HTTP(80), HTTPS(443) 규칙을 추가합니다. (앱 포트 3000은 외부에 열지 않고 Nginx를 통해서만 노출하는 것을 권장합니다.)
-4. **SSH 접속 후 Docker 설치**
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y docker.io docker-compose-plugin
-   sudo usermod -aG docker $USER
-   ```
-5. **코드 업로드**: `scp` 또는 `git clone`으로 프로젝트를 인스턴스에 올립니다.
-6. **환경변수 설정 후 실행**
-   ```bash
-   cp .env.example .env
-   nano .env   # ADMIN_PASSWORD, JWT_SECRET, IP_HASH_SALT 를 강력한 값으로 변경
-   docker compose up -d --build
-   ```
-7. **Nginx 리버스 프록시 + HTTPS (권장)**
-   ```bash
-   sudo apt-get install -y nginx certbot python3-certbot-nginx
-   ```
-   `/etc/nginx/sites-available/powerhouse` 에 아래 내용을 작성:
-   ```nginx
-   server {
-     listen 80;
-     server_name your-domain.com;
-     location / {
-       proxy_pass http://127.0.0.1:3000;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-     }
-   }
-   ```
-   ```bash
-   sudo ln -s /etc/nginx/sites-available/powerhouse /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
-   sudo certbot --nginx -d your-domain.com
-   ```
-8. 이후 코드 업데이트 시: `git pull && docker compose up -d --build`
-
-> 도메인이 없다면 Nginx/Certbot 단계는 생략하고 Lightsail 방화벽에서 3000 포트만 열어
-> `http://고정IP:3000` 으로 바로 접속해도 됩니다 (HTTPS 없이 테스트용으로만 권장).
+`DEPLOY.md` 참고 — Vercel(웹 앱) + Supabase(DB) + GitHub Actions(브리핑 생성 스케줄) 조합입니다.
+서버 SSH 관리가 필요 없습니다.
 
 ## 환경변수
 
 | 변수 | 설명 |
 |---|---|
-| `PORT` | 서버 포트 (기본 3000) |
+| `PORT` | 로컬 개발용 포트 (Vercel에서는 무시됨) |
+| `DATABASE_URL` | Supabase Postgres 연결 문자열 |
 | `ADMIN_PASSWORD` | 관리자 로그인 비밀번호 |
 | `JWT_SECRET` | 관리자 세션 토큰 서명용 비밀키 |
 | `IP_HASH_SALT` | 추천(좋아요) 중복 방지용 IP 해시 솔트 |
-| `DB_PATH` | SQLite 파일 경로 |
+| `GMAIL_USER` / `GMAIL_APP_PASSWORD` | 브리핑 이메일 발송용 (선택) |
+| `GITHUB_TOKEN` / `GITHUB_REPO` | "지금생성" 버튼이 GitHub Actions를 트리거하는 데 필요 |
+| `CLAUDE_CODE_OAUTH_TOKEN` | GitHub Actions에서 브리핑 생성 시 필요 (Actions Secret) |
 
 ## 디렉터리 구조
 
 ```
-server/         Express API 서버
-  routes/       posts, comments, admin API
+server/         Express API 서버 (api/index.js를 통해 Vercel 서버리스 함수로 노출)
+  routes/       posts, comments, admin, market-info API
   middleware/   관리자 인증
-  utils/        비밀번호 해시, IP 해시, 금지어 검사 등
-  db.js         SQLite 스키마 초기화
+  utils/        비밀번호 해시, IP 해시, 금지어 검사, 메일 발송, 설정
+  db.js         Postgres 스키마 초기화
+scripts/        generate-briefing.js (GitHub Actions에서 실행)
+.github/workflows/  브리핑 생성 예약 작업
 public/         일반 사용자 프론트엔드 (정적 파일)
 admin/          관리자 프론트엔드 (정적 파일, /admin 경로로 서빙)
-data/           SQLite DB 파일 (gitignore)
+.claude/skills/esmi/  브리핑 생성에 쓰이는 리서치 스킬 정의
 ```

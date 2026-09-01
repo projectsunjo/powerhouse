@@ -32,7 +32,7 @@ function showToast(message) {
 }
 
 function formatDate(iso) {
-  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  const d = new Date(iso);
   const now = new Date();
   const diffMs = now - d;
   const diffMin = Math.floor(diffMs / 60000);

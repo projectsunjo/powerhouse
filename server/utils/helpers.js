@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const { pool } = require('../db');
 
 function hashIp(ip) {
   const salt = process.env.IP_HASH_SALT || 'default-salt';
@@ -33,8 +33,8 @@ function randomNickname() {
   return `${word}${n}`;
 }
 
-function containsBannedWord(text) {
-  const rows = db.prepare('SELECT word FROM banned_words').all();
+async function containsBannedWord(text) {
+  const { rows } = await pool.query('SELECT word FROM banned_words');
   if (rows.length === 0) return null;
   const lower = String(text).toLowerCase();
   for (const row of rows) {

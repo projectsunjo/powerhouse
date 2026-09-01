@@ -202,7 +202,7 @@ const briefingRunState = { page: 1 };
 
 function formatTime(iso) {
   if (!iso) return '';
-  const d = new Date(iso.replace(' ', 'T') + 'Z');
+  const d = new Date(iso);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 

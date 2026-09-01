@@ -10,7 +10,6 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 const adminRouter = require('./routes/admin');
 const marketInfoRouter = require('./routes/marketInfo');
-const scheduler = require('./scheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -75,7 +74,15 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`PowerHouse board running on http://localhost:${PORT}`);
-  scheduler.start();
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: '서버 오류가 발생했습니다.' });
 });
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`PowerHouse board running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
