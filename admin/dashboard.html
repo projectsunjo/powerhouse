@@ -90,7 +90,7 @@
             <label class="checkbox-row"><input type="checkbox" id="scheduleEnabled" /> 사용</label>
           </div>
           <div class="form-group" style="flex:0 0 140px;">
-            <label>시작 시각</label>
+            <label>시작 시각 (한국시간)</label>
             <select class="input" id="scheduleHour"></select>
           </div>
           <div class="form-group" style="flex:0 0 160px;">
@@ -118,11 +118,12 @@
 
       <div class="search-row">
         <button class="btn btn-primary" id="briefingGenerateBtn">⚡ 지금생성</button>
+        <button class="btn btn-ghost" id="briefingSendEmailBtn">✉️ 이메일 발송</button>
         <span class="small-muted" id="briefingStatus"></span>
       </div>
       <div style="overflow-x:auto;">
         <table>
-          <thead><tr><th>시작</th><th>완료</th><th>상태</th><th>이메일 발송</th><th>관리</th></tr></thead>
+          <thead><tr><th>시작</th><th>완료</th><th>유형</th><th>상태</th><th>관리</th></tr></thead>
           <tbody id="briefingRunsTbody"></tbody>
         </table>
       </div>
@@ -137,6 +138,15 @@
           <button class="btn btn-primary" id="briefingEditSave">저장</button>
         </div>
       </div>
+
+      <div class="briefing-index-title" style="margin-top:28px;">이메일 발송 로그</div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>시각</th><th>유형</th><th>발신</th><th>수신</th><th>상태</th></tr></thead>
+          <tbody id="emailLogsTbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="emailLogsPagination"></div>
     </div>
   </div>
 

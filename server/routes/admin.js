@@ -4,6 +4,7 @@ const { pool } = require('../db');
 const { requireAdmin } = require('../middleware/adminAuth');
 const { triggerBriefingWorkflow } = require('../utils/github');
 const { getBriefingSettings, setSetting } = require('../utils/settings');
+const { sendAndLogBriefingEmail } = require('../utils/mailer');
 
 const router = express.Router();
 const PAGE_SIZE = 20;
@@ -234,7 +235,7 @@ router.get('/briefing-runs', async (req, res, next) => {
     const offset = (page - 1) * RUNS_PAGE_SIZE;
     const total = (await pool.query('SELECT COUNT(*)::int AS cnt FROM briefing_runs')).rows[0].cnt;
     const { rows } = await pool.query(
-      `SELECT id, started_at, completed_at, status, briefing_id, email_status, error
+      `SELECT id, started_at, completed_at, status, briefing_id, email_status, error, trigger_type
        FROM briefing_runs ORDER BY id DESC LIMIT $1 OFFSET $2`,
       [RUNS_PAGE_SIZE, offset]
     );
@@ -275,12 +276,46 @@ router.post('/briefings/generate', async (req, res, next) => {
     // first status poll from the frontend (5s later) already sees this run
     // instead of a stale previous 'failed' row (the Action itself takes
     // 20-40s of checkout/npm install before it would create this row).
-    const { rows } = await pool.query("INSERT INTO briefing_runs (status) VALUES ('running') RETURNING id");
+    const { rows } = await pool.query("INSERT INTO briefing_runs (status, trigger_type) VALUES ('running', 'manual') RETURNING id");
     const runId = rows[0].id;
     await triggerBriefingWorkflow(runId);
     res.json({ ok: true, status: 'started', runId });
   } catch (e) {
     res.status(500).json({ error: `실행 요청 실패: ${e.message}` });
+  }
+});
+
+// POST /api/admin/briefings/send-email { briefingId? }  (defaults to latest)
+router.post('/briefings/send-email', async (req, res, next) => {
+  try {
+    const { briefingId } = req.body || {};
+    const { rows } = briefingId
+      ? await pool.query('SELECT id, html, created_at FROM briefings WHERE id = $1', [briefingId])
+      : await pool.query('SELECT id, html, created_at FROM briefings ORDER BY id DESC LIMIT 1');
+    const briefing = rows[0];
+    if (!briefing) return res.status(404).json({ error: '발송할 브리핑이 없습니다.' });
+
+    const summary = await sendAndLogBriefingEmail(briefing.id, briefing.html, briefing.created_at.toISOString(), 'manual');
+    res.json({ ok: true, summary });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/admin/email-logs?page=1
+router.get('/email-logs', async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * PAGE_SIZE;
+    const total = (await pool.query('SELECT COUNT(*)::int AS cnt FROM email_logs')).rows[0].cnt;
+    const { rows } = await pool.query(
+      `SELECT id, briefing_id, trigger_type, from_email, recipients, status, detail, created_at
+       FROM email_logs ORDER BY id DESC LIMIT $1 OFFSET $2`,
+      [PAGE_SIZE, offset]
+    );
+    res.json({ logs: rows, page, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)), total });
+  } catch (e) {
+    next(e);
   }
 });
 

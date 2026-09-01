@@ -27,7 +27,12 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", 'data:'],
-        frameSrc: ["'self'", 'https://deacon1876.github.io'],
+        frameSrc: [
+          "'self'",
+          'https://deacon1876.github.io',
+          'https://www.youtube.com',
+          'https://player.vimeo.com',
+        ],
       },
     },
   })

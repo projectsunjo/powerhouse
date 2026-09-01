@@ -67,7 +67,21 @@ async function init() {
       status TEXT NOT NULL DEFAULT 'running' CHECK (status IN ('running','success','failed')),
       briefing_id INTEGER REFERENCES briefings(id) ON DELETE SET NULL,
       email_status TEXT,
-      error TEXT
+      error TEXT,
+      trigger_type TEXT NOT NULL DEFAULT 'auto' CHECK (trigger_type IN ('auto','manual'))
+    );
+
+    ALTER TABLE briefing_runs ADD COLUMN IF NOT EXISTS trigger_type TEXT NOT NULL DEFAULT 'auto';
+
+    CREATE TABLE IF NOT EXISTS email_logs (
+      id SERIAL PRIMARY KEY,
+      briefing_id INTEGER REFERENCES briefings(id) ON DELETE SET NULL,
+      trigger_type TEXT NOT NULL CHECK (trigger_type IN ('auto','manual')),
+      from_email TEXT,
+      recipients TEXT,
+      status TEXT NOT NULL CHECK (status IN ('success','failed','skipped')),
+      detail TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
     CREATE TABLE IF NOT EXISTS settings (
@@ -83,6 +97,7 @@ async function init() {
     CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
     CREATE INDEX IF NOT EXISTS idx_briefings_created ON briefings(created_at);
     CREATE INDEX IF NOT EXISTS idx_briefing_runs_started ON briefing_runs(started_at);
+    CREATE INDEX IF NOT EXISTS idx_email_logs_created ON email_logs(created_at);
   `);
 
   const defaultSettings = {

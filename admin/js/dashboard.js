@@ -212,6 +212,12 @@ function statusTag(status) {
   return '<span class="tag notice">진행중</span>';
 }
 
+function triggerTag(type) {
+  return type === 'manual'
+    ? '<span class="tag" style="background:var(--primary-soft); color:var(--primary);">수동</span>'
+    : '<span class="tag" style="background:var(--border); color:var(--text-muted);">자동</span>';
+}
+
 async function loadBriefingRuns() {
   const qs = new URLSearchParams({ page: briefingRunState.page });
   const data = await api(`/api/admin/briefing-runs?${qs.toString()}`);
@@ -219,24 +225,26 @@ async function loadBriefingRuns() {
   tbody.innerHTML = '';
 
   for (const run of data.runs) {
-    const logLine =
+    const completedCell =
       run.status === 'failed'
-        ? `${formatTime(run.started_at)} 시작 · 실패 (${run.error || '알 수 없는 오류'})`
+        ? `실패 (${run.error || '알 수 없는 오류'})`
         : run.status === 'running'
-          ? `${formatTime(run.started_at)} 시작 · 진행 중...`
-          : `${formatTime(run.started_at)} 시작 · ${formatTime(run.completed_at)} 생성완료${run.email_status ? ' · ' + run.email_status : ''}`;
+          ? '진행 중...'
+          : formatTime(run.completed_at);
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="title-cell" style="max-width:520px;"></td>
+      <td>${formatTime(run.started_at)}</td>
+      <td class="title-cell" style="max-width:320px;"></td>
+      <td>${triggerTag(run.trigger_type)}</td>
       <td>${statusTag(run.status)}</td>
       <td class="actions">
         ${run.briefing_id ? '<button class="btn btn-sm btn-ghost editBtn">수정</button>' : ''}
         <button class="btn btn-sm btn-danger delBtn">삭제</button>
       </td>
     `;
-    tr.querySelector('.title-cell').textContent = logLine;
-    tr.querySelector('.title-cell').title = logLine;
+    tr.querySelector('.title-cell').textContent = completedCell;
+    tr.querySelector('.title-cell').title = completedCell;
 
     if (run.briefing_id) {
       tr.querySelector('.editBtn').onclick = async () => {
@@ -332,6 +340,7 @@ function pollBriefingStatus() {
     btn.disabled = false;
     statusEl.textContent = '';
     loadBriefingRuns();
+    loadEmailLogs();
   };
   setTimeout(tick, 5000);
 }
@@ -346,6 +355,54 @@ document.getElementById('briefingGenerateBtn').onclick = async () => {
   }
 };
 
+const emailLogState = { page: 1 };
+
+function emailStatusTag(status) {
+  if (status === 'success') return '<span class="tag" style="background:var(--success); color:#fff;">성공</span>';
+  if (status === 'failed') return '<span class="tag hidden">실패</span>';
+  return '<span class="tag notice">건너뜀</span>';
+}
+
+async function loadEmailLogs() {
+  const qs = new URLSearchParams({ page: emailLogState.page });
+  const data = await api(`/api/admin/email-logs?${qs.toString()}`);
+  const tbody = document.getElementById('emailLogsTbody');
+  tbody.innerHTML = '';
+
+  for (const log of data.logs) {
+    const d = new Date(log.created_at);
+    const when = `${d.getMonth() + 1}/${d.getDate()} ${formatTime(log.created_at)}`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${when}</td>
+      <td>${triggerTag(log.trigger_type)}</td>
+      <td class="title-cell"></td>
+      <td class="title-cell"></td>
+      <td>${emailStatusTag(log.status)}${log.status !== 'success' && log.detail ? ` <span class="small-muted">(${log.detail})</span>` : ''}</td>
+    `;
+    tr.children[2].textContent = log.from_email || '-';
+    tr.children[3].textContent = log.recipients || '-';
+    tr.children[3].title = log.recipients || '';
+    tbody.appendChild(tr);
+  }
+
+  renderPagination('emailLogsPagination', data.page, data.totalPages, (n) => {
+    emailLogState.page = n;
+    loadEmailLogs();
+  });
+}
+
+document.getElementById('briefingSendEmailBtn').onclick = async () => {
+  if (!confirm('가장 최근 브리핑을 지금 이메일로 발송하시겠습니까?')) return;
+  try {
+    const result = await api('/api/admin/briefings/send-email', { method: 'POST' });
+    showToast(result.summary);
+    loadEmailLogs();
+  } catch (e) {
+    showToast(e.message);
+  }
+};
+
 (async function init() {
   await guardAuth();
   loadStats();
@@ -355,4 +412,5 @@ document.getElementById('briefingGenerateBtn').onclick = async () => {
   loadWords();
   loadBriefingSettings();
   loadBriefingRuns();
+  loadEmailLogs();
 })();

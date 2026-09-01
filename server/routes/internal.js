@@ -8,7 +8,9 @@
 const express = require('express');
 const { pool } = require('../db');
 const { getSetting, setSetting } = require('../utils/settings');
-const { sendBriefingEmail } = require('../utils/mailer');
+const { sendAndLogBriefingEmail } = require('../utils/mailer');
+
+const KST_OFFSET_MS = 9 * 3600 * 1000;
 
 const router = express.Router();
 
@@ -33,10 +35,15 @@ async function shouldRunScheduled() {
   if (lastRunAt) {
     nextRunAt = new Date(lastRunAt).getTime() + intervalHours * 3600 * 1000;
   } else {
-    const anchor = new Date(now);
-    anchor.setUTCHours(scheduleHour, 0, 0, 0);
-    if (anchor.getTime() > now.getTime()) anchor.setUTCDate(anchor.getUTCDate() - 1);
-    nextRunAt = anchor.getTime();
+    // scheduleHour is a KST (UTC+9) wall-clock hour. Shift "now" into a
+    // Date whose UTC-getters read as KST wall-clock, set the hour there,
+    // then shift back to get the real UTC instant for that KST time.
+    const kstNow = new Date(now.getTime() + KST_OFFSET_MS);
+    const anchorKst = new Date(kstNow);
+    anchorKst.setUTCHours(scheduleHour, 0, 0, 0);
+    let anchorUtcMs = anchorKst.getTime() - KST_OFFSET_MS;
+    if (anchorUtcMs > now.getTime()) anchorUtcMs -= 24 * 3600 * 1000;
+    nextRunAt = anchorUtcMs;
   }
   return now.getTime() >= nextRunAt;
 }
@@ -56,7 +63,7 @@ router.post('/briefing/start', async (req, res, next) => {
     }
 
     await setSetting('briefing_last_scheduled_run_at', new Date().toISOString());
-    const { rows } = await pool.query("INSERT INTO briefing_runs (status) VALUES ('running') RETURNING id");
+    const { rows } = await pool.query("INSERT INTO briefing_runs (status, trigger_type) VALUES ('running', 'auto') RETURNING id");
     res.json({ proceed: true, runId: rows[0].id });
   } catch (e) {
     next(e);
@@ -72,17 +79,9 @@ router.post('/briefing/complete', async (req, res, next) => {
     const insertResult = await pool.query('INSERT INTO briefings (html) VALUES ($1) RETURNING id, created_at', [html]);
     const briefing = insertResult.rows[0];
 
-    const emailRecipients = await getSetting('briefing_email_recipients', '');
-    const emailSubjectTemplate = await getSetting(
-      'briefing_email_subject_template',
-      '[ESMI 마켓봇] 국내외 전력 및 SOFC 관련 {날짜}'
-    );
-    let emailStatus;
-    try {
-      emailStatus = await sendBriefingEmail(html, briefing.created_at.toISOString(), emailRecipients, emailSubjectTemplate);
-    } catch (e) {
-      emailStatus = `이메일 발송 실패: ${e.message}`;
-    }
+    const runResult = await pool.query('SELECT trigger_type FROM briefing_runs WHERE id = $1', [runId]);
+    const triggerType = runResult.rows[0] ? runResult.rows[0].trigger_type : 'auto';
+    const emailStatus = await sendAndLogBriefingEmail(briefing.id, html, briefing.created_at.toISOString(), triggerType);
 
     await pool.query(
       "UPDATE briefing_runs SET completed_at = NOW(), status = 'success', briefing_id = $1, email_status = $2 WHERE id = $3",
