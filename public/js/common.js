@@ -1,6 +1,56 @@
+const URL_RE = /(https?:\/\/[^\s<]+)/g;
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+function getVideoEmbedSrc(url) {
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/);
+  if (m) return `https://www.youtube.com/embed/${m[1]}`;
+  m = url.match(/vimeo\.com\/(\d+)/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  return null;
+}
+
+// Pre-fills an input with a real auto-generated nickname shown dimmed, like
+// a placeholder; the first focus clears it so the user can type their own.
+function setupDimmedNicknameInput(input) {
+  input.classList.add('input-dimmed');
+  api('/api/posts/random-nickname')
+    .then((data) => { input.value = data.nickname; })
+    .catch(() => {});
+  input.addEventListener(
+    'focus',
+    () => {
+      if (input.classList.contains('input-dimmed')) {
+        input.value = '';
+        input.classList.remove('input-dimmed');
+      }
+    },
+    { once: true }
+  );
+}
+
+// Escapes the raw text, then turns URLs into links (and known video URLs
+// into an inline responsive embed). Safe to set via innerHTML since escaping
+// happens before any markup is introduced.
+function linkifyContent(text) {
+  return escapeHtml(text).replace(URL_RE, (url) => {
+    const link = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    const embedSrc = getVideoEmbedSrc(url);
+    if (!embedSrc) return link;
+    return `${link}<div class="video-embed"><iframe src="${embedSrc}" allowfullscreen loading="lazy"></iframe></div>`;
+  });
+}
+
 (function initMobileNav() {
   const toggle = document.getElementById('navToggle');
   const nav = document.querySelector('.nav-menu');
+  const label = document.getElementById('currentPageLabel');
+  if (label) {
+    const active = nav && nav.querySelector('.nav-link.active');
+    label.textContent = active ? active.textContent : '';
+  }
   if (!toggle || !nav) return;
   toggle.addEventListener('click', () => nav.classList.toggle('open'));
   document.addEventListener('click', (e) => {

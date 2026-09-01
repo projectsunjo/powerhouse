@@ -1,8 +1,4 @@
-api('/api/posts/random-nickname')
-  .then((data) => {
-    document.getElementById('nickname').value = data.nickname;
-  })
-  .catch(() => {});
+setupDimmedNicknameInput(document.getElementById('nickname'));
 
 document.getElementById('submitBtn').onclick = async () => {
   const title = document.getElementById('title').value.trim();

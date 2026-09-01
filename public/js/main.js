@@ -42,11 +42,15 @@ function renderList(data) {
           ${post.is_notice ? '<span class="badge notice">공지</span>' : ''}
           <span class="post-title"></span>
         </div>
-        <div class="post-meta"><span class="post-nick"></span> · <span class="post-date"></span></div>
+        <div class="post-meta">
+          <span><span class="post-nick"></span> · <span class="post-date"></span></span>
+          <span class="post-stats">
+            <span class="stat">👁 ${post.views}</span>
+            <span class="stat">♡ ${post.likes}</span>
+            <span class="stat">💬 ${post.comment_count}</span>
+          </span>
+        </div>
       </div>
-      <div class="col-num">${post.views}</div>
-      <div class="col-num">${post.likes}</div>
-      <div class="col-num">${post.comment_count}</div>
     `;
     row.querySelector('.post-title').textContent = post.title;
     row.querySelector('.post-nick').textContent = post.nickname;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>점심지도 - PowerHouse</title>
+<title>식권대장 - PowerHouse</title>
 <link rel="icon" href="/img/logo.png" type="image/png" />
 <link rel="stylesheet" href="/css/style.css" />
 </head>
@@ -11,12 +11,15 @@
   <div class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
-      <nav class="nav-menu">
-        <a class="nav-link" href="/">익명게시판</a>
-        <a class="nav-link" href="/market-info.html">Market Info</a>
-        <a class="nav-link active" href="/lunch-map.html">점심지도</a>
-      </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      <div class="nav-right">
+        <nav class="nav-menu">
+          <a class="nav-link" href="/">익명게시판</a>
+          <a class="nav-link" href="/market-info.html">Market Info</a>
+          <a class="nav-link active" href="/lunch-map.html">식권대장</a>
+        </nav>
+        <span class="current-page-label" id="currentPageLabel"></span>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      </div>
     </div>
   </div>
 
@@ -24,7 +27,7 @@
     <iframe
       class="lunch-map-frame"
       src="https://deacon1876.github.io/lunch-map/"
-      title="점심지도"
+      title="식권대장"
       loading="lazy"
     ></iframe>
   </div>

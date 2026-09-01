@@ -11,12 +11,15 @@
   <div class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
-      <nav class="nav-menu">
-        <a class="nav-link active" href="/">익명게시판</a>
-        <a class="nav-link" href="/market-info.html">Market Info</a>
-        <a class="nav-link" href="/lunch-map.html">점심지도</a>
-      </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      <div class="nav-right">
+        <nav class="nav-menu">
+          <a class="nav-link active" href="/">익명게시판</a>
+          <a class="nav-link" href="/market-info.html">Market Info</a>
+          <a class="nav-link" href="/lunch-map.html">식권대장</a>
+        </nav>
+        <span class="current-page-label" id="currentPageLabel"></span>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      </div>
     </div>
   </div>
 
@@ -50,7 +53,7 @@
           <div class="post-menu-wrap">
             <button class="icon-btn" id="postMenuBtn">⋯</button>
             <div class="dropdown-menu" id="postMenu">
-              <button id="reportPostBtn">🚩 신고</button>
+              <button id="reportPostBtn" class="report-hidden">🚩 신고</button>
               <button id="editPostBtn">✏️ 수정</button>
               <button id="deletePostBtn" class="danger">🗑 삭제</button>
             </div>
@@ -73,14 +76,17 @@
         <div class="card" id="commentList"></div>
 
         <div class="comment-form">
-          <div class="comment-form-hint">익명 작성 시 개인정보는 저장되지 않습니다.</div>
-          <textarea class="input" id="commentContent" maxlength="2000" style="min-height:70px" placeholder="댓글을 입력하세요"></textarea>
-          <div class="comment-form-footer">
-            <div class="comment-form-fields">
-              <input type="text" class="input input-sm" id="commentNickname" maxlength="30" placeholder="Volt1234" />
-              <input type="password" class="input input-sm" id="commentPassword" maxlength="50" placeholder="비밀번호" />
+          <input type="text" class="input" id="commentQuick" placeholder="댓글을 입력하세요" />
+          <div class="comment-form-expanded" id="commentExpanded" style="display:none;">
+            <div class="comment-form-hint">익명 작성 시 개인정보는 저장되지 않습니다.</div>
+            <textarea class="input" id="commentContent" maxlength="2000" style="min-height:70px" placeholder="댓글을 입력하세요"></textarea>
+            <div class="comment-form-footer">
+              <div class="comment-form-fields">
+                <input type="text" class="input input-sm" id="commentNickname" maxlength="30" />
+                <input type="password" class="input input-sm" id="commentPassword" maxlength="50" placeholder="비밀번호" />
+              </div>
+              <button class="btn btn-primary" id="commentSubmit">등록</button>
             </div>
-            <button class="btn btn-primary" id="commentSubmit">등록</button>
           </div>
         </div>
       </div>

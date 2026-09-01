@@ -11,12 +11,15 @@
   <div class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
-      <nav class="nav-menu">
-        <a class="nav-link active" href="/">익명게시판</a>
-        <a class="nav-link" href="/market-info.html">Market Info</a>
-        <a class="nav-link" href="/lunch-map.html">점심지도</a>
-      </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      <div class="nav-right">
+        <nav class="nav-menu">
+          <a class="nav-link active" href="/">익명게시판</a>
+          <a class="nav-link" href="/market-info.html">Market Info</a>
+          <a class="nav-link" href="/lunch-map.html">식권대장</a>
+        </nav>
+        <span class="current-page-label" id="currentPageLabel"></span>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      </div>
     </div>
   </div>
 
@@ -26,6 +29,14 @@
       <button class="board-tab" data-sort="best">Best글</button>
     </div>
 
+    <div class="board-table">
+      <div class="board-row board-head">
+        <div class="col-title">제목</div>
+      </div>
+      <div id="postList"></div>
+    </div>
+    <div id="pagination" class="pagination"></div>
+
     <div class="toolbar-row">
       <div class="search-row">
         <input type="text" class="input" id="searchInput" placeholder="제목 또는 내용을 검색하세요" />
@@ -33,17 +44,6 @@
       </div>
       <a href="/write.html"><button class="btn btn-primary">✏️ 글쓰기</button></a>
     </div>
-
-    <div class="board-table">
-      <div class="board-row board-head">
-        <div class="col-title">제목</div>
-        <div class="col-num">조회</div>
-        <div class="col-num">좋아요</div>
-        <div class="col-num">댓글</div>
-      </div>
-      <div id="postList"></div>
-    </div>
-    <div id="pagination" class="pagination"></div>
   </div>
 
   <script src="/js/common.js"></script>

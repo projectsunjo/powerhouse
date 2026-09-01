@@ -20,14 +20,12 @@ async function loadPost() {
 }
 
 function renderPost() {
-  document.getElementById('postBadge').innerHTML = currentPost.is_notice
-    ? '<span class="badge notice">공지</span>'
-    : `<span class="badge">#${currentPost.id}</span>`;
+  document.getElementById('postBadge').innerHTML = currentPost.is_notice ? '<span class="badge notice">공지</span>' : '';
   document.getElementById('postTitle').textContent = currentPost.title;
   document.getElementById('postNickname').textContent = currentPost.nickname;
   document.getElementById('postDate').textContent = formatDate(currentPost.created_at);
   document.getElementById('postViews').textContent = currentPost.views;
-  document.getElementById('postContent').textContent = currentPost.content;
+  document.getElementById('postContent').innerHTML = linkifyContent(currentPost.content);
   document.getElementById('likeCount').textContent = currentPost.likes;
 
   liked = localStorage.getItem(LIKED_KEY) === '1';
@@ -75,7 +73,7 @@ function renderCommentItem(c, isReply) {
       <span><span class="nick"></span> · <span class="when"></span></span>
       <span class="comment-actions">
         ${!isReply ? '<button class="replyC">답글</button>' : ''}
-        <button class="reportC">신고</button>
+        <button class="reportC report-hidden">신고</button>
         <button class="delC">삭제</button>
       </span>
     </div>
@@ -83,7 +81,7 @@ function renderCommentItem(c, isReply) {
   `;
   item.querySelector('.nick').textContent = c.nickname;
   item.querySelector('.when').textContent = formatDate(c.created_at);
-  item.querySelector('.comment-body').textContent = c.content;
+  item.querySelector('.comment-body').innerHTML = linkifyContent(c.content);
 
   item.querySelector('.delC').onclick = () => {
     promptPassword({
@@ -121,7 +119,7 @@ function toggleReplyForm(afterItem, parentId) {
   form.className = 'reply-form';
   form.innerHTML = `
     <div class="form-row">
-      <div class="form-group"><input type="text" class="input input-sm" maxlength="30" placeholder="Volt1234" /></div>
+      <div class="form-group"><input type="text" class="input input-sm input-dimmed" maxlength="30" /></div>
       <div class="form-group"><input type="password" class="input input-sm" maxlength="50" placeholder="비밀번호" /></div>
     </div>
     <textarea class="input" maxlength="2000" style="min-height:60px" placeholder="답글을 입력하세요"></textarea>
@@ -133,9 +131,7 @@ function toggleReplyForm(afterItem, parentId) {
   afterItem.after(form);
 
   const nicknameInput = form.querySelector('input[type="text"]');
-  api('/api/posts/random-nickname')
-    .then((data) => { nicknameInput.value = data.nickname; })
-    .catch(() => {});
+  setupDimmedNicknameInput(nicknameInput);
   const passwordInput = form.querySelector('input[type="password"]');
   const contentInput = form.querySelector('textarea');
   contentInput.focus();
@@ -240,13 +236,31 @@ document.getElementById('editSave').onclick = async () => {
 };
 
 function refreshCommentNickname() {
-  api('/api/posts/random-nickname')
-    .then((data) => { document.getElementById('commentNickname').value = data.nickname; })
-    .catch(() => {});
+  setupDimmedNicknameInput(document.getElementById('commentNickname'));
 }
 
+const commentQuick = document.getElementById('commentQuick');
+const commentExpanded = document.getElementById('commentExpanded');
+const commentContent = document.getElementById('commentContent');
+
+function expandCommentForm() {
+  if (commentExpanded.style.display !== 'none') return;
+  commentContent.value = commentQuick.value;
+  commentQuick.style.display = 'none';
+  commentExpanded.style.display = 'block';
+  commentContent.focus();
+}
+
+function collapseCommentForm() {
+  commentExpanded.style.display = 'none';
+  commentQuick.style.display = '';
+  commentQuick.value = '';
+}
+
+commentQuick.addEventListener('focus', expandCommentForm);
+
 document.getElementById('commentSubmit').onclick = async () => {
-  const content = document.getElementById('commentContent').value.trim();
+  const content = commentContent.value.trim();
   const nickname = document.getElementById('commentNickname').value.trim();
   const password = document.getElementById('commentPassword').value.trim();
 
@@ -258,9 +272,9 @@ document.getElementById('commentSubmit').onclick = async () => {
       method: 'POST',
       body: { content, nickname, password },
     });
-    document.getElementById('commentContent').value = '';
     document.getElementById('commentPassword').value = '';
     refreshCommentNickname();
+    collapseCommentForm();
     showToast('댓글이 등록되었습니다.');
     loadComments();
   } catch (e) {
