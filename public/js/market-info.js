@@ -100,9 +100,13 @@ async function pollGenerateStatus() {
       polling = false;
       btn.disabled = false;
       btn.textContent = '⚡ 지금생성';
-      showToast('새 브리핑이 생성되었습니다.');
-      loadFeatured();
-      loadIndex();
+      if (status.lastError) {
+        showToast(`생성 실패: ${status.lastError}`);
+      } else {
+        showToast('새 브리핑이 생성되었습니다.');
+        loadFeatured();
+        loadIndex();
+      }
     } catch (e) {
       polling = false;
       btn.disabled = false;
