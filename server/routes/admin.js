@@ -235,8 +235,14 @@ router.get('/briefing-runs', async (req, res, next) => {
     const offset = (page - 1) * RUNS_PAGE_SIZE;
     const total = (await pool.query('SELECT COUNT(*)::int AS cnt FROM briefing_runs')).rows[0].cnt;
     const { rows } = await pool.query(
-      `SELECT id, started_at, completed_at, status, briefing_id, email_status, error, trigger_type
-       FROM briefing_runs ORDER BY id DESC LIMIT $1 OFFSET $2`,
+      `SELECT br.id, br.started_at, br.completed_at, br.status, br.briefing_id, br.email_status, br.error, br.trigger_type,
+        b.created_at AS briefing_created_at,
+        (SELECT el.created_at FROM email_logs el
+          WHERE el.briefing_id = br.briefing_id AND el.status = 'success'
+          ORDER BY el.id DESC LIMIT 1) AS last_email_sent_at
+       FROM briefing_runs br
+       LEFT JOIN briefings b ON b.id = br.briefing_id
+       ORDER BY br.id DESC LIMIT $1 OFFSET $2`,
       [RUNS_PAGE_SIZE, offset]
     );
     res.json({ runs: rows, page, totalPages: Math.max(1, Math.ceil(total / RUNS_PAGE_SIZE)), total });

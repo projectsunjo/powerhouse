@@ -126,6 +126,8 @@ document.getElementById('generateNowBtn').onclick = async () => {
   }
 };
 
+const deepLinkId = new URLSearchParams(location.search).get('id');
+
 checkAdmin();
-loadFeatured();
+loadFeatured(deepLinkId || undefined);
 loadIndex();

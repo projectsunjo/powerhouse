@@ -87,6 +87,11 @@ td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag.notice { background: #fff3cd; color: #a67c00; }
 .tag.hidden { background: var(--danger-soft); color: var(--danger); }
 
+tr.row-link { cursor: pointer; }
+tr.row-link:hover { background: var(--primary-soft); }
+.report-id { font-weight: 700; color: var(--primary); }
+.last-sent-hint { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
 .banned-word-list {
   display: flex;
   flex-wrap: wrap;

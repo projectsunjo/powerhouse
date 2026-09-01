@@ -91,7 +91,7 @@ router.post('/', async (req, res, next) => {
     password = (password || '').trim();
 
     if (!title || !content) return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
-    if (title.length > 200) return res.status(400).json({ error: '제목이 너무 깁니다.' });
+    if (title.length > 100) return res.status(400).json({ error: '제목이 너무 깁니다.' });
     if (content.length > 10000) return res.status(400).json({ error: '내용이 너무 깁니다.' });
     if (!password || password.length < 4) return res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' });
     if (!nickname) nickname = randomNickname();
@@ -144,7 +144,7 @@ router.put('/:id', async (req, res, next) => {
     title = (title || '').trim();
     content = (content || '').trim();
     if (!title || !content) return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
-    if (title.length > 200 || content.length > 10000) return res.status(400).json({ error: '입력값이 너무 깁니다.' });
+    if (title.length > 100 || content.length > 10000) return res.status(400).json({ error: '입력값이 너무 깁니다.' });
 
     const banned = (await containsBannedWord(title)) || (await containsBannedWord(content));
     if (banned) return res.status(400).json({ error: '금지어가 포함되어 있습니다.' });

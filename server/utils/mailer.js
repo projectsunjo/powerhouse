@@ -24,7 +24,11 @@ function parseRecipients(recipientsStr) {
 }
 
 function buildSubject(template, createdAt) {
-  const dateLabel = new Date(createdAt.replace(' ', 'T') + 'Z').toLocaleDateString('ko-KR', {
+  // createdAt is always a full ISO 8601 string (toISOString()) by the time
+  // this is called — passing it straight to Date avoids double-appending
+  // 'Z' (which produced "Invalid Date" when this used to assume a bare
+  // "YYYY-MM-DD HH:MM:SS" SQL-style string).
+  const dateLabel = new Date(createdAt).toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

@@ -206,6 +206,20 @@ function formatTime(iso) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+function formatDateWithWeekday(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}(${WEEKDAYS_KO[d.getDay()]})`;
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+}
+
 function statusTag(status) {
   if (status === 'success') return '<span class="tag" style="background:var(--success); color:#fff;">완료</span>';
   if (status === 'failed') return '<span class="tag hidden">실패</span>';
@@ -225,28 +239,47 @@ async function loadBriefingRuns() {
   tbody.innerHTML = '';
 
   for (const run of data.runs) {
-    const completedCell =
-      run.status === 'failed'
+    const reportId = run.briefing_id ? `ESMI-${run.briefing_id}` : '-';
+    const createdLabel = run.briefing_created_at
+      ? formatDateWithWeekday(run.briefing_created_at)
+      : run.status === 'failed'
         ? `실패 (${run.error || '알 수 없는 오류'})`
         : run.status === 'running'
           ? '진행 중...'
-          : formatTime(run.completed_at);
+          : '-';
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${formatTime(run.started_at)}</td>
-      <td class="title-cell" style="max-width:320px;"></td>
+      <td class="report-id">${reportId}</td>
+      <td class="title-cell" style="max-width:220px;"></td>
       <td>${triggerTag(run.trigger_type)}</td>
       <td>${statusTag(run.status)}</td>
+      <td>
+        ${run.briefing_id ? '<button class="btn btn-sm btn-ghost sendBtn">보내기</button>' : '-'}
+        ${run.last_email_sent_at ? `<span class="last-sent-hint">${formatDateTime(run.last_email_sent_at)} 보냄</span>` : ''}
+      </td>
       <td class="actions">
+        ${run.briefing_id ? '<button class="btn btn-sm btn-ghost gotoBtn">본문가기</button>' : ''}
         ${run.briefing_id ? '<button class="btn btn-sm btn-ghost editBtn">수정</button>' : ''}
         <button class="btn btn-sm btn-danger delBtn">삭제</button>
       </td>
     `;
-    tr.querySelector('.title-cell').textContent = completedCell;
-    tr.querySelector('.title-cell').title = completedCell;
+    tr.querySelector('.title-cell').textContent = createdLabel;
+    tr.querySelector('.title-cell').title = createdLabel;
 
     if (run.briefing_id) {
+      tr.querySelector('.gotoBtn').onclick = () => window.open(`/market-info.html?id=${run.briefing_id}`, '_blank');
+      tr.querySelector('.sendBtn').onclick = async () => {
+        if (!confirm(`${reportId}를 지금 이메일로 발송하시겠습니까?`)) return;
+        try {
+          const result = await api('/api/admin/briefings/send-email', { method: 'POST', body: { briefingId: run.briefing_id } });
+          showToast(result.summary);
+          loadBriefingRuns();
+          loadEmailLogs();
+        } catch (e) {
+          showToast(e.message);
+        }
+      };
       tr.querySelector('.editBtn').onclick = async () => {
         const briefing = await api(`/api/admin/briefings`);
         const target = briefing.briefings.find((b) => b.id === run.briefing_id);
@@ -370,19 +403,25 @@ async function loadEmailLogs() {
   tbody.innerHTML = '';
 
   for (const log of data.logs) {
-    const d = new Date(log.created_at);
-    const when = `${d.getMonth() + 1}/${d.getDate()} ${formatTime(log.created_at)}`;
+    const when = `${formatDateWithWeekday(log.created_at)} ${formatTime(log.created_at)}`;
+    const reportId = log.briefing_id ? `ESMI-${log.briefing_id}` : '-';
     const tr = document.createElement('tr');
+    if (log.briefing_id) tr.className = 'row-link';
     tr.innerHTML = `
       <td>${when}</td>
+      <td class="report-id">${reportId}</td>
       <td>${triggerTag(log.trigger_type)}</td>
       <td class="title-cell"></td>
       <td class="title-cell"></td>
-      <td>${emailStatusTag(log.status)}${log.status !== 'success' && log.detail ? ` <span class="small-muted">(${log.detail})</span>` : ''}</td>
+      <td>${emailStatusTag(log.status)} <span class="small-muted detail-cell"></span></td>
     `;
-    tr.children[2].textContent = log.from_email || '-';
-    tr.children[3].textContent = log.recipients || '-';
-    tr.children[3].title = log.recipients || '';
+    tr.children[3].textContent = log.from_email || '-';
+    tr.children[4].textContent = log.recipients || '-';
+    tr.children[4].title = log.recipients || '';
+    if (log.status !== 'success' && log.detail) tr.querySelector('.detail-cell').textContent = `(${log.detail})`;
+    if (log.briefing_id) {
+      tr.onclick = () => window.open(`/market-info.html?id=${log.briefing_id}`, '_blank');
+    }
     tbody.appendChild(tr);
   }
 
