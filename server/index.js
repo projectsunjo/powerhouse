@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
+const { ready: dbReady } = require('./db');
 const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 const adminRouter = require('./routes/admin');
@@ -55,6 +56,11 @@ app.use((req, res, next) => {
     if (req.path.startsWith('/api/admin/')) return next();
     return writeLimiter(req, res, next);
   }
+  next();
+});
+
+app.use('/api', async (req, res, next) => {
+  await dbReady;
   next();
 });
 

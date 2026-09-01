@@ -95,8 +95,18 @@ async function init() {
   }
 }
 
-const ready = init().catch((e) => {
-  console.error('DB init failed (will retry on next query):', e.message);
-});
+async function initWithRetry(attempts = 4) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await init();
+      return;
+    } catch (e) {
+      console.error(`DB init failed (attempt ${i}/${attempts}):`, e.message);
+      if (i < attempts) await new Promise((r) => setTimeout(r, 1500 * i));
+    }
+  }
+}
+
+const ready = initWithRetry();
 
 module.exports = { pool, ready };
