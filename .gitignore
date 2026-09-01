@@ -5,3 +5,4 @@ npm-debug.log
 corp-ca-bundle.pem
 *.pem
 *.log
+.env*

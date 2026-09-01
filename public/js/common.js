@@ -1,3 +1,15 @@
+(function initMobileNav() {
+  const toggle = document.getElementById('navToggle');
+  const nav = document.querySelector('.nav-menu');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', () => nav.classList.toggle('open'));
+  document.addEventListener('click', (e) => {
+    if (!nav.classList.contains('open')) return;
+    if (nav.contains(e.target) || toggle.contains(e.target)) return;
+    nav.classList.remove('open');
+  });
+})();
+
 async function api(path, options = {}) {
   const res = await fetch(path, {
     headers: { 'Content-Type': 'application/json' },

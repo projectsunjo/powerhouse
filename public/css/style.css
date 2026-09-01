@@ -98,6 +98,19 @@ a { color: inherit; text-decoration: none; }
 .nav-link:hover { color: var(--primary); background: var(--primary-soft); }
 .nav-link.active { color: var(--primary); background: var(--primary-soft); }
 
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.nav-toggle:hover { background: var(--primary-soft); }
+
 .brand-mark {
   width: 32px;
   height: 32px;
@@ -555,7 +568,7 @@ button.stat-item.likeable.liked { color: var(--primary); font-weight: 700; }
 
 .small-muted { font-size: 0.8rem; color: var(--text-muted); }
 
-.market-info-container { padding-top: 0; }
+.market-info-container, .board-container { padding-top: 0; }
 .market-info-panel { margin-top: 16px; }
 .market-info-head {
   display: flex;
@@ -589,6 +602,28 @@ button.stat-item.likeable.liked { color: var(--primary); font-weight: 700; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+}
+
+@media (max-width: 720px) {
+  .topbar-inner { padding: 14px 10px; }
+  .container { padding-left: 10px; padding-right: 10px; }
+
+  .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+  }
+  .nav-menu.open { display: flex; }
+  .nav-link { padding: 12px 14px; }
 }
 
 @media (max-width: 560px) {
