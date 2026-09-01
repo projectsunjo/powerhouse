@@ -76,6 +76,8 @@ async function init() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
+    CREATE INDEX IF NOT EXISTS idx_posts_latest ON posts(is_hidden, is_notice DESC, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_posts_best ON posts(is_hidden, likes DESC, id DESC);
     CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
     CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
     CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);

@@ -12,6 +12,10 @@ on:
         description: 'Generate immediately regardless of schedule'
         required: false
         default: 'true'
+      run_id:
+        description: 'Existing briefing_runs id to report back to (set by the 지금생성 button)'
+        required: false
+        default: ''
 
 jobs:
   generate:
@@ -35,9 +39,9 @@ jobs:
 
       - name: Generate briefing
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+          INTERNAL_API_SECRET: ${{ secrets.INTERNAL_API_SECRET }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           FORCE: ${{ github.event.inputs.force || 'false' }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
         run: node scripts/generate-briefing.js

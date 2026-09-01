@@ -11,6 +11,7 @@ const postsRouter = require('./routes/posts');
 const commentsRouter = require('./routes/comments');
 const adminRouter = require('./routes/admin');
 const marketInfoRouter = require('./routes/marketInfo');
+const internalRouter = require('./routes/internal');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,7 +54,7 @@ const loginLimiter = rateLimit({
 app.use((req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
     if (req.path.startsWith('/api/admin/login')) return loginLimiter(req, res, next);
-    if (req.path.startsWith('/api/admin/')) return next();
+    if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/internal/')) return next();
     return writeLimiter(req, res, next);
   }
   next();
@@ -68,6 +69,7 @@ app.use('/api/posts', postsRouter);
 app.use('/api', commentsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/market-info', marketInfoRouter);
+app.use('/api/internal', internalRouter);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));

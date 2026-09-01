@@ -271,8 +271,14 @@ router.get('/briefings/status', async (req, res, next) => {
 // POST /api/admin/briefings/generate
 router.post('/briefings/generate', async (req, res, next) => {
   try {
-    await triggerBriefingWorkflow();
-    res.json({ ok: true, status: 'started' });
+    // Insert the 'running' row before dispatching the Action, so the very
+    // first status poll from the frontend (5s later) already sees this run
+    // instead of a stale previous 'failed' row (the Action itself takes
+    // 20-40s of checkout/npm install before it would create this row).
+    const { rows } = await pool.query("INSERT INTO briefing_runs (status) VALUES ('running') RETURNING id");
+    const runId = rows[0].id;
+    await triggerBriefingWorkflow(runId);
+    res.json({ ok: true, status: 'started', runId });
   } catch (e) {
     res.status(500).json({ error: `실행 요청 실패: ${e.message}` });
   }

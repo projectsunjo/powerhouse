@@ -1,7 +1,7 @@
 // Triggers the GitHub Actions workflow that generates a new energy-solution
 // briefing. Replaces the old local-process spawn now that the server runs on
 // Vercel (serverless — no persistent process, no shell to spawn into).
-async function triggerBriefingWorkflow() {
+async function triggerBriefingWorkflow(runId) {
   const token = process.env.GITHUB_TOKEN;
   const repo = process.env.GITHUB_REPO;
   if (!token || !repo) {
@@ -15,7 +15,7 @@ async function triggerBriefingWorkflow() {
       Accept: 'application/vnd.github+json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ ref: 'main', inputs: { force: 'true' } }),
+    body: JSON.stringify({ ref: 'main', inputs: { force: 'true', run_id: runId ? String(runId) : '' } }),
   });
 
   if (!res.ok) {
