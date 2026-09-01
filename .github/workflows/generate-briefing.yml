@@ -23,6 +23,7 @@ jobs:
       NODE_EXTRA_CA_CERTS: /home/sunjohwang/corp-ca-bundle.pem
       SSL_CERT_FILE: /home/sunjohwang/corp-ca-bundle.pem
       npm_config_cafile: /home/sunjohwang/corp-ca-bundle.pem
+      GIT_SSL_CAINFO: /home/sunjohwang/corp-ca-bundle.pem
     steps:
       - uses: actions/checkout@v4
 
