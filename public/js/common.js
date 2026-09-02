@@ -142,9 +142,9 @@ const NAV_ME_CACHE_KEY = 'powerhouse_nav_me';
 
 function visibilityToggleRow(me) {
   const icon = me.profile_visible
-    ? (me.profile_image_url ? `<img class="avatar-thumb" src="${me.profile_image_url}" />` : '<span class="visibility-icon">🙂</span>')
+    ? `<img class="avatar-thumb" src="${me.profile_image_url || '/img/logo.png'}" />`
     : '<span class="visibility-icon">🕶️</span>';
-  const label = me.profile_visible ? '실명모드' : '익명모드';
+  const label = me.profile_visible ? `현재: ${me.display_name}` : '현재: 익명모드';
   return `
     <label class="dropdown-checkbox-row">
       <input type="checkbox" id="navAnonToggle" ${me.profile_visible ? '' : 'checked'} />

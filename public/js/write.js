@@ -19,39 +19,71 @@ if (initialCategory === 'suggestion') {
 
 const initialTarget = new URLSearchParams(location.search).get('target') || '';
 
+// Native <select> can't show an avatar image inside its options, so the
+// target picker is a plain button + custom dropdown instead; the actual
+// selected value still lives in the hidden #targetUserId input the rest
+// of this file (and the submit handler) already reads.
+let targetOptions = [{ value: '', label: '일반건의', avatar: '/img/logo.png' }];
+
 api('/api/auth/executives')
   .then((data) => {
-    const select = document.getElementById('targetUserId');
-    select.insertAdjacentHTML(
-      'beforeend',
-      data.executives
-        .map((e) => `<option value="${e.id}" data-avatar="${e.profile_image_url || '/img/logo.png'}">@${e.display_name}</option>`)
-        .join('')
+    targetOptions = targetOptions.concat(
+      data.executives.map((e) => ({
+        value: String(e.id),
+        label: `@${e.display_name}`,
+        avatar: e.profile_image_url || '/img/logo.png',
+      }))
     );
-    if (initialTarget && initialTarget !== 'general') select.value = initialTarget;
-    updateTargetPreview();
+    renderTargetMenu();
+    if (initialTarget && initialTarget !== 'general') selectTarget(initialTarget);
   })
   .catch(() => {});
 
-// Shows the selected 임원/그룹장's photo next to the picker, and only
-// offers "비밀글로 작성" once a specific target is picked — a general
-// suggestion (전체, no specific target) can't be private to anyone.
+function renderTargetMenu() {
+  const menu = document.getElementById('targetPickerMenu');
+  menu.innerHTML = targetOptions
+    .map((o) => `<div class="target-picker-option" data-value="${o.value}"><img class="avatar-thumb" src="${o.avatar}" />${o.label}</div>`)
+    .join('');
+  menu.querySelectorAll('.target-picker-option').forEach((row) => {
+    row.onclick = () => {
+      selectTarget(row.dataset.value);
+      menu.classList.remove('show');
+    };
+  });
+  updateTargetPreview();
+}
+
+function selectTarget(value) {
+  document.getElementById('targetUserId').value = value;
+  updateTargetPreview();
+}
+
+// Shows the selected 임원/그룹장's photo+name on the picker button, and
+// only offers "비밀글로 작성" once a specific target is picked — a general
+// suggestion (일반건의, no specific target) can't be private to anyone.
 function updateTargetPreview() {
-  const select = document.getElementById('targetUserId');
-  const avatar = document.getElementById('targetAvatar');
+  const value = document.getElementById('targetUserId').value;
+  const opt = targetOptions.find((o) => o.value === value) || targetOptions[0];
+  document.getElementById('targetPickerAvatar').src = opt.avatar;
+  document.getElementById('targetPickerLabel').textContent = opt.label;
+  document.querySelectorAll('#targetPickerMenu .target-picker-option').forEach((row) => {
+    row.classList.toggle('selected', row.dataset.value === value);
+  });
+
   const isPrivateField = document.getElementById('isPrivateField');
-  const opt = select.selectedOptions[0];
-  if (opt && opt.value) {
-    avatar.src = opt.dataset.avatar || '/img/logo.png';
-    avatar.style.display = '';
+  if (value) {
     isPrivateField.style.display = 'flex';
   } else {
-    avatar.style.display = 'none';
     isPrivateField.style.display = 'none';
     document.getElementById('isPrivate').checked = false;
   }
 }
-document.getElementById('targetUserId').onchange = updateTargetPreview;
+
+document.getElementById('targetPickerBtn').onclick = (e) => {
+  e.stopPropagation();
+  document.getElementById('targetPickerMenu').classList.toggle('show');
+};
+document.addEventListener('click', () => document.getElementById('targetPickerMenu').classList.remove('show'));
 
 // 건의(suggestion) posts are always anonymous regardless of login (per the
 // board's design), but on the general board any logged-in account with

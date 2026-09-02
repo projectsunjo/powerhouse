@@ -41,12 +41,15 @@
       <div class="form-row" id="suggestionFields" style="display:none;">
         <div class="form-group">
           <label>건의 대상</label>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <img id="targetAvatar" class="avatar-thumb" style="display:none;" />
-            <select class="input" id="targetUserId" style="flex:1;">
-              <option value="">일반건의</option>
-            </select>
+          <div class="target-picker" id="targetPicker">
+            <button type="button" class="target-picker-btn" id="targetPickerBtn">
+              <img id="targetPickerAvatar" class="avatar-thumb" src="/img/logo.png" />
+              <span id="targetPickerLabel">일반건의</span>
+              <span class="target-picker-chevron">▾</span>
+            </button>
+            <div class="target-picker-menu" id="targetPickerMenu"></div>
           </div>
+          <input type="hidden" id="targetUserId" value="" />
         </div>
         <div class="form-group" id="isPrivateField" style="flex:0 0 auto; align-items:flex-end; padding-bottom:12px; display:none;">
           <label class="checkbox-row" style="display:flex; align-items:center; gap:6px;">
