@@ -566,8 +566,8 @@ const ROLE_LABELS = {
 };
 
 async function uploadPhoto(url, file) {
-  const imageBase64 = await readFileAsBase64(file);
-  return api(url, { method: 'POST', body: { imageBase64, mimeType: file.type } });
+  const { imageBase64, mimeType } = await compressImageToBase64(file);
+  return api(url, { method: 'POST', body: { imageBase64, mimeType } });
 }
 
 async function loadUsers() {

@@ -31,17 +31,35 @@ function setupDimmedNicknameInput(input) {
   );
 }
 
-// Reads a File as a base64 string (no "data:...;base64," prefix), for
+// Downscales an image and re-encodes it as JPEG on a canvas, returning a
+// base64 string (no "data:...;base64," prefix) + its mime type, for
 // profile-photo uploads sent as JSON rather than multipart/form-data —
 // this corporate network's proxy silently mangles multipart uploads.
-function readFileAsBase64(file) {
+// Compressing client-side also keeps the payload well under Vercel
+// serverless functions' ~4.5MB request body cap: an original phone photo
+// (often several MB) plus base64's ~33% inflation blows past that easily
+// and gets rejected before our own code ever runs (a 403 with zero trace
+// in server logs, since the function is never invoked).
+function compressImageToBase64(file, maxDim = 640, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      resolve(result.slice(result.indexOf(',') + 1));
-    };
+    const img = new Image();
+    reader.onload = () => { img.src = reader.result; };
     reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+        else { width = Math.round((width * maxDim) / height); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve({ imageBase64: dataUrl.slice(dataUrl.indexOf(',') + 1), mimeType: 'image/jpeg' });
+    };
+    img.onerror = () => reject(new Error('이미지를 불러오지 못했습니다.'));
     reader.readAsDataURL(file);
   });
 }
@@ -191,6 +209,15 @@ function renderNavLoggedOut(el) {
   el.innerHTML = '<a href="/login.html" class="nav-avatar-btn nav-avatar-login">로그인</a>';
 }
 
+// Neutral placeholder for while login state is still unknown (no cached
+// session yet, first call to /api/auth/me still in flight). Deliberately
+// NOT the "로그인" button — showing that and then swapping to the avatar
+// a moment later reads as a login/logout flicker, even though it's really
+// just "we didn't know yet."
+function renderNavUnknown(el) {
+  el.innerHTML = '<span class="nav-avatar-btn nav-avatar-loading" aria-hidden="true"></span>';
+}
+
 async function initNavProfile() {
   const el = document.getElementById('navProfile');
   if (!el) return;
@@ -205,7 +232,7 @@ async function initNavProfile() {
     cached = null;
   }
   if (cached) renderNavProfile(el, cached);
-  else renderNavLoggedOut(el);
+  else renderNavUnknown(el);
 
   let me;
   try {

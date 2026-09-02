@@ -27,8 +27,8 @@ photoInput.onchange = async () => {
   const file = photoInput.files[0];
   if (!file) return;
   try {
-    const imageBase64 = await readFileAsBase64(file);
-    await api('/api/auth/profile-image', { method: 'POST', body: { imageBase64, mimeType: file.type } });
+    const { imageBase64, mimeType } = await compressImageToBase64(file);
+    await api('/api/auth/profile-image', { method: 'POST', body: { imageBase64, mimeType } });
     showToast('사진이 변경되었습니다.');
     localStorage.removeItem(NAV_ME_CACHE_KEY);
     loadMyInfo();

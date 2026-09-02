@@ -520,6 +520,7 @@ textarea { min-height: 260px; resize: vertical; }
   text-align: center;
 }
 .nav-avatar-login:hover { background: var(--primary); color: #fff; }
+.nav-avatar-loading { background: var(--border); opacity: 0.5; }
 #navDropdown { min-width: 170px; }
 
 .post-detail-title {
