@@ -42,7 +42,7 @@ api('/api/auth/executives')
 function renderTargetMenu() {
   const menu = document.getElementById('targetPickerMenu');
   menu.innerHTML = targetOptions
-    .map((o) => `<div class="target-picker-option" data-value="${o.value}"><img class="avatar-thumb" src="${o.avatar}" />${o.label}</div>`)
+    .map((o) => `<div class="target-picker-option" data-value="${o.value}">${o.label}<img class="avatar-thumb" src="${o.avatar}" /></div>`)
     .join('');
   menu.querySelectorAll('.target-picker-option').forEach((row) => {
     row.onclick = () => {
@@ -100,9 +100,14 @@ function applyIdentityMode() {
   passwordField.style.display = signedGeneral ? 'none' : '';
 
   if (signedGeneral) {
+    // The server always substitutes the real display_name for the
+    // submitted post's nickname once it sees a signed-in, profile-visible
+    // author (see POST /api/posts) — this field is just a status
+    // indicator, not the actual value being sent, so it shows a plain
+    // message instead of redundantly spelling out the name.
     nicknameInput.disabled = true;
     nicknameInput.classList.remove('input-dimmed');
-    nicknameInput.value = writeMe.display_name;
+    nicknameInput.value = '실명으로 게시됩니다';
     avatarImg.src = writeMe.profile_image_url || '/img/logo.png';
     avatarImg.style.display = '';
   } else {

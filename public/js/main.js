@@ -67,7 +67,7 @@ async function renderSubFilterRow() {
     .map(
       (p) => `
       <button class="filter-pill${state.target === p.value ? ' active' : ''}" data-target="${p.value}">
-        ${p.avatar ? `<img src="${p.avatar}" />` : ''}${p.label}
+        ${p.label}${p.avatar ? `<img src="${p.avatar}" />` : ''}
       </button>
     `
     )
@@ -113,7 +113,7 @@ async function loadPosts() {
 function renderCategoryCell(post) {
   if (post.category === 'suggestion') {
     const sub = post.target_user_id
-      ? `<img src="${post.target_image_url || '/img/logo.png'}" />@${post.target_name}`
+      ? `@${post.target_name}<img src="${post.target_image_url || '/img/logo.png'}" />`
       : '일반';
     return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
   }
