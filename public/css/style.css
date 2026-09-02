@@ -220,6 +220,28 @@ a { color: inherit; text-decoration: none; }
 }
 .board-tab.active { color: var(--primary); border-color: var(--primary); }
 
+.suggestion-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.filter-pill.active { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); }
+.filter-pill img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+
 .toolbar-row {
   display: flex;
   align-items: center;

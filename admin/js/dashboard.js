@@ -218,7 +218,7 @@ async function loadSuggestions() {
     `;
     tr.querySelector('.postLink').textContent = p.title;
     tr.querySelector('.title-cell').title = p.title;
-    tr.children[2].textContent = p.target_name ? `@${p.target_name}` : '-';
+    tr.children[2].textContent = p.target_name ? `@${p.target_name}` : '전체';
 
     tr.querySelector('.hideBtn').onclick = async () => {
       await api(`/api/admin/suggestions/${p.id}`, { method: 'PATCH', body: { is_hidden: !p.is_hidden } });

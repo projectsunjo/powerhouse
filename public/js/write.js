@@ -17,14 +17,41 @@ if (initialCategory === 'suggestion') {
   document.querySelector('#writeCategoryTabs .board-tab[data-category="suggestion"]').click();
 }
 
+const initialTarget = new URLSearchParams(location.search).get('target') || '';
+
 api('/api/auth/executives')
   .then((data) => {
     const select = document.getElementById('targetUserId');
-    select.innerHTML = data.executives
-      .map((e) => `<option value="${e.id}">@${e.display_name}</option>`)
-      .join('');
+    select.insertAdjacentHTML(
+      'beforeend',
+      data.executives
+        .map((e) => `<option value="${e.id}" data-avatar="${e.profile_image_url || '/img/logo.png'}">@${e.display_name}</option>`)
+        .join('')
+    );
+    if (initialTarget && initialTarget !== 'general') select.value = initialTarget;
+    updateTargetPreview();
   })
   .catch(() => {});
+
+// Shows the selected 임원/그룹장's photo next to the picker, and only
+// offers "비밀글로 작성" once a specific target is picked — a general
+// suggestion (전체, no specific target) can't be private to anyone.
+function updateTargetPreview() {
+  const select = document.getElementById('targetUserId');
+  const avatar = document.getElementById('targetAvatar');
+  const isPrivateField = document.getElementById('isPrivateField');
+  const opt = select.selectedOptions[0];
+  if (opt && opt.value) {
+    avatar.src = opt.dataset.avatar || '/img/logo.png';
+    avatar.style.display = '';
+    isPrivateField.style.display = 'flex';
+  } else {
+    avatar.style.display = 'none';
+    isPrivateField.style.display = 'none';
+    document.getElementById('isPrivate').checked = false;
+  }
+}
+document.getElementById('targetUserId').onchange = updateTargetPreview;
 
 // 건의(suggestion) posts are always anonymous regardless of login (per the
 // board's design), but on the general board a logged-in executive with
@@ -47,6 +74,12 @@ function applyIdentityMode() {
     avatarImg.src = writeMe.profile_image_url || '/img/logo.png';
     avatarImg.style.display = '';
   } else {
+    // Switching in from real-name mode leaves the exec's display name
+    // sitting in the field — clear it so the dimmed-placeholder logic
+    // (which only fills in when the field is actually empty) kicks in.
+    // Don't clear it if we're just re-running this while already in
+    // anon mode, since the user may have typed their own nickname.
+    if (nicknameInput.disabled) nicknameInput.value = '';
     nicknameInput.disabled = false;
     avatarImg.style.display = 'none';
     setupDimmedNicknameInput(nicknameInput);
@@ -72,9 +105,10 @@ document.getElementById('submitBtn').onclick = async () => {
   const body = { title, content, nickname, password, category: writeState.category };
   if (writeState.category === 'suggestion') {
     const targetUserId = document.getElementById('targetUserId').value;
-    if (!targetUserId) return showToast('건의 대상을 선택해주세요.');
-    body.targetUserId = targetUserId;
-    body.isPrivate = document.getElementById('isPrivate').checked;
+    if (targetUserId) {
+      body.targetUserId = targetUserId;
+      body.isPrivate = document.getElementById('isPrivate').checked;
+    }
   }
 
   try {

@@ -54,7 +54,7 @@ function renderPost() {
   if (currentPost.category === 'suggestion') {
     targetEl.style.display = 'flex';
     document.getElementById('targetAvatar').innerHTML = `<img src="${currentPost.target_image_url || '/img/logo.png'}" />`;
-    document.getElementById('targetNickname').textContent = `@${currentPost.target_name || '알 수 없음'}`;
+    document.getElementById('targetNickname').textContent = currentPost.target_user_id ? `@${currentPost.target_name}` : '전체';
   } else {
     targetEl.style.display = 'none';
   }

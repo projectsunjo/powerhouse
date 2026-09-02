@@ -13,22 +13,39 @@ function getVideoEmbedSrc(url) {
 }
 
 // Pre-fills an input with a real auto-generated nickname shown dimmed, like
-// a placeholder; the first focus clears it so the user can type their own.
+// a placeholder; focus clears it so the user can type their own, and blur
+// restores the dimmed placeholder if they left it empty — so the field
+// never sits blank looking like it might submit nothing/anonymous-by-
+// accident. Safe to call again on the same input (e.g. switching the
+// write form back to anonymous mode) — listeners attach only once, only
+// the placeholder value itself is refreshed.
 function setupDimmedNicknameInput(input) {
-  input.classList.add('input-dimmed');
+  const showPlaceholder = () => {
+    if (input.dataset.placeholderNickname) {
+      input.value = input.dataset.placeholderNickname;
+      input.classList.add('input-dimmed');
+    }
+  };
+
   api('/api/posts/random-nickname')
-    .then((data) => { input.value = data.nickname; })
+    .then((data) => {
+      input.dataset.placeholderNickname = data.nickname;
+      if (document.activeElement !== input && !input.value.trim()) showPlaceholder();
+    })
     .catch(() => {});
-  input.addEventListener(
-    'focus',
-    () => {
+
+  if (!input.dataset.dimmedBound) {
+    input.dataset.dimmedBound = '1';
+    input.addEventListener('focus', () => {
       if (input.classList.contains('input-dimmed')) {
         input.value = '';
         input.classList.remove('input-dimmed');
       }
-    },
-    { once: true }
-  );
+    });
+    input.addEventListener('blur', () => {
+      if (!input.value.trim()) showPlaceholder();
+    });
+  }
 }
 
 // Downscales an image and re-encodes it as JPEG on a canvas, returning a

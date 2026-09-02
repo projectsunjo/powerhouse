@@ -1,4 +1,5 @@
 const state = { page: 1, q: '', sort: 'latest', target: '' };
+let executivesCache = null;
 
 const params = new URLSearchParams(location.search);
 if (params.get('q')) {
@@ -11,12 +12,64 @@ if (['best', 'suggestion'].includes(params.get('sort'))) {
   document.querySelectorAll('.board-tab').forEach((b) => b.classList.remove('active'));
   document.querySelector(`.board-tab[data-sort="${state.sort}"]`).classList.add('active');
 }
-if (state.sort === 'suggestion' && params.get('target') === 'me') state.target = 'me';
+if (state.sort === 'suggestion' && params.get('target')) state.target = params.get('target');
 updateWriteLink();
+updateSuggestionFilterRow();
 
 function updateWriteLink() {
   const link = document.getElementById('writeLink');
-  if (link) link.href = state.sort === 'suggestion' ? '/write.html?category=suggestion' : '/write.html';
+  if (!link) return;
+  if (state.sort !== 'suggestion') {
+    link.href = '/write.html';
+    return;
+  }
+  const targetable = state.target && state.target !== 'me' ? `&target=${encodeURIComponent(state.target)}` : '';
+  link.href = `/write.html?category=suggestion${targetable}`;
+}
+
+// Below the board tabs, on the 건의 tab only: 전체(all) / 일반(no specific
+// target, e.g. "xx 사주세요" addressed to everyone) / one pill per
+// 임원·그룹장 — clicking filters the list by that target.
+async function updateSuggestionFilterRow() {
+  const row = document.getElementById('suggestionFilterRow');
+  if (!row) return;
+  if (state.sort !== 'suggestion') {
+    row.style.display = 'none';
+    return;
+  }
+  row.style.display = 'flex';
+
+  if (!executivesCache) {
+    try {
+      executivesCache = (await api('/api/auth/executives')).executives;
+    } catch (e) {
+      executivesCache = [];
+    }
+  }
+
+  const pills = [
+    { value: '', label: '전체' },
+    { value: 'general', label: '일반 건의' },
+    ...executivesCache.map((e) => ({ value: String(e.id), label: `@${e.display_name}`, avatar: e.profile_image_url })),
+  ];
+  row.innerHTML = pills
+    .map(
+      (p) => `
+      <button class="filter-pill${state.target === p.value ? ' active' : ''}" data-target="${p.value}">
+        ${p.avatar ? `<img src="${p.avatar}" />` : ''}${p.label}
+      </button>
+    `
+    )
+    .join('');
+  row.querySelectorAll('.filter-pill').forEach((btn) => {
+    btn.onclick = () => {
+      state.target = btn.dataset.target;
+      state.page = 1;
+      updateWriteLink();
+      updateSuggestionFilterRow();
+      loadPosts();
+    };
+  });
 }
 
 async function loadPosts() {
@@ -59,8 +112,9 @@ function renderList(data) {
               <img class="avatar-thumb" src="/img/logo.png" />
               <span class="post-nick"></span>
               <span class="suggestion-arrow" style="font-size:0.85rem;">→</span>
-              <img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" />
-              <span class="post-target"></span>
+              ${post.target_user_id
+                ? `<img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" /><span class="post-target"></span>`
+                : '<span class="post-target">전체</span>'}
             ` : '<span class="post-nick"></span>'}
             · <span class="post-date"></span>
           </span>
@@ -75,7 +129,7 @@ function renderList(data) {
     `;
     row.querySelector('.post-title').textContent = post.title;
     row.querySelector('.post-nick').textContent = post.nickname;
-    if (isSuggestion) row.querySelector('.post-target').textContent = `@${post.target_name || '알 수 없음'}`;
+    if (isSuggestion && post.target_user_id) row.querySelector('.post-target').textContent = `@${post.target_name}`;
     row.querySelector('.post-date').textContent = formatDate(post.created_at);
     listEl.appendChild(row);
   }
@@ -91,6 +145,7 @@ document.querySelectorAll('.board-tab').forEach((btn) => {
     state.target = '';
     state.page = 1;
     updateWriteLink();
+    updateSuggestionFilterRow();
     loadPosts();
   };
 });

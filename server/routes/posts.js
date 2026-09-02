@@ -37,11 +37,20 @@ router.get('/', async (req, res, next) => {
     }
     if (sort === 'suggestion') {
       where += " AND category = 'suggestion'";
-      if (req.query.target === 'me') {
+      const target = req.query.target;
+      if (target === 'me') {
         const payload = getUserFromRequest(req);
         if (!payload) return res.status(401).json({ error: '로그인이 필요합니다.' });
         params.push(payload.userId);
         where += ` AND target_user_id = $${params.length}`;
+      } else if (target === 'general') {
+        where += ' AND target_user_id IS NULL';
+      } else if (target) {
+        const targetId = parseInt(target, 10);
+        if (targetId) {
+          params.push(targetId);
+          where += ` AND target_user_id = $${params.length}`;
+        }
       }
     } else {
       where += " AND category = 'general'";
@@ -151,13 +160,18 @@ router.post('/', async (req, res, next) => {
     if (title.length > 100) return res.status(400).json({ error: '제목이 너무 깁니다.' });
     if (content.length > 10000) return res.status(400).json({ error: '내용이 너무 깁니다.' });
 
+    // targetUserId is optional for a suggestion: omitted means a "일반
+    // 건의" (general suggestion) addressed to everyone rather than one
+    // specific 임원/그룹장. Privacy only makes sense with a specific
+    // target, so a general suggestion can never be private.
     let targetId = null;
-    if (category === 'suggestion') {
+    if (category === 'suggestion' && targetUserId) {
       targetId = parseInt(targetUserId, 10);
-      if (!targetId) return res.status(400).json({ error: '건의 대상을 선택해주세요.' });
+      if (!targetId) return res.status(400).json({ error: '올바르지 않은 건의 대상입니다.' });
       const targetCheck = await pool.query("SELECT id FROM users WHERE id = $1 AND role = 'executive'", [targetId]);
       if (!targetCheck.rows[0]) return res.status(400).json({ error: '올바르지 않은 건의 대상입니다.' });
     }
+    const effectivePrivate = targetId ? !!isPrivate : false;
 
     // A logged-in executive with their profile visible posts under their
     // real name on the general board, tied to their account instead of an
@@ -188,7 +202,7 @@ router.post('/', async (req, res, next) => {
     const { rows } = await pool.query(
       `INSERT INTO posts (title, content, nickname, password_hash, category, target_user_id, is_private, user_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-      [title, content, nickname, userId ? hashPassword(randomNickname()) : hashPassword(password), category, targetId, !!isPrivate, userId]
+      [title, content, nickname, userId ? hashPassword(randomNickname()) : hashPassword(password), category, targetId, effectivePrivate, userId]
     );
 
     res.status(201).json({ id: rows[0].id });
