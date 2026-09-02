@@ -22,6 +22,16 @@ router.use((req, res, next) => {
   next();
 });
 
+// The next scheduled slot is always derived fresh from scheduleHour +
+// intervalHours + the current time — never from lastRunAt directly. An
+// earlier version anchored off lastRunAt (lastRunAt + intervalHours), which
+// meant a single off-schedule write (e.g. a raw `workflow_dispatch` run
+// triggered outside the app, which forces a generation without going
+// through the 지금생성 button) permanently dragged every future "scheduled"
+// run onto that odd hour — that's why an "auto" send once went out at
+// 17:23 instead of the configured 08:00. lastRunAt is only consulted to
+// check whether the current slot was already served (avoids double-firing
+// across consecutive hourly cron ticks within the same slot window).
 async function shouldRunScheduled() {
   const enabled = (await getSetting('briefing_schedule_enabled', '1')) === '1';
   if (!enabled) return false;
@@ -31,21 +41,28 @@ async function shouldRunScheduled() {
   const lastRunAt = await getSetting('briefing_last_scheduled_run_at', null);
 
   const now = new Date();
-  let nextRunAt;
-  if (lastRunAt) {
-    nextRunAt = new Date(lastRunAt).getTime() + intervalHours * 3600 * 1000;
+  const nowMs = now.getTime();
+  const intervalMs = intervalHours * 3600 * 1000;
+
+  // scheduleHour is a KST (UTC+9) wall-clock hour. Shift "now" into a Date
+  // whose UTC-getters read as KST wall-clock, set the hour there, then
+  // shift back to get the real UTC instant for that KST time today.
+  const kstNow = new Date(nowMs + KST_OFFSET_MS);
+  const anchorKst = new Date(kstNow);
+  anchorKst.setUTCHours(scheduleHour, 0, 0, 0);
+  const todayAnchorMs = anchorKst.getTime() - KST_OFFSET_MS;
+
+  // Walk that anchor forward/backward by whole intervals to land on the
+  // latest slot that is not in the future.
+  let slotMs = todayAnchorMs;
+  if (slotMs > nowMs) {
+    slotMs -= Math.ceil((slotMs - nowMs) / intervalMs) * intervalMs;
   } else {
-    // scheduleHour is a KST (UTC+9) wall-clock hour. Shift "now" into a
-    // Date whose UTC-getters read as KST wall-clock, set the hour there,
-    // then shift back to get the real UTC instant for that KST time.
-    const kstNow = new Date(now.getTime() + KST_OFFSET_MS);
-    const anchorKst = new Date(kstNow);
-    anchorKst.setUTCHours(scheduleHour, 0, 0, 0);
-    let anchorUtcMs = anchorKst.getTime() - KST_OFFSET_MS;
-    if (anchorUtcMs > now.getTime()) anchorUtcMs -= 24 * 3600 * 1000;
-    nextRunAt = anchorUtcMs;
+    slotMs += Math.floor((nowMs - slotMs) / intervalMs) * intervalMs;
   }
-  return now.getTime() >= nextRunAt;
+
+  if (lastRunAt && new Date(lastRunAt).getTime() >= slotMs) return false;
+  return nowMs >= slotMs;
 }
 
 // POST /api/internal/briefing/start { force, runId? }
@@ -65,7 +82,18 @@ router.post('/briefing/start', async (req, res, next) => {
 
     if (runId) return res.json({ proceed: true, runId: Number(runId) });
 
-    if (!force && !(await shouldRunScheduled())) {
+    // force with no runId means the Action was dispatched directly (e.g.
+    // from GitHub's own UI/CLI) rather than through the 지금생성 button —
+    // treat it as manual and, critically, never write
+    // briefing_last_scheduled_run_at for it: doing so used to drag every
+    // future "scheduled" run onto whatever odd hour this ad-hoc dispatch
+    // happened to run at.
+    if (force) {
+      const { rows } = await pool.query("INSERT INTO briefing_runs (status, trigger_type) VALUES ('running', 'manual') RETURNING id");
+      return res.json({ proceed: true, runId: rows[0].id });
+    }
+
+    if (!(await shouldRunScheduled())) {
       return res.json({ proceed: false });
     }
 
