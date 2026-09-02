@@ -1,12 +1,9 @@
-// The board is one underlying list, not separate boards per tab. `filter`
-// just narrows/sorts that same list:
-//   ''                  최신순 — everything, newest first (no filter)
-//   'best'               likes >= 5
-//   'general'            일반 글 only
-//   'suggestion:general' 건의 중 특정 대상 없는 일반건의
-//   'suggestion:me'      나에게 온 건의 (헤더 "내 건의 보기"에서 진입)
-//   'suggestion:<id>'    특정 임원/그룹장에게 온 건의
-const state = { page: 1, q: '', filter: '' };
+// The board is one underlying list, not separate boards per tab — tabs
+// just narrow/sort that same list. 최신순 shows everything (general +
+// 건의) mixed, newest first; Best filters to likes>=5; 건의 filters to
+// category='suggestion' and reveals a second-level filter row to narrow
+// further by target (일반건의, or a specific 임원/그룹장).
+const state = { page: 1, q: '', tab: 'latest', target: '' };
 let executivesCache = null;
 
 const params = new URLSearchParams(location.search);
@@ -15,35 +12,43 @@ if (params.get('q')) {
   document.getElementById('searchInput').value = state.q;
 }
 if (params.get('page')) state.page = parseInt(params.get('page'), 10) || 1;
-if (params.get('filter')) state.filter = params.get('filter');
+if (['best', 'suggestion'].includes(params.get('tab'))) {
+  state.tab = params.get('tab');
+  document.querySelectorAll('.board-tabs .board-tab').forEach((b) => b.classList.remove('active'));
+  document.querySelector(`.board-tab[data-tab="${state.tab}"]`).classList.add('active');
+}
+if (state.tab === 'suggestion' && params.get('target')) state.target = params.get('target');
 updateWriteLink();
-renderFilterRow();
+renderSubFilterRow();
 
-function apiParamsForFilter(filter) {
-  if (filter === 'best') return { sort: 'best' };
-  if (filter === 'general') return { sort: 'general' };
-  if (filter.startsWith('suggestion:')) return { sort: 'suggestion', target: filter.slice('suggestion:'.length) };
+function apiParamsForState() {
+  if (state.tab === 'best') return { sort: 'best' };
+  if (state.tab === 'suggestion') return { sort: 'suggestion', ...(state.target ? { target: state.target } : {}) };
   return {};
 }
 
 function updateWriteLink() {
   const link = document.getElementById('writeLink');
   if (!link) return;
-  if (state.filter.startsWith('suggestion:')) {
-    const target = state.filter.slice('suggestion:'.length);
-    const targetQs = target && target !== 'me' ? `&target=${encodeURIComponent(target)}` : '';
-    link.href = `/write.html?category=suggestion${targetQs}`;
-  } else {
+  if (state.tab !== 'suggestion') {
     link.href = '/write.html';
+    return;
   }
+  const targetQs = state.target && state.target !== 'me' ? `&target=${encodeURIComponent(state.target)}` : '';
+  link.href = `/write.html?category=suggestion${targetQs}`;
 }
 
-// 최신순(전체) / Best / 일반 글 / 일반건의 / 임원·그룹장 개인별 — the same
-// vocabulary doubles as the row's "분류" label in renderList, so picking a
-// pill and reading the column are two views of the same classification.
-async function renderFilterRow() {
+// Second-level filter row, shown only under the 건의 tab: 일반건의 (no
+// specific target) + one pill per 임원/그룹장. Clicking the active pill
+// again clears it back to "건의 전체".
+async function renderSubFilterRow() {
   const row = document.getElementById('filterRow');
   if (!row) return;
+  if (state.tab !== 'suggestion') {
+    row.style.display = 'none';
+    return;
+  }
+  row.style.display = 'flex';
 
   if (!executivesCache) {
     try {
@@ -54,16 +59,13 @@ async function renderFilterRow() {
   }
 
   const pills = [
-    { value: '', label: '최신순' },
-    { value: 'best', label: 'Best' },
-    { value: 'general', label: '일반 글' },
-    { value: 'suggestion:general', label: '일반건의' },
-    ...executivesCache.map((e) => ({ value: `suggestion:${e.id}`, label: `@${e.display_name}`, avatar: e.profile_image_url })),
+    { value: 'general', label: '일반건의' },
+    ...executivesCache.map((e) => ({ value: String(e.id), label: `@${e.display_name}`, avatar: e.profile_image_url })),
   ];
   row.innerHTML = pills
     .map(
       (p) => `
-      <button class="filter-pill${state.filter === p.value ? ' active' : ''}" data-filter="${p.value}">
+      <button class="filter-pill${state.target === p.value ? ' active' : ''}" data-target="${p.value}">
         ${p.avatar ? `<img src="${p.avatar}" />` : ''}${p.label}
       </button>
     `
@@ -71,20 +73,33 @@ async function renderFilterRow() {
     .join('');
   row.querySelectorAll('.filter-pill').forEach((btn) => {
     btn.onclick = () => {
-      state.filter = btn.dataset.filter;
+      state.target = state.target === btn.dataset.target ? '' : btn.dataset.target;
       state.page = 1;
       updateWriteLink();
-      renderFilterRow();
+      renderSubFilterRow();
       loadPosts();
     };
   });
 }
 
+document.querySelectorAll('.board-tabs .board-tab').forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll('.board-tabs .board-tab').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.tab = btn.dataset.tab;
+    state.target = '';
+    state.page = 1;
+    updateWriteLink();
+    renderSubFilterRow();
+    loadPosts();
+  };
+});
+
 async function loadPosts() {
   const listEl = document.getElementById('postList');
   listEl.innerHTML = '<div class="empty-state">불러오는 중...</div>';
   try {
-    const qs = new URLSearchParams({ page: state.page, q: state.q, ...apiParamsForFilter(state.filter) });
+    const qs = new URLSearchParams({ page: state.page, q: state.q, ...apiParamsForState() });
     const data = await api(`/api/posts?${qs.toString()}`);
     renderList(data);
   } catch (e) {
@@ -92,9 +107,17 @@ async function loadPosts() {
   }
 }
 
-function classifyLabel(post) {
-  if (post.category === 'suggestion') return post.target_user_id ? `@${post.target_name}` : '일반건의';
-  return post.likes >= 5 ? 'Best' : '일반 글';
+// 분류 cell: 일반 (plain) / BEST (orange chip) / 건의 (green chip) + a
+// second line naming the target (or "일반" for a general/untargeted 건의).
+function renderCategoryCell(post) {
+  if (post.category === 'suggestion') {
+    const sub = post.target_user_id
+      ? `<img src="${post.target_image_url || '/img/logo.png'}" />@${post.target_name}`
+      : '일반';
+    return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
+  }
+  if (post.likes >= 5) return '<span class="category-chip chip-best">BEST</span>';
+  return '일반';
 }
 
 function renderList(data) {
@@ -133,7 +156,7 @@ function renderList(data) {
         </div>
       </div>
     `;
-    row.querySelector('.col-category').textContent = classifyLabel(post);
+    row.querySelector('.col-category').innerHTML = renderCategoryCell(post);
     row.querySelector('.post-title').textContent = post.title;
     row.querySelector('.post-nick').textContent = post.nickname;
     row.querySelector('.post-date').textContent = formatDate(post.created_at);

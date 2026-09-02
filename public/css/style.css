@@ -10,6 +10,9 @@
   --danger: #e5484d;
   --danger-soft: #fdeceb;
   --success: #17a673;
+  --success-soft: #e3f7ef;
+  --warning: #c9660a;
+  --warning-soft: #fdf0e1;
   --radius: 14px;
   --shadow: 0 2px 10px rgba(15, 35, 80, 0.07);
   --shadow-lg: 0 10px 30px rgba(15, 35, 80, 0.14);
@@ -29,6 +32,9 @@
     --danger: #f1696d;
     --danger-soft: #3a2226;
     --success: #33c491;
+    --success-soft: #163527;
+    --warning: #e8983f;
+    --warning-soft: #3a2b16;
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
@@ -260,7 +266,7 @@ a { color: inherit; text-decoration: none; }
 
 .board-row {
   display: grid;
-  grid-template-columns: 68px 1fr;
+  grid-template-columns: 84px 1fr;
   align-items: center;
   gap: 10px;
   padding: 14px 18px;
@@ -278,13 +284,35 @@ a { color: inherit; text-decoration: none; }
 a.board-row:hover { background: var(--primary-soft); }
 
 .board-row .col-category {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--text-muted);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.category-chip.chip-best { background: var(--warning-soft); color: var(--warning); }
+.category-chip.chip-suggestion { background: var(--success-soft); color: var(--success); }
+.col-category .category-sub {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+}
+.col-category .category-sub img { width: 14px; height: 14px; border-radius: 50%; object-fit: cover; }
 .board-row .col-title { min-width: 0; }
 .post-title-line { display: flex; align-items: flex-start; gap: 6px; }
 .post-title-line .post-title {
@@ -774,7 +802,9 @@ body.lunch-map-page { overflow: hidden; }
 @media (max-width: 560px) {
   .form-row { flex-direction: column; }
   .post-row .post-meta { flex-wrap: wrap; }
-  .board-row { padding: 12px; gap: 6px; }
+  .board-row { grid-template-columns: 64px 1fr; padding: 12px; gap: 6px; }
+  .board-row .col-category { font-size: 0.64rem; }
+  .category-chip { font-size: 0.6rem; padding: 1px 6px; }
   .toolbar-row { flex-wrap: wrap; }
   .toolbar-row .search-row { width: 100%; }
 }
