@@ -1,0 +1,65 @@
+const ROLE_LABELS = {
+  webmaster: '웹마스터',
+  marketbot_keeper: '마켓봇 지킴이',
+  board_keeper: '익명게시판 지킴이',
+  executive: '임원 및 그룹장',
+};
+
+let myInfo = null;
+
+async function loadMyInfo() {
+  try {
+    myInfo = await api('/api/auth/me');
+  } catch (e) {
+    location.href = '/login.html';
+    return;
+  }
+  document.getElementById('myAvatar').src = myInfo.profile_image_url || '/img/logo.png';
+  document.getElementById('myDisplayName').value = myInfo.display_name;
+  document.getElementById('myRole').value = ROLE_LABELS[myInfo.role] || myInfo.role;
+  document.getElementById('myUsername').value = myInfo.username;
+  document.getElementById('photoDeleteBtn').style.display = myInfo.profile_image_url ? '' : 'none';
+}
+
+const photoInput = document.getElementById('photoInput');
+document.getElementById('photoChangeBtn').onclick = () => photoInput.click();
+photoInput.onchange = async () => {
+  if (!photoInput.files[0]) return;
+  const formData = new FormData();
+  formData.append('image', photoInput.files[0]);
+  try {
+    const res = await fetch('/api/auth/profile-image', { method: 'POST', body: formData, credentials: 'same-origin' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
+    showToast('사진이 변경되었습니다.');
+    loadMyInfo();
+  } catch (e) {
+    showToast(e.message);
+  }
+};
+
+document.getElementById('photoDeleteBtn').onclick = async () => {
+  if (!confirm('프로필 사진을 삭제하시겠습니까?')) return;
+  try {
+    await api('/api/auth/profile-image', { method: 'DELETE' });
+    showToast('사진이 삭제되었습니다.');
+    loadMyInfo();
+  } catch (e) {
+    showToast(e.message);
+  }
+};
+
+document.getElementById('usernameSaveBtn').onclick = async () => {
+  const username = document.getElementById('myUsername').value.trim();
+  if (!username) return showToast('아이디를 입력해주세요.');
+  if (username === myInfo.username) return showToast('변경 사항이 없습니다.');
+  try {
+    await api('/api/auth/username', { method: 'PATCH', body: { username } });
+    showToast('아이디가 변경되었습니다. 다음 로그인부터 새 아이디를 사용하세요.');
+    loadMyInfo();
+  } catch (e) {
+    showToast(e.message);
+  }
+};
+
+loadMyInfo();

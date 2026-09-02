@@ -7,6 +7,7 @@ const TAB_ROLES = {
   comments: ['webmaster', 'board_keeper'],
   reports: ['webmaster', 'board_keeper'],
   words: ['webmaster', 'board_keeper'],
+  suggestions: ['webmaster', 'board_keeper'],
   briefings: ['webmaster', 'marketbot_keeper'],
   users: ['webmaster'],
 };
@@ -31,6 +32,15 @@ function applyRoleVisibility() {
     const allowed = TAB_ROLES[btn.dataset.tab] || [];
     btn.style.display = allowed.includes(myRole) ? '' : 'none';
   });
+
+  // Deep-link support from the header profile menu, e.g. ?tab=suggestions.
+  const requestedTab = new URLSearchParams(location.search).get('tab');
+  const requestedBtn = requestedTab && document.querySelector(`.tab-btn[data-tab="${requestedTab}"]`);
+  if (requestedBtn && requestedBtn.style.display !== 'none') {
+    requestedBtn.click();
+    return;
+  }
+
   const activeBtn = document.querySelector('.tab-btn.active');
   if (!activeBtn || activeBtn.style.display === 'none') {
     const firstVisible = Array.from(document.querySelectorAll('.tab-btn')).find((b) => b.style.display !== 'none');
@@ -179,6 +189,55 @@ async function loadWords() {
     };
     el.appendChild(chip);
   }
+}
+
+const suggestionState = { page: 1 };
+
+async function loadSuggestions() {
+  const qs = new URLSearchParams({ page: suggestionState.page });
+  const data = await api(`/api/admin/suggestions?${qs.toString()}`);
+  const tbody = document.getElementById('suggestionsTbody');
+  tbody.innerHTML = '';
+
+  for (const p of data.posts) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td class="title-cell"><a class="postLink" href="/post.html?id=${p.id}" target="_blank"></a></td>
+      <td></td>
+      <td>
+        ${p.is_private ? '<span class="tag notice">비밀글</span>' : ''}
+        ${p.has_official_reply ? '<span class="tag" style="background:var(--success); color:#fff;">답변</span>' : ''}
+        ${p.is_hidden ? '<span class="tag hidden">숨김</span>' : ''}
+      </td>
+      <td>${formatDate(p.created_at)}</td>
+      <td class="actions">
+        <button class="btn btn-sm btn-ghost hideBtn">${p.is_hidden ? '숨김해제' : '숨기기'}</button>
+        <button class="btn btn-sm btn-danger delBtn">삭제</button>
+      </td>
+    `;
+    tr.querySelector('.postLink').textContent = p.title;
+    tr.querySelector('.title-cell').title = p.title;
+    tr.children[2].textContent = p.target_name ? `@${p.target_name}` : '-';
+
+    tr.querySelector('.hideBtn').onclick = async () => {
+      await api(`/api/admin/suggestions/${p.id}`, { method: 'PATCH', body: { is_hidden: !p.is_hidden } });
+      loadSuggestions();
+    };
+    tr.querySelector('.delBtn').onclick = async () => {
+      if (!confirm('정말 삭제하시겠습니까?')) return;
+      await api(`/api/admin/suggestions/${p.id}`, { method: 'DELETE' });
+      showToast('삭제되었습니다.');
+      loadSuggestions();
+    };
+
+    tbody.appendChild(tr);
+  }
+
+  renderPagination('suggestionsPagination', data.page, data.totalPages, (n) => {
+    suggestionState.page = n;
+    loadSuggestions();
+  });
 }
 
 function renderPagination(elId, page, totalPages, onClick) {
@@ -506,6 +565,15 @@ const ROLE_LABELS = {
   executive: '임원 및 그룹장',
 };
 
+async function uploadPhoto(url, file) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch(url, { method: 'POST', body: formData, credentials: 'same-origin' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
+  return data;
+}
+
 async function loadUsers() {
   const data = await api('/api/admin/users');
   const tbody = document.getElementById('usersTbody');
@@ -515,9 +583,24 @@ async function loadUsers() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${u.id}</td>
-      <td></td>
-      <td></td>
-      <td>${ROLE_LABELS[u.role] || u.role}</td>
+      <td>
+        <div class="avatar-thumb-wrap">
+          <img class="avatar-thumb" src="${u.profile_image_url || '/img/logo.png'}" />
+          <input type="file" accept="image/*" class="photoInput" style="display:none;" />
+          <button class="btn btn-sm btn-ghost photoBtn">변경</button>
+          ${u.profile_image_url ? '<button class="btn btn-sm btn-ghost photoDelBtn">삭제</button>' : ''}
+        </div>
+      </td>
+      <td class="username-cell" style="cursor:pointer;" title="클릭해서 아이디 수정"></td>
+      <td class="displayname-cell" style="cursor:pointer;" title="클릭해서 표시 이름 수정"></td>
+      <td>
+        <select class="input input-sm roleSelect">
+          <option value="webmaster">웹마스터</option>
+          <option value="marketbot_keeper">마켓봇 지킴이</option>
+          <option value="board_keeper">익명게시판 지킴이</option>
+          <option value="executive">임원 및 그룹장</option>
+        </select>
+      </td>
       <td>${u.role === 'executive' ? (u.profile_visible ? '노출' : '숨김') : '-'}</td>
       <td>${formatDate(u.created_at)}</td>
       <td class="actions">
@@ -525,8 +608,58 @@ async function loadUsers() {
         <button class="btn btn-sm btn-danger delBtn">삭제</button>
       </td>
     `;
-    tr.children[1].textContent = u.username;
-    tr.children[2].textContent = u.display_name;
+    tr.querySelector('.username-cell').textContent = u.username;
+    tr.querySelector('.displayname-cell').textContent = u.display_name;
+    tr.querySelector('.roleSelect').value = u.role;
+
+    tr.querySelector('.username-cell').onclick = () => {
+      const val = prompt('새 아이디를 입력하세요', u.username);
+      if (!val || val === u.username) return;
+      api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { username: val } })
+        .then(() => { showToast('아이디가 변경되었습니다.'); loadUsers(); })
+        .catch((e) => showToast(e.message));
+    };
+    tr.querySelector('.displayname-cell').onclick = () => {
+      const val = prompt('새 표시 이름을 입력하세요', u.display_name);
+      if (!val || val === u.display_name) return;
+      api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { displayName: val } })
+        .then(() => { showToast('표시 이름이 변경되었습니다.'); loadUsers(); })
+        .catch((e) => showToast(e.message));
+    };
+    tr.querySelector('.roleSelect').onchange = async (e) => {
+      try {
+        await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { role: e.target.value } });
+        showToast('권한이 변경되었습니다.');
+      } catch (err) {
+        showToast(err.message);
+        e.target.value = u.role;
+      }
+    };
+
+    const photoInput = tr.querySelector('.photoInput');
+    tr.querySelector('.photoBtn').onclick = () => photoInput.click();
+    photoInput.onchange = async () => {
+      if (!photoInput.files[0]) return;
+      try {
+        await uploadPhoto(`/api/admin/users/${u.id}/profile-image`, photoInput.files[0]);
+        showToast('사진이 변경되었습니다.');
+        loadUsers();
+      } catch (e) {
+        showToast(e.message);
+      }
+    };
+    const photoDelBtn = tr.querySelector('.photoDelBtn');
+    if (photoDelBtn) {
+      photoDelBtn.onclick = async () => {
+        try {
+          await api(`/api/admin/users/${u.id}/profile-image`, { method: 'DELETE' });
+          showToast('사진이 삭제되었습니다.');
+          loadUsers();
+        } catch (e) {
+          showToast(e.message);
+        }
+      };
+    }
 
     tr.querySelector('.pwBtn').onclick = async () => {
       const pw = prompt(`${u.username}의 새 비밀번호를 입력하세요 (4자 이상)`);
@@ -581,6 +714,9 @@ document.getElementById('addUserBtn').onclick = async () => {
     loadComments();
     loadReports();
     loadWords();
+  }
+  if (TAB_ROLES.suggestions.includes(myRole)) {
+    loadSuggestions();
   }
   if (TAB_ROLES.briefings.includes(myRole)) {
     loadBriefingSettings();

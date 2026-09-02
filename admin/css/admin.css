@@ -74,6 +74,16 @@ tr.row-link:hover { background: var(--primary-soft); }
 .report-id { font-weight: 700; color: var(--primary); }
 .last-sent-hint { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
+.avatar-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--border);
+  display: block;
+}
+.avatar-thumb-wrap { display: flex; align-items: center; gap: 6px; }
+
 .banned-word-list {
   display: flex;
   flex-wrap: wrap;

@@ -19,6 +19,7 @@ async function init() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image_url TEXT;
 
     CREATE TABLE IF NOT EXISTS posts (
       id SERIAL PRIMARY KEY,
@@ -51,6 +52,7 @@ async function init() {
 
     ALTER TABLE comments ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
     ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_private BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_official BOOLEAN NOT NULL DEFAULT FALSE;
 
     CREATE TABLE IF NOT EXISTS likes (
       id SERIAL PRIMARY KEY,

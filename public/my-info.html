@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>내정보 - PowerHouse</title>
+<link rel="icon" href="/img/logo.png" type="image/png" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
+      <div class="nav-right">
+        <nav class="nav-menu">
+          <a class="nav-link" href="/">익명게시판</a>
+          <a class="nav-link" href="/market-info.html">Market Info</a>
+          <a class="nav-link" href="/lunch-map.html">식권대장</a>
+          <a class="nav-link" href="/usage-info.html">이용정보</a>
+        </nav>
+        <span class="current-page-label" id="currentPageLabel"></span>
+        <span class="nav-profile" id="navProfile"></span>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="max-width:560px;">
+    <div class="card" style="padding:24px;">
+      <h2 style="margin-top:0;">내정보</h2>
+
+      <div class="form-group" style="text-align:center;">
+        <img id="myAvatar" class="avatar-thumb avatar-lg" style="width:96px; height:96px; margin:0 auto 12px; display:block;" />
+        <input type="file" accept="image/*" id="photoInput" style="display:none;" />
+        <div class="action-row" style="justify-content:center;">
+          <button class="btn btn-ghost btn-sm" id="photoChangeBtn">사진 변경</button>
+          <button class="btn btn-ghost btn-sm" id="photoDeleteBtn">사진 삭제</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>표시 이름</label>
+        <input type="text" class="input" id="myDisplayName" disabled />
+      </div>
+
+      <div class="form-group">
+        <label>권한</label>
+        <input type="text" class="input" id="myRole" disabled />
+      </div>
+
+      <div class="form-group">
+        <label>아이디</label>
+        <input type="text" class="input" id="myUsername" />
+      </div>
+
+      <div class="action-row" style="justify-content:flex-start;">
+        <button class="btn btn-primary" id="usernameSaveBtn">아이디 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/my-info.js"></script>
+</body>
+</html>

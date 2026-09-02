@@ -1,12 +1,15 @@
 const express = require('express');
+const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { requireRole } = require('../utils/userAuth');
 const { triggerBriefingWorkflow } = require('../utils/github');
 const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
+const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;
 
@@ -371,7 +374,7 @@ const VALID_ROLES = ['webmaster', 'marketbot_keeper', 'board_keeper', 'executive
 router.get('/users', webmasterOnly, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, username, display_name, role, profile_visible, created_at FROM users ORDER BY id ASC'
+      'SELECT id, username, display_name, role, profile_visible, profile_image_url, created_at FROM users ORDER BY id ASC'
     );
     res.json({ users: rows });
   } catch (e) {
@@ -403,10 +406,10 @@ router.post('/users', webmasterOnly, async (req, res, next) => {
   }
 });
 
-// PATCH /api/admin/users/:id { displayName?, role?, password?, profileVisible? }
+// PATCH /api/admin/users/:id { username?, displayName?, role?, password?, profileVisible? }
 router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
   try {
-    const { displayName, role, password, profileVisible } = req.body || {};
+    const { username, displayName, role, password, profileVisible } = req.body || {};
     if (role !== undefined && !VALID_ROLES.includes(role)) {
       return res.status(400).json({ error: '올바르지 않은 권한입니다.' });
     }
@@ -414,6 +417,13 @@ router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
       return res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' });
     }
 
+    if (username !== undefined) {
+      try {
+        await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username.trim(), req.params.id]);
+      } catch (e) {
+        return res.status(409).json({ error: '이미 존재하는 아이디입니다.' });
+      }
+    }
     if (displayName !== undefined) await pool.query('UPDATE users SET display_name = $1 WHERE id = $2', [displayName.trim(), req.params.id]);
     if (role !== undefined) await pool.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
     if (typeof profileVisible === 'boolean') {
@@ -427,10 +437,82 @@ router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
   }
 });
 
+// POST /api/admin/users/:id/profile-image — webmaster uploads a photo on
+// behalf of any user (multipart "image" field).
+router.post('/users/:id/profile-image', webmasterOnly, upload.single('image'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
+    if (!req.file.mimetype.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
+
+    const url = await uploadProfileImage(req.params.id, req.file.buffer, req.file.mimetype);
+    await pool.query('UPDATE users SET profile_image_url = $1 WHERE id = $2', [url, req.params.id]);
+    res.json({ ok: true, url });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/admin/users/:id/profile-image
+router.delete('/users/:id/profile-image', webmasterOnly, async (req, res, next) => {
+  try {
+    await pool.query('UPDATE users SET profile_image_url = NULL WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // DELETE /api/admin/users/:id
 router.delete('/users/:id', webmasterOnly, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/admin/suggestions?page=1  (건의글 관리 — 웹마스터 + 익명게시판 지킴이)
+router.get('/suggestions', boardAccess, async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * PAGE_SIZE;
+
+    const total = (await pool.query("SELECT COUNT(*)::int AS cnt FROM posts WHERE category = 'suggestion'")).rows[0]
+      .cnt;
+    const { rows } = await pool.query(
+      `SELECT posts.id, title, nickname, is_private, is_hidden, posts.created_at, tu.display_name AS target_name,
+        EXISTS(SELECT 1 FROM comments c WHERE c.post_id = posts.id AND c.is_official = true) AS has_official_reply
+       FROM posts LEFT JOIN users tu ON tu.id = posts.target_user_id
+       WHERE category = 'suggestion'
+       ORDER BY posts.id DESC LIMIT $1 OFFSET $2`,
+      [PAGE_SIZE, offset]
+    );
+    res.json({ posts: rows, page, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)), total });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PATCH /api/admin/suggestions/:id { is_hidden }
+router.patch('/suggestions/:id', boardAccess, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query("SELECT id FROM posts WHERE id = $1 AND category = 'suggestion'", [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: '건의글을 찾을 수 없습니다.' });
+
+    if (typeof (req.body && req.body.is_hidden) === 'boolean') {
+      await pool.query('UPDATE posts SET is_hidden = $1 WHERE id = $2', [req.body.is_hidden, req.params.id]);
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/admin/suggestions/:id
+router.delete('/suggestions/:id', boardAccess, async (req, res, next) => {
+  try {
+    await pool.query("DELETE FROM posts WHERE id = $1 AND category = 'suggestion'", [req.params.id]);
     res.json({ ok: true });
   } catch (e) {
     next(e);

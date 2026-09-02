@@ -1,9 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { issueUserToken, getUserFromRequest, requireRole } = require('../utils/userAuth');
+const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 // POST /api/auth/login { username, password } — single login for every
 // role (webmaster / marketbot_keeper / board_keeper / executive).
@@ -42,7 +45,7 @@ router.get('/me', async (req, res, next) => {
     const payload = getUserFromRequest(req);
     if (!payload) return res.status(401).json({ error: '로그인이 필요합니다.' });
     const { rows } = await pool.query(
-      'SELECT id, username, display_name, role, profile_visible FROM users WHERE id = $1',
+      'SELECT id, username, display_name, role, profile_visible, profile_image_url FROM users WHERE id = $1',
       [payload.userId]
     );
     const user = rows[0];
@@ -71,12 +74,61 @@ router.patch('/profile-visible', requireRole('executive'), async (req, res, next
 router.get('/executives', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, display_name FROM users WHERE role = 'executive' ORDER BY display_name ASC"
+      "SELECT id, display_name, profile_image_url FROM users WHERE role = 'executive' ORDER BY display_name ASC"
     );
     res.json({ executives: rows });
   } catch (e) {
     next(e);
   }
 });
+
+// PATCH /api/auth/username { username } — any logged-in role, self-service.
+router.patch('/username', requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'), async (req, res, next) => {
+  try {
+    const username = ((req.body && req.body.username) || '').trim();
+    if (!username) return res.status(400).json({ error: '아이디를 입력해주세요.' });
+    try {
+      await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username, req.user.userId]);
+      res.json({ ok: true, username });
+    } catch (e) {
+      res.status(409).json({ error: '이미 사용 중인 아이디입니다.' });
+    }
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/auth/profile-image — multipart "image" field, any logged-in role.
+router.post(
+  '/profile-image',
+  requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'),
+  upload.single('image'),
+  async (req, res, next) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
+      if (!req.file.mimetype.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
+
+      const url = await uploadProfileImage(req.user.userId, req.file.buffer, req.file.mimetype);
+      await pool.query('UPDATE users SET profile_image_url = $1 WHERE id = $2', [url, req.user.userId]);
+      res.json({ ok: true, url });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// DELETE /api/auth/profile-image
+router.delete(
+  '/profile-image',
+  requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'),
+  async (req, res, next) => {
+    try {
+      await pool.query('UPDATE users SET profile_image_url = NULL WHERE id = $1', [req.user.userId]);
+      res.json({ ok: true });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 module.exports = router;

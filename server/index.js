@@ -27,7 +27,7 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:'],
+        imgSrc: ["'self'", 'data:', 'https://*.supabase.co'],
         frameSrc: [
           "'self'",
           'https://deacon1876.github.io',

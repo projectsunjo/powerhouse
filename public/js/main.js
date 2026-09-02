@@ -1,4 +1,4 @@
-const state = { page: 1, q: '', sort: 'latest' };
+const state = { page: 1, q: '', sort: 'latest', target: '' };
 
 const params = new URLSearchParams(location.search);
 if (params.get('q')) {
@@ -11,6 +11,7 @@ if (['best', 'suggestion'].includes(params.get('sort'))) {
   document.querySelectorAll('.board-tab').forEach((b) => b.classList.remove('active'));
   document.querySelector(`.board-tab[data-sort="${state.sort}"]`).classList.add('active');
 }
+if (state.sort === 'suggestion' && params.get('target') === 'me') state.target = 'me';
 updateWriteLink();
 
 function updateWriteLink() {
@@ -23,6 +24,7 @@ async function loadPosts() {
   listEl.innerHTML = '<div class="empty-state">불러오는 중...</div>';
   try {
     const qs = new URLSearchParams({ page: state.page, q: state.q, sort: state.sort });
+    if (state.target) qs.set('target', state.target);
     const data = await api(`/api/posts?${qs.toString()}`);
     renderList(data);
   } catch (e) {
@@ -47,11 +49,15 @@ function renderList(data) {
       <div class="col-title">
         <div class="post-title-line">
           ${post.is_notice ? '<span class="badge notice">공지</span>' : ''}
+          ${isSuggestion && post.has_official_reply ? '<span class="badge" style="background:var(--success); color:#fff;">답변</span>' : ''}
           ${post.is_private ? '<span class="lock-icon">🔒</span>' : ''}
           <span class="post-title"></span>
         </div>
         <div class="post-meta">
-          <span><span class="post-nick"></span> · <span class="post-date"></span></span>
+          <span style="display:flex; align-items:center; gap:5px;">
+            ${isSuggestion ? `<img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" />` : ''}
+            <span class="post-nick"></span> · <span class="post-date"></span>
+          </span>
           <span class="post-stats">
             ${isSuggestion ? `<span class="stat">💬 ${post.comment_count}</span>` : `
             <span class="stat">👁 ${post.views}</span>
@@ -75,6 +81,7 @@ document.querySelectorAll('.board-tab').forEach((btn) => {
     document.querySelectorAll('.board-tab').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     state.sort = btn.dataset.sort;
+    state.target = '';
     state.page = 1;
     updateWriteLink();
     loadPosts();

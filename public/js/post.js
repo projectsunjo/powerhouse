@@ -34,10 +34,21 @@ function renderPost() {
   const badges = [];
   if (currentPost.is_notice) badges.push('<span class="badge notice">공지</span>');
   if (currentPost.category === 'suggestion') {
-    badges.push(`<span class="badge">@${escapeHtml(currentPost.target_name || '알 수 없음')}</span>`);
+    const targetImg = currentPost.target_image_url || '/img/logo.png';
+    badges.push(
+      `<span class="badge"><img class="avatar-thumb" src="${targetImg}" style="vertical-align:middle; margin-right:4px;" />@${escapeHtml(currentPost.target_name || '알 수 없음')}</span>`
+    );
     if (currentPost.is_private) badges.push('<span class="badge">🔒 비밀글</span>');
   }
   document.getElementById('postBadge').innerHTML = badges.join(' ');
+
+  const avatarEl = document.getElementById('postAvatar');
+  const avatarImgUrl = currentPost.category === 'suggestion' ? '/img/logo.png' : currentPost.author_image_url;
+  if (avatarImgUrl) {
+    avatarEl.innerHTML = `<img class="avatar-thumb avatar-lg" src="${avatarImgUrl}" />`;
+  } else {
+    avatarEl.textContent = '?';
+  }
 
   document.getElementById('postTitle').textContent = currentPost.title;
   document.getElementById('postNickname').textContent = currentPost.nickname;
@@ -123,9 +134,14 @@ function renderCommentItem(c, isReply) {
   item.className = 'comment-item' + (isReply ? ' comment-reply' : '');
   item.innerHTML = `
     <div class="comment-head">
-      <span>${c.is_private ? '🔒 ' : ''}<span class="nick"></span> · <span class="when"></span></span>
+      <span>
+        ${c.user_id ? `<img class="avatar-thumb" src="${c.user_image_url || '/img/logo.png'}" style="vertical-align:middle; margin-right:4px;" />` : ''}
+        ${c.is_official ? '<span class="badge" style="background:var(--success); color:#fff;">공식답변</span> ' : ''}
+        ${c.is_private ? '🔒 ' : ''}<span class="nick"></span> · <span class="when"></span>
+      </span>
       <span class="comment-actions">
         ${!isReply ? '<button class="replyC">답글</button>' : ''}
+        ${!isReply && isTargetExec() ? '<button class="officialReplyC">공식답변</button>' : ''}
         <button class="reportC report-hidden">신고</button>
         <button class="delC">삭제</button>
       </span>
@@ -166,20 +182,22 @@ function renderCommentItem(c, isReply) {
     });
   };
   if (!isReply) {
-    item.querySelector('.replyC').onclick = () => toggleReplyForm(item, c.id);
+    item.querySelector('.replyC').onclick = () => toggleReplyForm(item, c.id, false);
+    const officialBtn = item.querySelector('.officialReplyC');
+    if (officialBtn) officialBtn.onclick = () => toggleReplyForm(item, c.id, true);
   }
 
   return item;
 }
 
-function toggleReplyForm(afterItem, parentId) {
+function toggleReplyForm(afterItem, parentId, official) {
   const existing = afterItem.nextElementSibling;
   if (existing && existing.classList.contains('reply-form')) {
     existing.remove();
     return;
   }
 
-  const asExec = isTargetExec();
+  const asExec = official && isTargetExec();
   const form = document.createElement('div');
   form.className = 'reply-form';
   form.innerHTML = `
@@ -188,8 +206,8 @@ function toggleReplyForm(afterItem, parentId) {
       <div class="form-group"><input type="text" class="input input-sm input-dimmed" maxlength="30" /></div>
       <div class="form-group"><input type="password" class="input input-sm" maxlength="50" placeholder="비밀번호" /></div>
     </div>`}
-    <textarea class="input" maxlength="2000" style="min-height:60px" placeholder="답글을 입력하세요"></textarea>
-    ${asExec ? '<label class="checkbox-row" style="display:flex; align-items:center; gap:6px; margin-top:6px;"><input type="checkbox" class="replyPrivate" /> 비밀 답변으로 남기기</label>' : ''}
+    <textarea class="input" maxlength="2000" style="min-height:60px" placeholder="${asExec ? '공식 답변을 입력하세요' : '답글을 입력하세요'}"></textarea>
+    ${asExec ? '<label class="checkbox-row" style="display:flex; align-items:center; gap:6px; margin-top:6px;"><input type="checkbox" class="replyPrivate" /> 비밀 답변으로 남기기 (건의자와 나만 봄)</label>' : ''}
     <div class="action-row">
       <button class="btn btn-ghost btn-sm cancelReply">취소</button>
       <button class="btn btn-primary btn-sm submitReply">등록</button>
@@ -210,6 +228,7 @@ function toggleReplyForm(afterItem, parentId) {
 
     const body = { content, parent_id: parentId };
     if (asExec) {
+      body.is_official = true;
       body.is_private = form.querySelector('.replyPrivate').checked;
     } else {
       const password = passwordInput.value.trim();

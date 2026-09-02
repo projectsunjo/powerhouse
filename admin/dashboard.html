@@ -32,7 +32,8 @@
       <button class="tab-btn" data-tab="comments">댓글 관리</button>
       <button class="tab-btn" data-tab="reports">신고 관리</button>
       <button class="tab-btn" data-tab="words">금지어 관리</button>
-      <button class="tab-btn" data-tab="briefings">브리핑 관리</button>
+      <button class="tab-btn" data-tab="suggestions">건의글 관리</button>
+      <button class="tab-btn" data-tab="briefings">마켓봇 관리</button>
       <button class="tab-btn" data-tab="users">회원관리</button>
     </div>
 
@@ -81,6 +82,16 @@
         <button class="btn btn-primary" id="addWordBtn">추가</button>
       </div>
       <div class="banned-word-list" id="wordList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-suggestions">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>ID</th><th>제목</th><th>대상</th><th>상태</th><th>작성일</th><th>관리</th></tr></thead>
+          <tbody id="suggestionsTbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="suggestionsPagination"></div>
     </div>
 
     <div class="tab-panel" id="tab-briefings">
@@ -185,7 +196,7 @@
       </div>
       <div style="overflow-x:auto;">
         <table>
-          <thead><tr><th>ID</th><th>아이디</th><th>표시 이름</th><th>권한</th><th>프로필 노출</th><th>생성일</th><th>관리</th></tr></thead>
+          <thead><tr><th>ID</th><th>사진</th><th>아이디</th><th>표시 이름</th><th>권한</th><th>프로필 노출</th><th>생성일</th><th>관리</th></tr></thead>
           <tbody id="usersTbody"></tbody>
         </table>
       </div>

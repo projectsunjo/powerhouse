@@ -81,12 +81,31 @@ async function api(path, options = {}) {
   return data;
 }
 
-const ROLE_LABELS_KO = {
-  webmaster: '웹마스터',
-  marketbot_keeper: '마켓봇 지킴이',
-  board_keeper: '익명게시판 지킴이',
-  executive: '임원/그룹장',
-};
+function navMenuItemsFor(me) {
+  const infoLink = '<a href="/my-info.html">내정보</a>';
+  if (me.role === 'webmaster') {
+    return `<a href="/admin/dashboard.html">admin판넬</a>${infoLink}`;
+  }
+  if (me.role === 'marketbot_keeper') {
+    return `<a href="/admin/dashboard.html?tab=briefings">마켓봇 관리</a>${infoLink}`;
+  }
+  if (me.role === 'board_keeper') {
+    return `
+      <a href="/admin/dashboard.html?tab=posts">게시글관리</a>
+      <a href="/admin/dashboard.html?tab=comments">댓글관리</a>
+      <a href="/admin/dashboard.html?tab=suggestions">건의글 관리</a>
+      ${infoLink}
+    `;
+  }
+  if (me.role === 'executive') {
+    return `
+      <button id="navProfileVisibleBtn">${me.profile_visible ? '프로필 노출 끄기' : '프로필 노출 켜기'}</button>
+      <a href="/?sort=suggestion&target=me">내 건의 보기</a>
+      ${infoLink}
+    `;
+  }
+  return infoLink;
+}
 
 async function initNavProfile() {
   const el = document.getElementById('navProfile');
@@ -96,35 +115,46 @@ async function initNavProfile() {
   try {
     me = await api('/api/auth/me');
   } catch (e) {
-    el.innerHTML = '<a href="/login.html">로그인</a>';
+    el.innerHTML = '<a href="/login.html" class="nav-avatar-login">로그인</a>';
     return;
   }
 
   el.innerHTML = `
-    <span class="role-badge">${ROLE_LABELS_KO[me.role] || me.role}</span>
-    <span></span>
-    ${me.role === 'executive' ? '<label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="profileVisibleToggle" /> 프로필 노출</label>' : ''}
-    <button id="navLogoutBtn">로그아웃</button>
+    <div class="nav-avatar-wrap">
+      <button class="nav-avatar-btn" id="navAvatarBtn" aria-label="내 메뉴">
+        ${me.profile_image_url ? `<img class="nav-avatar-img" src="${me.profile_image_url}" />` : ''}
+      </button>
+      <div class="dropdown-menu" id="navDropdown">${navMenuItemsFor(me)}</div>
+    </div>
   `;
-  el.querySelector('span:nth-child(2)').textContent = me.display_name;
 
-  const toggle = document.getElementById('profileVisibleToggle');
-  if (toggle) {
-    toggle.checked = me.profile_visible;
-    toggle.onchange = async () => {
+  if (!me.profile_image_url) {
+    document.getElementById('navAvatarBtn').textContent = (me.display_name || '?').charAt(0);
+  }
+
+  const btn = document.getElementById('navAvatarBtn');
+  const menu = document.getElementById('navDropdown');
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    menu.classList.toggle('show');
+  };
+  document.addEventListener('click', () => menu.classList.remove('show'));
+
+  const visBtn = document.getElementById('navProfileVisibleBtn');
+  if (visBtn) {
+    visBtn.onclick = async (e) => {
+      e.stopPropagation();
+      const next = !me.profile_visible;
       try {
-        await api('/api/auth/profile-visible', { method: 'PATCH', body: { visible: toggle.checked } });
-        showToast(toggle.checked ? '이제 익명게시판에 프로필이 노출됩니다.' : '이제 익명게시판에서 완전히 익명으로 표시됩니다.');
-      } catch (e) {
-        showToast(e.message);
+        await api('/api/auth/profile-visible', { method: 'PATCH', body: { visible: next } });
+        me.profile_visible = next;
+        visBtn.textContent = next ? '프로필 노출 끄기' : '프로필 노출 켜기';
+        showToast(next ? '이제 실명으로 표시됩니다.' : '이제 완전히 익명으로 표시됩니다.');
+      } catch (err) {
+        showToast(err.message);
       }
     };
   }
-
-  document.getElementById('navLogoutBtn').onclick = async () => {
-    await api('/api/auth/logout', { method: 'POST' });
-    location.reload();
-  };
 }
 
 function showToast(message) {

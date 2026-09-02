@@ -37,6 +37,12 @@ router.get('/', async (req, res, next) => {
     }
     if (sort === 'suggestion') {
       where += " AND category = 'suggestion'";
+      if (req.query.target === 'me') {
+        const payload = getUserFromRequest(req);
+        if (!payload) return res.status(401).json({ error: '로그인이 필요합니다.' });
+        params.push(payload.userId);
+        where += ` AND target_user_id = $${params.length}`;
+      }
     } else {
       where += " AND category = 'general'";
       if (sort === 'best') where += ' AND likes >= 5';
@@ -51,8 +57,9 @@ router.get('/', async (req, res, next) => {
     const offsetParam = params.length + 2;
     const { rows } = await pool.query(
       `SELECT posts.id, title, nickname, views, likes, is_notice, posts.created_at, is_private, target_user_id,
-        tu.display_name AS target_name,
-        (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = posts.id AND c.is_hidden = false) AS comment_count
+        tu.display_name AS target_name, tu.profile_image_url AS target_image_url,
+        (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = posts.id AND c.is_hidden = false) AS comment_count,
+        EXISTS(SELECT 1 FROM comments oc WHERE oc.post_id = posts.id AND oc.is_official = true) AS has_official_reply
        FROM posts
        LEFT JOIN users tu ON tu.id = posts.target_user_id
        ${where}
@@ -82,8 +89,11 @@ router.get('/:id', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
       `SELECT posts.id, title, content, nickname, views, likes, is_notice, posts.created_at,
-        category, is_private, target_user_id, user_id, tu.display_name AS target_name
-       FROM posts LEFT JOIN users tu ON tu.id = posts.target_user_id
+        category, is_private, target_user_id, user_id, tu.display_name AS target_name, tu.profile_image_url AS target_image_url,
+        au.profile_image_url AS author_image_url
+       FROM posts
+       LEFT JOIN users tu ON tu.id = posts.target_user_id
+       LEFT JOIN users au ON au.id = posts.user_id
        WHERE posts.id = $1 AND posts.is_hidden = false`,
       [req.params.id]
     );
@@ -150,10 +160,13 @@ router.post('/', async (req, res, next) => {
     }
 
     // A logged-in executive with their profile visible posts under their
-    // real name, tied to their account instead of an anonymous password.
+    // real name on the general board, tied to their account instead of an
+    // anonymous password. 건의(suggestion) posts are always anonymous —
+    // even the target's own colleagues shouldn't be able to tell who
+    // submitted a suggestion just because they happen to be logged in.
     const payload = getUserFromRequest(req);
     let userId = null;
-    if (payload && payload.role === 'executive') {
+    if (category !== 'suggestion' && payload && payload.role === 'executive') {
       const { rows: urows } = await pool.query('SELECT display_name, profile_visible FROM users WHERE id = $1', [
         payload.userId,
       ]);
