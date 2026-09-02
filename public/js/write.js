@@ -54,7 +54,7 @@ function updateTargetPreview() {
 document.getElementById('targetUserId').onchange = updateTargetPreview;
 
 // 건의(suggestion) posts are always anonymous regardless of login (per the
-// board's design), but on the general board a logged-in executive with
+// board's design), but on the general board any logged-in account with
 // their profile visible writes under their real name — shown here as a
 // disabled field with their own photo, instead of the usual random
 // dimmed nickname.
@@ -62,7 +62,7 @@ function applyIdentityMode() {
   const nicknameInput = document.getElementById('nickname');
   const avatarImg = document.getElementById('nicknameAvatar');
   const passwordField = document.getElementById('passwordField');
-  const signedGeneral = !!(writeMe && writeMe.role === 'executive' && writeMe.profile_visible && writeState.category !== 'suggestion');
+  const signedGeneral = !!(writeMe && writeMe.profile_visible && writeState.category !== 'suggestion');
 
   writeState.signedIn = signedGeneral;
   passwordField.style.display = signedGeneral ? 'none' : '';

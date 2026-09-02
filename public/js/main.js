@@ -59,6 +59,7 @@ async function renderSubFilterRow() {
   }
 
   const pills = [
+    { value: '', label: '전체' },
     { value: 'general', label: '일반건의' },
     ...executivesCache.map((e) => ({ value: String(e.id), label: `@${e.display_name}`, avatar: e.profile_image_url })),
   ];
@@ -138,7 +139,7 @@ function renderList(data) {
       <div class="col-title">
         <div class="post-title-line">
           ${post.is_notice ? '<span class="badge notice">공지</span>' : ''}
-          ${isSuggestion && post.has_official_reply ? '<span class="badge" style="background:var(--success); color:#fff;">답변</span>' : ''}
+          ${isSuggestion && post.has_official_reply ? '<span class="category-chip chip-best">답변</span>' : ''}
           ${post.is_private ? '<span class="lock-icon">🔒</span>' : ''}
           <span class="post-title"></span>
         </div>

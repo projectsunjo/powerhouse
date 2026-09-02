@@ -96,10 +96,14 @@ function linkifyContent(text) {
 (function initNavMenu() {
   const toggle = document.getElementById('navToggle');
   const nav = document.querySelector('.nav-menu');
+  const activeText = nav ? (nav.querySelector('.nav-link.active') || {}).textContent : '';
+
+  const topLabel = document.getElementById('pageLabelTop');
+  if (topLabel) topLabel.textContent = activeText || '';
+
   const label = document.getElementById('currentPageLabel');
   if (label && nav) {
-    const active = nav.querySelector('.nav-link.active');
-    label.textContent = active ? active.textContent : '';
+    label.textContent = activeText || '';
     nav.prepend(label); // shows inside the dropdown, not beside the toggle
   }
   if (!toggle || !nav) return;
@@ -152,13 +156,14 @@ function visibilityToggleRow(me) {
 function navMenuItemsFor(me) {
   const infoLink = '<a href="/my-info.html">내정보</a>';
   if (me.role === 'webmaster') {
-    return `<a href="/admin/dashboard.html">admin판넬</a>${infoLink}`;
+    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html">admin판넬</a>${infoLink}`;
   }
   if (me.role === 'marketbot_keeper') {
-    return `<a href="/admin/dashboard.html?tab=briefings">마켓봇 관리</a>${infoLink}`;
+    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html?tab=briefings">마켓봇 관리</a>${infoLink}`;
   }
   if (me.role === 'board_keeper') {
     return `
+      ${visibilityToggleRow(me)}
       <a href="/admin/dashboard.html?tab=posts">게시글관리</a>
       <a href="/admin/dashboard.html?tab=comments">댓글관리</a>
       <a href="/admin/dashboard.html?tab=suggestions">건의글 관리</a>

@@ -46,9 +46,27 @@ app.use(compression());
 app.use(express.json({ limit: '6mb' }));
 app.use(cookieParser());
 
+// Basic bot/scraping/flood protection. This is deliberately minimal —
+// Vercel's edge network already absorbs raw volumetric DDoS before it
+// reaches this function at all; these limiters are for the next layer
+// down (a script hammering our own API/admin endpoints).
+const readLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
+});
 const writeLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
+});
+const authLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
@@ -61,12 +79,16 @@ const loginLimiter = rateLimit({
   message: { error: '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.' },
 });
 
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/internal/')) return readLimiter(req, res, next);
+  next();
+});
+
 app.use((req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
     if (req.path === '/api/auth/login') return loginLimiter(req, res, next);
-    if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/internal/') || req.path.startsWith('/api/auth/')) {
-      return next();
-    }
+    if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/internal/')) return next();
+    if (req.path.startsWith('/api/auth/')) return authLimiter(req, res, next);
     return writeLimiter(req, res, next);
   }
   next();

@@ -130,9 +130,15 @@ async function init() {
     briefing_email_recipients: process.env.BRIEFING_EMAIL_TO || '',
     briefing_email_subject_template: '[ESMI 마켓봇] 국내외 전력 및 SOFC 관련 {날짜}',
   };
-  for (const [key, value] of Object.entries(defaultSettings)) {
-    await pool.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING', [key, value]);
-  }
+  // Each cold serverless invocation re-runs init() from scratch, and every
+  // await here is a round trip to Supabase — running these in parallel
+  // instead of one at a time cuts that cold-start cost noticeably,
+  // especially now that the function and DB are in the same region.
+  await Promise.all(
+    Object.entries(defaultSettings).map(([key, value]) =>
+      pool.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING', [key, value])
+    )
+  );
 
   // One-time migration from the old single-password admin login to the
   // users table: seed a webmaster account reusing the existing

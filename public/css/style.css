@@ -89,6 +89,22 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.02em;
 }
 
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-label-inline {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .page-label-inline { display: none; }
+}
+
 .nav-right {
   position: relative;
   display: flex;

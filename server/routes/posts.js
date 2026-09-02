@@ -180,14 +180,14 @@ router.post('/', async (req, res, next) => {
     }
     const effectivePrivate = targetId ? !!isPrivate : false;
 
-    // A logged-in executive with their profile visible posts under their
+    // Any logged-in account with their profile visible posts under their
     // real name on the general board, tied to their account instead of an
     // anonymous password. 건의(suggestion) posts are always anonymous —
     // even the target's own colleagues shouldn't be able to tell who
     // submitted a suggestion just because they happen to be logged in.
     const payload = getUserFromRequest(req);
     let userId = null;
-    if (category !== 'suggestion' && payload && payload.role === 'executive') {
+    if (category !== 'suggestion' && payload) {
       const { rows: urows } = await pool.query('SELECT display_name, profile_visible FROM users WHERE id = $1', [
         payload.userId,
       ]);

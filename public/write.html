@@ -10,7 +10,10 @@
 <body>
   <div class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
+      <div class="brand-group">
+        <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
+        <span class="page-label-inline" id="pageLabelTop"></span>
+      </div>
       <div class="nav-right">
         <nav class="nav-menu">
           <a class="nav-link active" href="/">익명게시판</a>
@@ -27,7 +30,8 @@
 
   <div class="container">
     <div class="card" style="padding: 24px;">
-      <h2 style="margin-top:0;">✏️ 새 글 작성</h2>
+      <h2 style="margin-top:0; margin-bottom:4px;">✏️ 새 글 작성</h2>
+      <p class="small-muted" style="margin-top:0;">맹목적인 비난이나 부적절한 글은 예고없이 삭제 될 수 있습니다.</p>
 
       <div class="board-tabs" id="writeCategoryTabs" style="margin-bottom:16px;">
         <button class="board-tab active" data-category="general">일반글</button>
@@ -40,7 +44,7 @@
           <div style="display:flex; align-items:center; gap:8px;">
             <img id="targetAvatar" class="avatar-thumb" style="display:none;" />
             <select class="input" id="targetUserId" style="flex:1;">
-              <option value="">전체 (특정 대상 없음)</option>
+              <option value="">일반건의</option>
             </select>
           </div>
         </div>

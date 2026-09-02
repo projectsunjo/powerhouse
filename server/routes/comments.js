@@ -95,7 +95,7 @@ router.post('/posts/:postId/comments', async (req, res, next) => {
         nickname = urows[0].display_name;
         isOfficialComment = true;
       }
-    } else if (payload && payload.role === 'executive') {
+    } else if (payload) {
       const { rows: urows } = await pool.query('SELECT display_name, profile_visible FROM users WHERE id = $1', [
         payload.userId,
       ]);

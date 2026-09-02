@@ -56,10 +56,10 @@ router.get('/me', async (req, res, next) => {
   }
 });
 
-// PATCH /api/auth/profile-visible { visible } — executives only: toggle
+// PATCH /api/auth/profile-visible { visible } — any logged-in role: toggle
 // whether their real name shows on the anonymous board or they post/comment
 // exactly like a regular anonymous visitor.
-router.patch('/profile-visible', requireRole('executive'), async (req, res, next) => {
+router.patch('/profile-visible', ANY_ROLE, async (req, res, next) => {
   try {
     const visible = !!(req.body && req.body.visible);
     await pool.query('UPDATE users SET profile_visible = $1 WHERE id = $2', [visible, req.user.userId]);
