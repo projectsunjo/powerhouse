@@ -124,18 +124,16 @@ function navMenuItemsFor(me) {
 }
 
 function renderNavProfile(el, me) {
+  // Any logged-in account defaults to the PowerHouse logo until they upload
+  // their own photo — no initials fallback.
   el.innerHTML = `
     <div class="nav-avatar-wrap">
       <button class="nav-avatar-btn" id="navAvatarBtn" aria-label="내 메뉴">
-        ${me.profile_image_url ? `<img class="nav-avatar-img" src="${me.profile_image_url}" />` : ''}
+        <img class="nav-avatar-img" src="${me.profile_image_url || '/img/logo.png'}" />
       </button>
       <div class="dropdown-menu" id="navDropdown">${navMenuItemsFor(me)}</div>
     </div>
   `;
-
-  if (!me.profile_image_url) {
-    document.getElementById('navAvatarBtn').textContent = (me.display_name || '?').charAt(0);
-  }
 
   const btn = document.getElementById('navAvatarBtn');
   const menu = document.getElementById('navDropdown');

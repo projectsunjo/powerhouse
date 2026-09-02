@@ -424,6 +424,13 @@ textarea { min-height: 260px; resize: vertical; }
   font-weight: 700;
   flex-shrink: 0;
 }
+.avatar.avatar-anon {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
 .author-meta .nick { font-weight: 700; font-size: 0.92rem; }
 .author-meta .date { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 

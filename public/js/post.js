@@ -39,21 +39,21 @@ function renderPost() {
   document.getElementById('postBadge').innerHTML = badges.join(' ');
 
   const avatarEl = document.getElementById('postAvatar');
-  const avatarImgUrl = currentPost.category === 'suggestion' ? '/img/logo.png' : currentPost.author_image_url;
-  if (avatarImgUrl) {
-    avatarEl.innerHTML = `<img class="avatar-thumb avatar-lg" src="${avatarImgUrl}" />`;
+  avatarEl.classList.remove('avatar-anon');
+  if (currentPost.category === 'suggestion') {
+    avatarEl.innerHTML = `<img class="avatar-thumb avatar-lg" src="/img/logo.png" />`;
+  } else if (currentPost.user_id) {
+    avatarEl.innerHTML = `<img class="avatar-thumb avatar-lg" src="${currentPost.author_image_url || '/img/logo.png'}" />`;
   } else {
-    avatarEl.textContent = '?';
+    avatarEl.innerHTML = '';
+    avatarEl.textContent = '익명';
+    avatarEl.classList.add('avatar-anon');
   }
 
   const targetEl = document.getElementById('suggestionTarget');
   if (currentPost.category === 'suggestion') {
     targetEl.style.display = 'flex';
-    const targetImg = currentPost.target_image_url;
-    document.getElementById('targetAvatar').innerHTML = targetImg
-      ? `<img src="${targetImg}" />`
-      : '';
-    if (!targetImg) document.getElementById('targetAvatar').textContent = (currentPost.target_name || '?').charAt(0);
+    document.getElementById('targetAvatar').innerHTML = `<img src="${currentPost.target_image_url || '/img/logo.png'}" />`;
     document.getElementById('targetNickname').textContent = `@${currentPost.target_name || '알 수 없음'}`;
   } else {
     targetEl.style.display = 'none';
