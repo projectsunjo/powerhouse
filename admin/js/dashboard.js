@@ -566,12 +566,8 @@ const ROLE_LABELS = {
 };
 
 async function uploadPhoto(url, file) {
-  const formData = new FormData();
-  formData.append('image', file);
-  const res = await fetch(url, { method: 'POST', body: formData, credentials: 'same-origin' });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
-  return data;
+  const imageBase64 = await readFileAsBase64(file);
+  return api(url, { method: 'POST', body: { imageBase64, mimeType: file.type } });
 }
 
 async function loadUsers() {

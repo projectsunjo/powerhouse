@@ -31,6 +31,21 @@ function setupDimmedNicknameInput(input) {
   );
 }
 
+// Reads a File as a base64 string (no "data:...;base64," prefix), for
+// profile-photo uploads sent as JSON rather than multipart/form-data —
+// this corporate network's proxy silently mangles multipart uploads.
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      resolve(result.slice(result.indexOf(',') + 1));
+    };
+    reader.onerror = () => reject(new Error('파일을 읽지 못했습니다.'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // Escapes the raw text, then turns URLs into links (and known video URLs
 // into an inline responsive embed). Safe to set via innerHTML since escaping
 // happens before any markup is introduced.

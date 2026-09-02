@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { requireRole } = require('../utils/userAuth');
@@ -9,7 +8,7 @@ const { sendAndLogBriefingEmail } = require('../utils/mailer');
 const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;
 
@@ -437,14 +436,19 @@ router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
   }
 });
 
-// POST /api/admin/users/:id/profile-image — webmaster uploads a photo on
-// behalf of any user (multipart "image" field).
-router.post('/users/:id/profile-image', webmasterOnly, upload.single('image'), async (req, res, next) => {
+// POST /api/admin/users/:id/profile-image { imageBase64, mimeType } —
+// webmaster uploads a photo on behalf of any user. Base64 JSON, not
+// multipart/form-data — see the matching note in routes/auth.js.
+router.post('/users/:id/profile-image', webmasterOnly, async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
-    if (!req.file.mimetype.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
+    const { imageBase64, mimeType } = req.body || {};
+    if (!imageBase64 || !mimeType) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
+    if (!mimeType.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
 
-    const url = await uploadProfileImage(req.params.id, req.file.buffer, req.file.mimetype);
+    const buffer = Buffer.from(imageBase64, 'base64');
+    if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: '이미지 용량은 4MB 이하여야 합니다.' });
+
+    const url = await uploadProfileImage(req.params.id, buffer, mimeType);
     await pool.query('UPDATE users SET profile_image_url = $1 WHERE id = $2', [url, req.params.id]);
     res.json({ ok: true, url });
   } catch (e) {

@@ -39,7 +39,11 @@ app.use(
   })
 );
 app.use(compression());
-app.use(express.json({ limit: '200kb' }));
+// Raised from 200kb: profile-photo uploads are sent as base64 JSON (not
+// multipart/form-data - this corporate network's proxy silently mangles
+// multipart uploads, the same issue that blocked Vercel's own upload API
+// earlier), so a 4MB image needs headroom for ~33% base64 overhead.
+app.use(express.json({ limit: '6mb' }));
 app.use(cookieParser());
 
 const writeLimiter = rateLimit({

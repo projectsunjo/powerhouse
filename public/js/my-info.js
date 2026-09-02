@@ -24,13 +24,11 @@ async function loadMyInfo() {
 const photoInput = document.getElementById('photoInput');
 document.getElementById('photoChangeBtn').onclick = () => photoInput.click();
 photoInput.onchange = async () => {
-  if (!photoInput.files[0]) return;
-  const formData = new FormData();
-  formData.append('image', photoInput.files[0]);
+  const file = photoInput.files[0];
+  if (!file) return;
   try {
-    const res = await fetch('/api/auth/profile-image', { method: 'POST', body: formData, credentials: 'same-origin' });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
+    const imageBase64 = await readFileAsBase64(file);
+    await api('/api/auth/profile-image', { method: 'POST', body: { imageBase64, mimeType: file.type } });
     showToast('사진이 변경되었습니다.');
     localStorage.removeItem(NAV_ME_CACHE_KEY);
     loadMyInfo();

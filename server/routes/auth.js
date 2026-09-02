@@ -1,15 +1,12 @@
 const express = require('express');
-const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { issueUserToken, getUserFromRequest, requireRole } = require('../utils/userAuth');
 const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
-// Kept under Vercel's ~4.5MB serverless request-body cap so an oversized
-// photo fails with our own message instead of a platform-level 413.
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 const ANY_ROLE = requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive');
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 // POST /api/auth/login { username, password } — single login for every
 // role (webmaster / marketbot_keeper / board_keeper / executive).
@@ -110,24 +107,27 @@ router.patch('/profile', ANY_ROLE, async (req, res, next) => {
   }
 });
 
-// POST /api/auth/profile-image — multipart "image" field, any logged-in role.
-router.post(
-  '/profile-image',
-  ANY_ROLE,
-  upload.single('image'),
-  async (req, res, next) => {
-    try {
-      if (!req.file) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
-      if (!req.file.mimetype.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
+// POST /api/auth/profile-image { imageBase64, mimeType } — any logged-in
+// role. Sent as base64 JSON rather than multipart/form-data: this
+// corporate network's proxy silently mangles multipart uploads (the same
+// issue that blocked Vercel's own file-upload API earlier this project),
+// so a plain JSON body sidesteps it entirely.
+router.post('/profile-image', ANY_ROLE, async (req, res, next) => {
+  try {
+    const { imageBase64, mimeType } = req.body || {};
+    if (!imageBase64 || !mimeType) return res.status(400).json({ error: '이미지 파일을 선택해주세요.' });
+    if (!mimeType.startsWith('image/')) return res.status(400).json({ error: '이미지 파일만 업로드할 수 있습니다.' });
 
-      const url = await uploadProfileImage(req.user.userId, req.file.buffer, req.file.mimetype);
-      await pool.query('UPDATE users SET profile_image_url = $1 WHERE id = $2', [url, req.user.userId]);
-      res.json({ ok: true, url });
-    } catch (e) {
-      next(e);
-    }
+    const buffer = Buffer.from(imageBase64, 'base64');
+    if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: '이미지 용량은 4MB 이하여야 합니다.' });
+
+    const url = await uploadProfileImage(req.user.userId, buffer, mimeType);
+    await pool.query('UPDATE users SET profile_image_url = $1 WHERE id = $2', [url, req.user.userId]);
+    res.json({ ok: true, url });
+  } catch (e) {
+    next(e);
   }
-);
+});
 
 // DELETE /api/auth/profile-image
 router.delete(
