@@ -335,6 +335,34 @@ async function loadBriefingSettings() {
   document.getElementById('intervalHours').value = s.intervalHours;
   document.getElementById('emailRecipients').value = s.emailRecipients;
   document.getElementById('emailSubjectTemplate').value = s.emailSubjectTemplate;
+  renderHeartbeat(s);
+}
+
+// Every hourly cron tick calls /api/internal/briefing/start regardless of
+// whether it's actually due — so a fresh heartbeat proves the self-hosted
+// runner + cron loop are alive, independent of whether a report was
+// actually generated. Anything older than ~90 min (one missed tick plus
+// slack for GitHub's scheduling delay) means the runner is likely offline.
+function renderHeartbeat(s) {
+  const el = document.getElementById('heartbeatStatus');
+  const card = document.getElementById('heartbeatCard');
+
+  if (!s.lastHeartbeatAt) {
+    card.style.background = 'var(--danger-soft)';
+    el.innerHTML = '⚠️ 자동 생성이 아직 한 번도 체크된 적이 없습니다. 러너(runner)가 켜져 있는지 확인하세요.';
+    return;
+  }
+
+  const minutesAgo = Math.floor((Date.now() - new Date(s.lastHeartbeatAt).getTime()) / 60000);
+  const stale = minutesAgo >= 90;
+  card.style.background = stale ? 'var(--danger-soft)' : 'var(--success)';
+  card.style.color = stale ? 'var(--danger)' : '#fff';
+
+  const lastRunLabel = s.lastScheduledRunAt ? `${formatDateWithWeekday(s.lastScheduledRunAt)} ${formatTime(s.lastScheduledRunAt)}` : '없음';
+
+  el.innerHTML = stale
+    ? `⚠️ ${formatDate(s.lastHeartbeatAt)} 이후 러너 응답이 없습니다 (마지막 체크: ${formatTime(s.lastHeartbeatAt)}). 러너가 꺼져 있을 수 있습니다.`
+    : `✅ 자동 생성 정상 동작 중 · 마지막 체크: ${formatDate(s.lastHeartbeatAt)} (${formatTime(s.lastHeartbeatAt)}) · 마지막 자동 생성: ${lastRunLabel}`;
 }
 
 document.getElementById('settingsSaveBtn').onclick = async () => {

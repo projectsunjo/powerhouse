@@ -56,6 +56,13 @@ async function shouldRunScheduled() {
 router.post('/briefing/start', async (req, res, next) => {
   try {
     const { force, runId } = req.body || {};
+
+    // Reaching here at all proves the self-hosted runner is alive and the
+    // hourly cron actually fired — record it regardless of what happens
+    // next, so the admin dashboard can tell "runner is offline" apart from
+    // "runner checked in but decided it wasn't due yet".
+    await setSetting('briefing_last_heartbeat_at', new Date().toISOString());
+
     if (runId) return res.json({ proceed: true, runId: Number(runId) });
 
     if (!force && !(await shouldRunScheduled())) {

@@ -13,12 +13,22 @@ async function setSetting(key, value) {
 }
 
 async function getBriefingSettings() {
-  const [scheduleEnabled, scheduleHour, intervalHours, emailRecipients, emailSubjectTemplate] = await Promise.all([
+  const [
+    scheduleEnabled,
+    scheduleHour,
+    intervalHours,
+    emailRecipients,
+    emailSubjectTemplate,
+    lastHeartbeatAt,
+    lastScheduledRunAt,
+  ] = await Promise.all([
     getSetting('briefing_schedule_enabled', '1'),
     getSetting('briefing_schedule_hour', '8'),
     getSetting('briefing_interval_hours', '24'),
     getSetting('briefing_email_recipients', ''),
     getSetting('briefing_email_subject_template', '[ESMI 마켓봇] 국내외 전력 및 SOFC 관련 {날짜}'),
+    getSetting('briefing_last_heartbeat_at', null),
+    getSetting('briefing_last_scheduled_run_at', null),
   ]);
   return {
     scheduleEnabled: scheduleEnabled === '1',
@@ -26,6 +36,8 @@ async function getBriefingSettings() {
     intervalHours: parseInt(intervalHours, 10),
     emailRecipients,
     emailSubjectTemplate,
+    lastHeartbeatAt,
+    lastScheduledRunAt,
   };
 }
 
