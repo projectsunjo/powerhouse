@@ -21,12 +21,18 @@ function canViewPrivate(post, payload) {
   return !!(payload && post.target_user_id && payload.userId === post.target_user_id);
 }
 
-// GET /api/posts?page=1&q=검색어&sort=latest|best|suggestion
+// GET /api/posts?page=1&q=검색어&sort=all|best|general|suggestion&target=...
+//
+// The board is one underlying list — "최신순"(sort=all, the default) shows
+// every post regardless of category, newest first. The other sort values
+// are just filters on top of that same list: best (likes>=5), general
+// (일반 글 only), suggestion (건의 only, optionally narrowed further by
+// target: 'me' | 'general' [일반건의, no specific target] | an exec's id).
 router.get('/', async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const q = (req.query.q || '').trim();
-    const sort = ['best', 'suggestion'].includes(req.query.sort) ? req.query.sort : 'latest';
+    const sort = ['best', 'general', 'suggestion'].includes(req.query.sort) ? req.query.sort : 'all';
     const offset = (page - 1) * PAGE_SIZE;
 
     let where = 'WHERE posts.is_hidden = false';
@@ -35,7 +41,11 @@ router.get('/', async (req, res, next) => {
       params.push(`%${q}%`, `%${q}%`);
       where += ` AND (title ILIKE $${params.length - 1} OR content ILIKE $${params.length})`;
     }
-    if (sort === 'suggestion') {
+    if (sort === 'general') {
+      where += " AND category = 'general'";
+    } else if (sort === 'best') {
+      where += ' AND likes >= 5';
+    } else if (sort === 'suggestion') {
       where += " AND category = 'suggestion'";
       const target = req.query.target;
       if (target === 'me') {
@@ -52,9 +62,6 @@ router.get('/', async (req, res, next) => {
           where += ` AND target_user_id = $${params.length}`;
         }
       }
-    } else {
-      where += " AND category = 'general'";
-      if (sort === 'best') where += ' AND likes >= 5';
     }
 
     const totalResult = await pool.query(`SELECT COUNT(*)::int AS cnt FROM posts ${where}`, params);
@@ -65,7 +72,7 @@ router.get('/', async (req, res, next) => {
     const limitParam = params.length + 1;
     const offsetParam = params.length + 2;
     const { rows } = await pool.query(
-      `SELECT posts.id, title, nickname, views, likes, is_notice, posts.created_at, is_private, target_user_id,
+      `SELECT posts.id, title, nickname, views, likes, is_notice, posts.created_at, category, is_private, target_user_id,
         tu.display_name AS target_name, tu.profile_image_url AS target_image_url,
         (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = posts.id AND c.is_hidden = false) AS comment_count,
         EXISTS(SELECT 1 FROM comments oc WHERE oc.post_id = posts.id AND oc.is_official = true) AS has_official_reply

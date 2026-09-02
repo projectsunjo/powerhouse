@@ -168,7 +168,7 @@ function navMenuItemsFor(me) {
   if (me.role === 'executive') {
     return `
       ${visibilityToggleRow(me)}
-      <a href="/?sort=suggestion&target=me">내 건의 보기</a>
+      <a href="/?filter=suggestion:me">내 건의 보기</a>
       ${infoLink}
     `;
   }

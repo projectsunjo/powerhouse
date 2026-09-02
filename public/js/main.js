@@ -1,4 +1,12 @@
-const state = { page: 1, q: '', sort: 'latest', target: '' };
+// The board is one underlying list, not separate boards per tab. `filter`
+// just narrows/sorts that same list:
+//   ''                  최신순 — everything, newest first (no filter)
+//   'best'               likes >= 5
+//   'general'            일반 글 only
+//   'suggestion:general' 건의 중 특정 대상 없는 일반건의
+//   'suggestion:me'      나에게 온 건의 (헤더 "내 건의 보기"에서 진입)
+//   'suggestion:<id>'    특정 임원/그룹장에게 온 건의
+const state = { page: 1, q: '', filter: '' };
 let executivesCache = null;
 
 const params = new URLSearchParams(location.search);
@@ -7,37 +15,35 @@ if (params.get('q')) {
   document.getElementById('searchInput').value = state.q;
 }
 if (params.get('page')) state.page = parseInt(params.get('page'), 10) || 1;
-if (['best', 'suggestion'].includes(params.get('sort'))) {
-  state.sort = params.get('sort');
-  document.querySelectorAll('.board-tab').forEach((b) => b.classList.remove('active'));
-  document.querySelector(`.board-tab[data-sort="${state.sort}"]`).classList.add('active');
-}
-if (state.sort === 'suggestion' && params.get('target')) state.target = params.get('target');
+if (params.get('filter')) state.filter = params.get('filter');
 updateWriteLink();
-updateSuggestionFilterRow();
+renderFilterRow();
+
+function apiParamsForFilter(filter) {
+  if (filter === 'best') return { sort: 'best' };
+  if (filter === 'general') return { sort: 'general' };
+  if (filter.startsWith('suggestion:')) return { sort: 'suggestion', target: filter.slice('suggestion:'.length) };
+  return {};
+}
 
 function updateWriteLink() {
   const link = document.getElementById('writeLink');
   if (!link) return;
-  if (state.sort !== 'suggestion') {
+  if (state.filter.startsWith('suggestion:')) {
+    const target = state.filter.slice('suggestion:'.length);
+    const targetQs = target && target !== 'me' ? `&target=${encodeURIComponent(target)}` : '';
+    link.href = `/write.html?category=suggestion${targetQs}`;
+  } else {
     link.href = '/write.html';
-    return;
   }
-  const targetable = state.target && state.target !== 'me' ? `&target=${encodeURIComponent(state.target)}` : '';
-  link.href = `/write.html?category=suggestion${targetable}`;
 }
 
-// Below the board tabs, on the 건의 tab only: 전체(all) / 일반(no specific
-// target, e.g. "xx 사주세요" addressed to everyone) / one pill per
-// 임원·그룹장 — clicking filters the list by that target.
-async function updateSuggestionFilterRow() {
-  const row = document.getElementById('suggestionFilterRow');
+// 최신순(전체) / Best / 일반 글 / 일반건의 / 임원·그룹장 개인별 — the same
+// vocabulary doubles as the row's "분류" label in renderList, so picking a
+// pill and reading the column are two views of the same classification.
+async function renderFilterRow() {
+  const row = document.getElementById('filterRow');
   if (!row) return;
-  if (state.sort !== 'suggestion') {
-    row.style.display = 'none';
-    return;
-  }
-  row.style.display = 'flex';
 
   if (!executivesCache) {
     try {
@@ -48,14 +54,16 @@ async function updateSuggestionFilterRow() {
   }
 
   const pills = [
-    { value: '', label: '전체' },
-    { value: 'general', label: '일반 건의' },
-    ...executivesCache.map((e) => ({ value: String(e.id), label: `@${e.display_name}`, avatar: e.profile_image_url })),
+    { value: '', label: '최신순' },
+    { value: 'best', label: 'Best' },
+    { value: 'general', label: '일반 글' },
+    { value: 'suggestion:general', label: '일반건의' },
+    ...executivesCache.map((e) => ({ value: `suggestion:${e.id}`, label: `@${e.display_name}`, avatar: e.profile_image_url })),
   ];
   row.innerHTML = pills
     .map(
       (p) => `
-      <button class="filter-pill${state.target === p.value ? ' active' : ''}" data-target="${p.value}">
+      <button class="filter-pill${state.filter === p.value ? ' active' : ''}" data-filter="${p.value}">
         ${p.avatar ? `<img src="${p.avatar}" />` : ''}${p.label}
       </button>
     `
@@ -63,10 +71,10 @@ async function updateSuggestionFilterRow() {
     .join('');
   row.querySelectorAll('.filter-pill').forEach((btn) => {
     btn.onclick = () => {
-      state.target = btn.dataset.target;
+      state.filter = btn.dataset.filter;
       state.page = 1;
       updateWriteLink();
-      updateSuggestionFilterRow();
+      renderFilterRow();
       loadPosts();
     };
   });
@@ -76,13 +84,17 @@ async function loadPosts() {
   const listEl = document.getElementById('postList');
   listEl.innerHTML = '<div class="empty-state">불러오는 중...</div>';
   try {
-    const qs = new URLSearchParams({ page: state.page, q: state.q, sort: state.sort });
-    if (state.target) qs.set('target', state.target);
+    const qs = new URLSearchParams({ page: state.page, q: state.q, ...apiParamsForFilter(state.filter) });
     const data = await api(`/api/posts?${qs.toString()}`);
     renderList(data);
   } catch (e) {
     listEl.innerHTML = `<div class="empty-state">${e.message}</div>`;
   }
+}
+
+function classifyLabel(post) {
+  if (post.category === 'suggestion') return post.target_user_id ? `@${post.target_name}` : '일반건의';
+  return post.likes >= 5 ? 'Best' : '일반 글';
 }
 
 function renderList(data) {
@@ -93,12 +105,13 @@ function renderList(data) {
     listEl.innerHTML = '<div class="empty-state">게시글이 없습니다. 첫 글을 작성해보세요!</div>';
   }
 
-  const isSuggestion = state.sort === 'suggestion';
   for (const post of data.posts) {
+    const isSuggestion = post.category === 'suggestion';
     const row = document.createElement('a');
     row.href = `/post.html?id=${post.id}`;
     row.className = 'board-row';
     row.innerHTML = `
+      <div class="col-category"></div>
       <div class="col-title">
         <div class="post-title-line">
           ${post.is_notice ? '<span class="badge notice">공지</span>' : ''}
@@ -108,14 +121,7 @@ function renderList(data) {
         </div>
         <div class="post-meta">
           <span style="display:flex; align-items:center; gap:5px;">
-            ${isSuggestion ? `
-              <img class="avatar-thumb" src="/img/logo.png" />
-              <span class="post-nick"></span>
-              <span class="suggestion-arrow" style="font-size:0.85rem;">→</span>
-              ${post.target_user_id
-                ? `<img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" /><span class="post-target"></span>`
-                : '<span class="post-target">전체</span>'}
-            ` : '<span class="post-nick"></span>'}
+            <span class="post-nick"></span>
             · <span class="post-date"></span>
           </span>
           <span class="post-stats">
@@ -127,28 +133,15 @@ function renderList(data) {
         </div>
       </div>
     `;
+    row.querySelector('.col-category').textContent = classifyLabel(post);
     row.querySelector('.post-title').textContent = post.title;
     row.querySelector('.post-nick').textContent = post.nickname;
-    if (isSuggestion && post.target_user_id) row.querySelector('.post-target').textContent = `@${post.target_name}`;
     row.querySelector('.post-date').textContent = formatDate(post.created_at);
     listEl.appendChild(row);
   }
 
   renderPagination(data.page, data.totalPages);
 }
-
-document.querySelectorAll('.board-tab').forEach((btn) => {
-  btn.onclick = () => {
-    document.querySelectorAll('.board-tab').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.sort = btn.dataset.sort;
-    state.target = '';
-    state.page = 1;
-    updateWriteLink();
-    updateSuggestionFilterRow();
-    loadPosts();
-  };
-});
 
 function renderPagination(page, totalPages) {
   const el = document.getElementById('pagination');

@@ -26,15 +26,11 @@
   </div>
 
   <div class="container board-container">
-    <div class="board-tabs">
-      <button class="board-tab active" data-sort="latest">최신순</button>
-      <button class="board-tab" data-sort="best">Best글</button>
-      <button class="board-tab" data-sort="suggestion">건의</button>
-    </div>
-    <div class="suggestion-filter-row" id="suggestionFilterRow" style="display:none;"></div>
+    <div class="suggestion-filter-row" id="filterRow"></div>
 
     <div class="board-table">
       <div class="board-row board-head">
+        <div class="col-category">분류</div>
         <div class="col-title">제목</div>
       </div>
       <div id="postList"></div>

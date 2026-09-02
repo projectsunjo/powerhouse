@@ -260,7 +260,7 @@ a { color: inherit; text-decoration: none; }
 
 .board-row {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 68px 1fr;
   align-items: center;
   gap: 10px;
   padding: 14px 18px;
@@ -277,6 +277,14 @@ a { color: inherit; text-decoration: none; }
 
 a.board-row:hover { background: var(--primary-soft); }
 
+.board-row .col-category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
 .board-row .col-title { min-width: 0; }
 .post-title-line { display: flex; align-items: flex-start; gap: 6px; }
 .post-title-line .post-title {
