@@ -684,3 +684,66 @@ button.stat-item.likeable.liked { color: var(--primary); font-weight: 700; }
   .toolbar-row { flex-wrap: wrap; }
   .toolbar-row .search-row { width: 100%; }
 }
+
+.login-wrap {
+  max-width: 380px;
+  margin: 12vh auto 0;
+  padding: 32px;
+}
+.login-wrap h1 { text-align: center; margin-bottom: 4px; }
+.login-wrap p.sub {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+}
+
+.nav-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.nav-profile .role-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.nav-profile button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.lock-icon { color: var(--text-muted); }
+.private-notice { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.exec-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #a67c00;
+  margin-left: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+th { background: var(--primary-soft); color: var(--primary); font-weight: 700; }

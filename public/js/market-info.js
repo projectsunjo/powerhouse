@@ -75,9 +75,9 @@ function renderIndexPagination(page, totalPages) {
 
 async function checkAdmin() {
   try {
-    await api('/api/admin/me');
-    isAdmin = true;
-    document.getElementById('generateNowBtn').style.display = 'inline-flex';
+    const me = await api('/api/auth/me');
+    isAdmin = me.role === 'webmaster' || me.role === 'marketbot_keeper';
+    if (isAdmin) document.getElementById('generateNowBtn').style.display = 'inline-flex';
   } catch (e) {
     isAdmin = false;
   }

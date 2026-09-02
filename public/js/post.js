@@ -1,6 +1,8 @@
 const postId = new URLSearchParams(location.search).get('id');
 let currentPost = null;
 let liked = false;
+let me = null;
+let unlockedPassword = null; // proven by the anonymous author via /unlock, kept in memory only
 
 if (!postId) {
   location.href = '/';
@@ -8,7 +10,16 @@ if (!postId) {
 
 const LIKED_KEY = `liked_post_${postId}`;
 
+function isTargetExec() {
+  return !!(me && currentPost && currentPost.target_user_id && me.id === currentPost.target_user_id);
+}
+
 async function loadPost() {
+  try {
+    me = await api('/api/auth/me');
+  } catch (e) {
+    me = null;
+  }
   try {
     currentPost = await api(`/api/posts/${postId}`);
   } catch (e) {
@@ -20,13 +31,20 @@ async function loadPost() {
 }
 
 function renderPost() {
-  document.getElementById('postBadge').innerHTML = currentPost.is_notice ? '<span class="badge notice">공지</span>' : '';
+  const badges = [];
+  if (currentPost.is_notice) badges.push('<span class="badge notice">공지</span>');
+  if (currentPost.category === 'suggestion') {
+    badges.push(`<span class="badge">@${escapeHtml(currentPost.target_name || '알 수 없음')}</span>`);
+    if (currentPost.is_private) badges.push('<span class="badge">🔒 비밀글</span>');
+  }
+  document.getElementById('postBadge').innerHTML = badges.join(' ');
+
   document.getElementById('postTitle').textContent = currentPost.title;
   document.getElementById('postNickname').textContent = currentPost.nickname;
   document.getElementById('postDate').textContent = formatDate(currentPost.created_at);
   document.getElementById('postViews').textContent = currentPost.views;
-  document.getElementById('postContent').innerHTML = linkifyContent(currentPost.content);
   document.getElementById('likeCount').textContent = currentPost.likes;
+  renderPostContent();
 
   liked = localStorage.getItem(LIKED_KEY) === '1';
   if (liked) {
@@ -35,13 +53,48 @@ function renderPost() {
   }
 }
 
+function renderPostContent() {
+  const el = document.getElementById('postContent');
+  if (currentPost.restricted) {
+    el.innerHTML = `<div class="private-notice">🔒 비밀글입니다.<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
+    document.getElementById('unlockBtn').onclick = () => {
+      promptPassword({
+        title: '비밀글 열람',
+        onConfirm: async (pw) => {
+          const result = await api(`/api/posts/${postId}/unlock`, { method: 'POST', body: { password: pw } });
+          unlockedPassword = pw;
+          currentPost.content = result.content;
+          currentPost.restricted = false;
+          renderPostContent();
+          loadComments();
+        },
+      });
+    };
+  } else {
+    el.innerHTML = linkifyContent(currentPost.content);
+  }
+}
+
+function withPostPassword(opts = {}) {
+  if (!unlockedPassword) return opts;
+  return { ...opts, headers: { 'Content-Type': 'application/json', 'x-post-password': unlockedPassword } };
+}
+
 async function loadComments() {
-  const data = await api(`/api/posts/${postId}/comments`);
+  const data = await api(`/api/posts/${postId}/comments`, withPostPassword());
   const total = data.comments.length;
   document.getElementById('commentCount').textContent = total;
   document.getElementById('commentStatCount').textContent = total;
   const listEl = document.getElementById('commentList');
   listEl.innerHTML = '';
+
+  const commentForm = document.querySelector('.comment-form');
+  if (data.restricted) {
+    listEl.innerHTML = '<div class="private-notice" style="padding:24px;">🔒 비밀글의 댓글입니다.</div>';
+    if (commentForm) commentForm.style.display = 'none';
+    return;
+  }
+  if (commentForm) commentForm.style.display = '';
 
   if (!total) {
     listEl.innerHTML = '<div class="empty-state" style="padding:24px;">첫 댓글을 남겨보세요.</div>';
@@ -70,7 +123,7 @@ function renderCommentItem(c, isReply) {
   item.className = 'comment-item' + (isReply ? ' comment-reply' : '');
   item.innerHTML = `
     <div class="comment-head">
-      <span><span class="nick"></span> · <span class="when"></span></span>
+      <span>${c.is_private ? '🔒 ' : ''}<span class="nick"></span> · <span class="when"></span></span>
       <span class="comment-actions">
         ${!isReply ? '<button class="replyC">답글</button>' : ''}
         <button class="reportC report-hidden">신고</button>
@@ -81,9 +134,20 @@ function renderCommentItem(c, isReply) {
   `;
   item.querySelector('.nick').textContent = c.nickname;
   item.querySelector('.when').textContent = formatDate(c.created_at);
-  item.querySelector('.comment-body').innerHTML = linkifyContent(c.content);
+  item.querySelector('.comment-body').innerHTML =
+    c.is_private && c.content === null ? '<span class="small-muted">🔒 비밀 답글입니다.</span>' : linkifyContent(c.content);
 
   item.querySelector('.delC').onclick = () => {
+    if (c.user_id) {
+      if (!confirm('이 댓글을 삭제하시겠습니까?')) return;
+      api(`/api/comments/${c.id}`, { method: 'DELETE' })
+        .then(() => {
+          showToast('댓글이 삭제되었습니다.');
+          loadComments();
+        })
+        .catch((e) => showToast(e.message));
+      return;
+    }
     promptPassword({
       title: '댓글 삭제',
       onConfirm: async (pw) => {
@@ -115,14 +179,17 @@ function toggleReplyForm(afterItem, parentId) {
     return;
   }
 
+  const asExec = isTargetExec();
   const form = document.createElement('div');
   form.className = 'reply-form';
   form.innerHTML = `
+    ${asExec ? '' : `
     <div class="form-row">
       <div class="form-group"><input type="text" class="input input-sm input-dimmed" maxlength="30" /></div>
       <div class="form-group"><input type="password" class="input input-sm" maxlength="50" placeholder="비밀번호" /></div>
-    </div>
+    </div>`}
     <textarea class="input" maxlength="2000" style="min-height:60px" placeholder="답글을 입력하세요"></textarea>
+    ${asExec ? '<label class="checkbox-row" style="display:flex; align-items:center; gap:6px; margin-top:6px;"><input type="checkbox" class="replyPrivate" /> 비밀 답변으로 남기기</label>' : ''}
     <div class="action-row">
       <button class="btn btn-ghost btn-sm cancelReply">취소</button>
       <button class="btn btn-primary btn-sm submitReply">등록</button>
@@ -131,7 +198,7 @@ function toggleReplyForm(afterItem, parentId) {
   afterItem.after(form);
 
   const nicknameInput = form.querySelector('input[type="text"]');
-  setupDimmedNicknameInput(nicknameInput);
+  if (nicknameInput) setupDimmedNicknameInput(nicknameInput);
   const passwordInput = form.querySelector('input[type="password"]');
   const contentInput = form.querySelector('textarea');
   contentInput.focus();
@@ -139,15 +206,21 @@ function toggleReplyForm(afterItem, parentId) {
   form.querySelector('.cancelReply').onclick = () => form.remove();
   form.querySelector('.submitReply').onclick = async () => {
     const content = contentInput.value.trim();
-    const password = passwordInput.value.trim();
-    const nickname = nicknameInput.value.trim();
     if (!content) return showToast('답글 내용을 입력해주세요.');
-    if (!password || password.length < 4) return showToast('비밀번호는 4자 이상이어야 합니다.');
+
+    const body = { content, parent_id: parentId };
+    if (asExec) {
+      body.is_private = form.querySelector('.replyPrivate').checked;
+    } else {
+      const password = passwordInput.value.trim();
+      const nickname = nicknameInput.value.trim();
+      if (!password || password.length < 4) return showToast('비밀번호는 4자 이상이어야 합니다.');
+      body.password = password;
+      body.nickname = nickname;
+    }
+
     try {
-      await api(`/api/posts/${postId}/comments`, {
-        method: 'POST',
-        body: { content, nickname, password, parent_id: parentId },
-      });
+      await api(`/api/posts/${postId}/comments`, withPostPassword({ method: 'POST', body }));
       showToast('답글이 등록되었습니다.');
       loadComments();
     } catch (e) {
@@ -188,6 +261,16 @@ document.getElementById('reportPostBtn').onclick = () => {
 };
 
 document.getElementById('deletePostBtn').onclick = () => {
+  if (currentPost.user_id) {
+    if (!confirm('이 게시글을 삭제하시겠습니까?')) return;
+    api(`/api/posts/${postId}`, { method: 'DELETE' })
+      .then(() => {
+        showToast('삭제되었습니다.');
+        setTimeout(() => (location.href = '/'), 600);
+      })
+      .catch((e) => showToast(e.message));
+    return;
+  }
   promptPassword({
     title: '게시글 삭제',
     onConfirm: async (pw) => {
@@ -198,16 +281,24 @@ document.getElementById('deletePostBtn').onclick = () => {
   });
 };
 
+function openEditForm() {
+  document.getElementById('editTitle').value = currentPost.title;
+  document.getElementById('editContent').value = currentPost.content;
+  document.getElementById('postView').style.display = 'none';
+  document.getElementById('editForm').style.display = 'block';
+}
+
 document.getElementById('editPostBtn').onclick = () => {
+  if (currentPost.user_id) {
+    openEditForm();
+    return;
+  }
   promptPassword({
     title: '수정하려면 비밀번호를 입력하세요',
     onConfirm: async (pw) => {
       await api(`/api/posts/${postId}/verify-password`, { method: 'POST', body: { password: pw } });
       currentPost._editPassword = pw;
-      document.getElementById('editTitle').value = currentPost.title;
-      document.getElementById('editContent').value = currentPost.content;
-      document.getElementById('postView').style.display = 'none';
-      document.getElementById('editForm').style.display = 'block';
+      openEditForm();
     },
   });
 };
@@ -268,10 +359,10 @@ document.getElementById('commentSubmit').onclick = async () => {
   if (!password || password.length < 4) return showToast('비밀번호는 4자 이상이어야 합니다.');
 
   try {
-    await api(`/api/posts/${postId}/comments`, {
+    await api(`/api/posts/${postId}/comments`, withPostPassword({
       method: 'POST',
       body: { content, nickname, password },
-    });
+    }));
     document.getElementById('commentPassword').value = '';
     refreshCommentNickname();
     collapseCommentForm();

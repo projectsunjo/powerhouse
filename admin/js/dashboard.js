@@ -1,11 +1,40 @@
 const postState = { page: 1, q: '' };
 const commentState = { page: 1 };
+let myRole = null;
+
+const TAB_ROLES = {
+  posts: ['webmaster', 'board_keeper'],
+  comments: ['webmaster', 'board_keeper'],
+  reports: ['webmaster', 'board_keeper'],
+  words: ['webmaster', 'board_keeper'],
+  briefings: ['webmaster', 'marketbot_keeper'],
+  users: ['webmaster'],
+};
 
 async function guardAuth() {
   try {
-    await api('/api/admin/me');
+    const me = await api('/api/auth/me');
+    if (me.role === 'executive') {
+      // Executives have no admin panel access — only the profile toggle on the board itself.
+      location.href = '/';
+      return;
+    }
+    myRole = me.role;
+    applyRoleVisibility();
   } catch (e) {
-    location.href = '/admin/login.html';
+    location.href = '/login.html';
+  }
+}
+
+function applyRoleVisibility() {
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    const allowed = TAB_ROLES[btn.dataset.tab] || [];
+    btn.style.display = allowed.includes(myRole) ? '' : 'none';
+  });
+  const activeBtn = document.querySelector('.tab-btn.active');
+  if (!activeBtn || activeBtn.style.display === 'none') {
+    const firstVisible = Array.from(document.querySelectorAll('.tab-btn')).find((b) => b.style.display !== 'none');
+    if (firstVisible) firstVisible.click();
   }
 }
 
@@ -193,8 +222,8 @@ document.getElementById('addWordBtn').onclick = async () => {
   }
 };
 document.getElementById('logoutBtn').onclick = async () => {
-  await api('/api/admin/logout', { method: 'POST' });
-  location.href = '/admin/login.html';
+  await api('/api/auth/logout', { method: 'POST' });
+  location.href = '/login.html';
 };
 
 let briefingPolling = false;
@@ -470,14 +499,95 @@ document.getElementById('briefingSendEmailBtn').onclick = async () => {
   }
 };
 
+const ROLE_LABELS = {
+  webmaster: '웹마스터',
+  marketbot_keeper: '마켓봇 지킴이',
+  board_keeper: '익명게시판 지킴이',
+  executive: '임원 및 그룹장',
+};
+
+async function loadUsers() {
+  const data = await api('/api/admin/users');
+  const tbody = document.getElementById('usersTbody');
+  tbody.innerHTML = '';
+
+  for (const u of data.users) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.id}</td>
+      <td></td>
+      <td></td>
+      <td>${ROLE_LABELS[u.role] || u.role}</td>
+      <td>${u.role === 'executive' ? (u.profile_visible ? '노출' : '숨김') : '-'}</td>
+      <td>${formatDate(u.created_at)}</td>
+      <td class="actions">
+        <button class="btn btn-sm btn-ghost pwBtn">비번 재설정</button>
+        <button class="btn btn-sm btn-danger delBtn">삭제</button>
+      </td>
+    `;
+    tr.children[1].textContent = u.username;
+    tr.children[2].textContent = u.display_name;
+
+    tr.querySelector('.pwBtn').onclick = async () => {
+      const pw = prompt(`${u.username}의 새 비밀번호를 입력하세요 (4자 이상)`);
+      if (!pw) return;
+      try {
+        await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { password: pw } });
+        showToast('비밀번호가 변경되었습니다.');
+      } catch (e) {
+        showToast(e.message);
+      }
+    };
+    tr.querySelector('.delBtn').onclick = async () => {
+      if (!confirm(`${u.username} 계정을 삭제하시겠습니까?`)) return;
+      try {
+        await api(`/api/admin/users/${u.id}`, { method: 'DELETE' });
+        showToast('삭제되었습니다.');
+        loadUsers();
+      } catch (e) {
+        showToast(e.message);
+      }
+    };
+
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById('addUserBtn').onclick = async () => {
+  const username = document.getElementById('newUserUsername').value.trim();
+  const password = document.getElementById('newUserPassword').value;
+  const displayName = document.getElementById('newUserDisplayName').value.trim();
+  const role = document.getElementById('newUserRole').value;
+  if (!username || !password || !displayName) return showToast('모든 항목을 입력해주세요.');
+  try {
+    await api('/api/admin/users', { method: 'POST', body: { username, password, displayName, role } });
+    document.getElementById('newUserUsername').value = '';
+    document.getElementById('newUserPassword').value = '';
+    document.getElementById('newUserDisplayName').value = '';
+    showToast('계정이 추가되었습니다.');
+    loadUsers();
+  } catch (e) {
+    showToast(e.message);
+  }
+};
+
 (async function init() {
   await guardAuth();
-  loadStats();
-  loadPosts();
-  loadComments();
-  loadReports();
-  loadWords();
-  loadBriefingSettings();
-  loadBriefingRuns();
-  loadEmailLogs();
+  if (!myRole) return;
+
+  if (TAB_ROLES.posts.includes(myRole)) {
+    loadStats();
+    loadPosts();
+    loadComments();
+    loadReports();
+    loadWords();
+  }
+  if (TAB_ROLES.briefings.includes(myRole)) {
+    loadBriefingSettings();
+    loadBriefingRuns();
+    loadEmailLogs();
+  }
+  if (TAB_ROLES.users.includes(myRole)) {
+    loadUsers();
+  }
 })();

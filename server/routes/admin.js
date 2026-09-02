@@ -1,7 +1,7 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
-const { requireAdmin } = require('../middleware/adminAuth');
+const { requireRole } = require('../utils/userAuth');
 const { triggerBriefingWorkflow } = require('../utils/github');
 const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
@@ -10,45 +10,13 @@ const router = express.Router();
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;
 
-function timingSafeEqual(a, b) {
-  const crypto = require('crypto');
-  const bufA = Buffer.from(String(a));
-  const bufB = Buffer.from(String(b));
-  if (bufA.length !== bufB.length) return false;
-  return crypto.timingSafeEqual(bufA, bufB);
-}
-
-// POST /api/admin/login
-router.post('/login', (req, res) => {
-  const { password } = req.body || {};
-  const adminPassword = process.env.ADMIN_PASSWORD || '';
-  if (!password || !adminPassword || !timingSafeEqual(password, adminPassword)) {
-    return res.status(401).json({ error: '비밀번호가 일치하지 않습니다.' });
-  }
-
-  const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '12h' });
-  res.cookie('admin_token', token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 12 * 60 * 60 * 1000,
-  });
-  res.json({ ok: true });
-});
-
-// POST /api/admin/logout
-router.post('/logout', (req, res) => {
-  res.clearCookie('admin_token');
-  res.json({ ok: true });
-});
-
-// GET /api/admin/me
-router.get('/me', requireAdmin, (req, res) => res.json({ ok: true }));
-
-router.use(requireAdmin);
+// 웹마스터는 모든 구역에 접근; 두 "지킴이" 역할은 각자 담당 구역만.
+const boardAccess = requireRole('webmaster', 'board_keeper');
+const marketAccess = requireRole('webmaster', 'marketbot_keeper');
+const webmasterOnly = requireRole('webmaster');
 
 // GET /api/admin/stats
-router.get('/stats', async (req, res, next) => {
+router.get('/stats', boardAccess, async (req, res, next) => {
   try {
     const [totalPosts, totalComments, todayPosts, pendingReports] = await Promise.all([
       pool.query('SELECT COUNT(*)::int AS c FROM posts'),
@@ -68,7 +36,7 @@ router.get('/stats', async (req, res, next) => {
 });
 
 // GET /api/admin/posts?page=&q=
-router.get('/posts', async (req, res, next) => {
+router.get('/posts', boardAccess, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const q = (req.query.q || '').trim();
@@ -95,7 +63,7 @@ router.get('/posts', async (req, res, next) => {
 });
 
 // PATCH /api/admin/posts/:id  { is_notice?, is_hidden? }
-router.patch('/posts/:id', async (req, res, next) => {
+router.patch('/posts/:id', boardAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id FROM posts WHERE id = $1', [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: '게시글을 찾을 수 없습니다.' });
@@ -114,7 +82,7 @@ router.patch('/posts/:id', async (req, res, next) => {
 });
 
 // DELETE /api/admin/posts/:id
-router.delete('/posts/:id', async (req, res, next) => {
+router.delete('/posts/:id', boardAccess, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
@@ -124,7 +92,7 @@ router.delete('/posts/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/comments?page=&postId=
-router.get('/comments', async (req, res, next) => {
+router.get('/comments', boardAccess, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * PAGE_SIZE;
@@ -151,7 +119,7 @@ router.get('/comments', async (req, res, next) => {
 });
 
 // DELETE /api/admin/comments/:id
-router.delete('/comments/:id', async (req, res, next) => {
+router.delete('/comments/:id', boardAccess, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM comments WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
@@ -161,7 +129,7 @@ router.delete('/comments/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/reports?status=pending
-router.get('/reports', async (req, res, next) => {
+router.get('/reports', boardAccess, async (req, res, next) => {
   try {
     const status = req.query.status === 'resolved' ? 'resolved' : 'pending';
     const { rows } = await pool.query('SELECT * FROM reports WHERE status = $1 ORDER BY id DESC LIMIT 100', [status]);
@@ -172,7 +140,7 @@ router.get('/reports', async (req, res, next) => {
 });
 
 // PATCH /api/admin/reports/:id { status }
-router.patch('/reports/:id', async (req, res, next) => {
+router.patch('/reports/:id', boardAccess, async (req, res, next) => {
   try {
     const status = req.body && req.body.status === 'resolved' ? 'resolved' : 'pending';
     await pool.query('UPDATE reports SET status = $1 WHERE id = $2', [status, req.params.id]);
@@ -183,7 +151,7 @@ router.patch('/reports/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/banned-words
-router.get('/banned-words', async (req, res, next) => {
+router.get('/banned-words', boardAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, word FROM banned_words ORDER BY word ASC');
     res.json({ words: rows });
@@ -193,7 +161,7 @@ router.get('/banned-words', async (req, res, next) => {
 });
 
 // POST /api/admin/banned-words { word }
-router.post('/banned-words', async (req, res, next) => {
+router.post('/banned-words', boardAccess, async (req, res, next) => {
   try {
     const word = ((req.body && req.body.word) || '').trim();
     if (!word) return res.status(400).json({ error: '단어를 입력해주세요.' });
@@ -209,7 +177,7 @@ router.post('/banned-words', async (req, res, next) => {
 });
 
 // DELETE /api/admin/banned-words/:id
-router.delete('/banned-words/:id', async (req, res, next) => {
+router.delete('/banned-words/:id', boardAccess, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM banned_words WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
@@ -219,7 +187,7 @@ router.delete('/banned-words/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/briefings
-router.get('/briefings', async (req, res, next) => {
+router.get('/briefings', marketAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, html, created_at FROM briefings ORDER BY id DESC');
     res.json({ briefings: rows });
@@ -229,7 +197,7 @@ router.get('/briefings', async (req, res, next) => {
 });
 
 // GET /api/admin/briefing-runs?page=1  (run log: 시작/완료/이메일 발송 상태)
-router.get('/briefing-runs', async (req, res, next) => {
+router.get('/briefing-runs', marketAccess, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * RUNS_PAGE_SIZE;
@@ -252,7 +220,7 @@ router.get('/briefing-runs', async (req, res, next) => {
 });
 
 // DELETE /api/admin/briefing-runs/:id
-router.delete('/briefing-runs/:id', async (req, res, next) => {
+router.delete('/briefing-runs/:id', marketAccess, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM briefing_runs WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
@@ -262,7 +230,7 @@ router.delete('/briefing-runs/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/briefings/status
-router.get('/briefings/status', async (req, res, next) => {
+router.get('/briefings/status', marketAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT status, error FROM briefing_runs ORDER BY id DESC LIMIT 1');
     const latest = rows[0];
@@ -276,7 +244,7 @@ router.get('/briefings/status', async (req, res, next) => {
 });
 
 // POST /api/admin/briefings/generate
-router.post('/briefings/generate', async (req, res, next) => {
+router.post('/briefings/generate', marketAccess, async (req, res, next) => {
   try {
     // Insert the 'running' row before dispatching the Action, so the very
     // first status poll from the frontend (5s later) already sees this run
@@ -292,7 +260,7 @@ router.post('/briefings/generate', async (req, res, next) => {
 });
 
 // POST /api/admin/briefings/send-email { briefingId? }  (defaults to latest)
-router.post('/briefings/send-email', async (req, res, next) => {
+router.post('/briefings/send-email', marketAccess, async (req, res, next) => {
   try {
     const { briefingId } = req.body || {};
     const { rows } = briefingId
@@ -309,7 +277,7 @@ router.post('/briefings/send-email', async (req, res, next) => {
 });
 
 // GET /api/admin/email-logs?page=1
-router.get('/email-logs', async (req, res, next) => {
+router.get('/email-logs', marketAccess, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const offset = (page - 1) * PAGE_SIZE;
@@ -326,7 +294,7 @@ router.get('/email-logs', async (req, res, next) => {
 });
 
 // PATCH /api/admin/briefings/:id  { html }
-router.patch('/briefings/:id', async (req, res, next) => {
+router.patch('/briefings/:id', marketAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id FROM briefings WHERE id = $1', [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: '브리핑을 찾을 수 없습니다.' });
@@ -342,7 +310,7 @@ router.patch('/briefings/:id', async (req, res, next) => {
 });
 
 // DELETE /api/admin/briefings/:id
-router.delete('/briefings/:id', async (req, res, next) => {
+router.delete('/briefings/:id', marketAccess, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM briefings WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
@@ -352,7 +320,7 @@ router.delete('/briefings/:id', async (req, res, next) => {
 });
 
 // GET /api/admin/briefing-settings
-router.get('/briefing-settings', async (req, res, next) => {
+router.get('/briefing-settings', marketAccess, async (req, res, next) => {
   try {
     res.json(await getBriefingSettings());
   } catch (e) {
@@ -361,7 +329,7 @@ router.get('/briefing-settings', async (req, res, next) => {
 });
 
 // PATCH /api/admin/briefing-settings
-router.patch('/briefing-settings', async (req, res, next) => {
+router.patch('/briefing-settings', marketAccess, async (req, res, next) => {
   try {
     const { scheduleEnabled, scheduleHour, intervalHours, emailRecipients, emailSubjectTemplate } = req.body || {};
 
@@ -392,6 +360,78 @@ router.patch('/briefing-settings', async (req, res, next) => {
     }
 
     res.json(await getBriefingSettings());
+  } catch (e) {
+    next(e);
+  }
+});
+
+const VALID_ROLES = ['webmaster', 'marketbot_keeper', 'board_keeper', 'executive'];
+
+// GET /api/admin/users  (회원관리 — 웹마스터 전용)
+router.get('/users', webmasterOnly, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, username, display_name, role, profile_visible, created_at FROM users ORDER BY id ASC'
+    );
+    res.json({ users: rows });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/admin/users { username, password, displayName, role }
+router.post('/users', webmasterOnly, async (req, res, next) => {
+  try {
+    const { username, password, displayName, role } = req.body || {};
+    if (!username || !password || !displayName || !role) {
+      return res.status(400).json({ error: '모든 항목을 입력해주세요.' });
+    }
+    if (!VALID_ROLES.includes(role)) return res.status(400).json({ error: '올바르지 않은 권한입니다.' });
+    if (password.length < 4) return res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' });
+
+    try {
+      const { rows } = await pool.query(
+        'INSERT INTO users (username, password_hash, display_name, role) VALUES ($1, $2, $3, $4) RETURNING id',
+        [username.trim(), bcrypt.hashSync(password, 10), displayName.trim(), role]
+      );
+      res.status(201).json({ id: rows[0].id });
+    } catch (e) {
+      return res.status(409).json({ error: '이미 존재하는 아이디입니다.' });
+    }
+  } catch (e) {
+    next(e);
+  }
+});
+
+// PATCH /api/admin/users/:id { displayName?, role?, password?, profileVisible? }
+router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
+  try {
+    const { displayName, role, password, profileVisible } = req.body || {};
+    if (role !== undefined && !VALID_ROLES.includes(role)) {
+      return res.status(400).json({ error: '올바르지 않은 권한입니다.' });
+    }
+    if (password !== undefined && password.length < 4) {
+      return res.status(400).json({ error: '비밀번호는 4자 이상이어야 합니다.' });
+    }
+
+    if (displayName !== undefined) await pool.query('UPDATE users SET display_name = $1 WHERE id = $2', [displayName.trim(), req.params.id]);
+    if (role !== undefined) await pool.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
+    if (typeof profileVisible === 'boolean') {
+      await pool.query('UPDATE users SET profile_visible = $1 WHERE id = $2', [profileVisible, req.params.id]);
+    }
+    if (password) await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [bcrypt.hashSync(password, 10), req.params.id]);
+
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/admin/users/:id
+router.delete('/users/:id', webmasterOnly, async (req, res, next) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }

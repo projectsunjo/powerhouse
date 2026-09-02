@@ -33,6 +33,7 @@
       <button class="tab-btn" data-tab="reports">신고 관리</button>
       <button class="tab-btn" data-tab="words">금지어 관리</button>
       <button class="tab-btn" data-tab="briefings">브리핑 관리</button>
+      <button class="tab-btn" data-tab="users">회원관리</button>
     </div>
 
     <div class="tab-panel active" id="tab-posts">
@@ -151,6 +152,43 @@
         </table>
       </div>
       <div class="pagination" id="emailLogsPagination"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-users">
+      <div class="card" style="padding:20px; margin-bottom:20px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>아이디</label>
+            <input type="text" class="input" id="newUserUsername" placeholder="아이디" />
+          </div>
+          <div class="form-group">
+            <label>초기 비밀번호</label>
+            <input type="text" class="input" id="newUserPassword" placeholder="4자 이상" />
+          </div>
+          <div class="form-group">
+            <label>표시 이름</label>
+            <input type="text" class="input" id="newUserDisplayName" placeholder="예: 김상무" />
+          </div>
+          <div class="form-group">
+            <label>권한</label>
+            <select class="input" id="newUserRole">
+              <option value="marketbot_keeper">마켓봇 지킴이</option>
+              <option value="board_keeper">익명게시판 지킴이</option>
+              <option value="executive">임원 및 그룹장</option>
+              <option value="webmaster">웹마스터</option>
+            </select>
+          </div>
+        </div>
+        <div class="action-row" style="justify-content:flex-start;">
+          <button class="btn btn-primary" id="addUserBtn">계정 추가</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>ID</th><th>아이디</th><th>표시 이름</th><th>권한</th><th>프로필 노출</th><th>생성일</th><th>관리</th></tr></thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 

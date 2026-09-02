@@ -60,6 +60,8 @@ function linkifyContent(text) {
   });
 })();
 
+initNavProfile();
+
 async function api(path, options = {}) {
   const res = await fetch(path, {
     headers: { 'Content-Type': 'application/json' },
@@ -77,6 +79,52 @@ async function api(path, options = {}) {
     throw new Error((data && data.error) || '요청에 실패했습니다.');
   }
   return data;
+}
+
+const ROLE_LABELS_KO = {
+  webmaster: '웹마스터',
+  marketbot_keeper: '마켓봇 지킴이',
+  board_keeper: '익명게시판 지킴이',
+  executive: '임원/그룹장',
+};
+
+async function initNavProfile() {
+  const el = document.getElementById('navProfile');
+  if (!el) return;
+
+  let me;
+  try {
+    me = await api('/api/auth/me');
+  } catch (e) {
+    el.innerHTML = '<a href="/login.html">로그인</a>';
+    return;
+  }
+
+  el.innerHTML = `
+    <span class="role-badge">${ROLE_LABELS_KO[me.role] || me.role}</span>
+    <span></span>
+    ${me.role === 'executive' ? '<label style="display:flex; align-items:center; gap:4px; cursor:pointer;"><input type="checkbox" id="profileVisibleToggle" /> 프로필 노출</label>' : ''}
+    <button id="navLogoutBtn">로그아웃</button>
+  `;
+  el.querySelector('span:nth-child(2)').textContent = me.display_name;
+
+  const toggle = document.getElementById('profileVisibleToggle');
+  if (toggle) {
+    toggle.checked = me.profile_visible;
+    toggle.onchange = async () => {
+      try {
+        await api('/api/auth/profile-visible', { method: 'PATCH', body: { visible: toggle.checked } });
+        showToast(toggle.checked ? '이제 익명게시판에 프로필이 노출됩니다.' : '이제 익명게시판에서 완전히 익명으로 표시됩니다.');
+      } catch (e) {
+        showToast(e.message);
+      }
+    };
+  }
+
+  document.getElementById('navLogoutBtn').onclick = async () => {
+    await api('/api/auth/logout', { method: 'POST' });
+    location.reload();
+  };
 }
 
 function showToast(message) {

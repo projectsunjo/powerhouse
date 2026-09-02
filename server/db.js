@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -8,6 +9,17 @@ const pool = new Pool({
 
 async function init() {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      display_name TEXT NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('webmaster','marketbot_keeper','board_keeper','executive')),
+      profile_visible BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
     CREATE TABLE IF NOT EXISTS posts (
       id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
@@ -21,6 +33,11 @@ async function init() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'general';
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_private BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS target_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+
     CREATE TABLE IF NOT EXISTS comments (
       id SERIAL PRIMARY KEY,
       post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
@@ -31,6 +48,9 @@ async function init() {
       parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE comments ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE comments ADD COLUMN IF NOT EXISTS is_private BOOLEAN NOT NULL DEFAULT FALSE;
 
     CREATE TABLE IF NOT EXISTS likes (
       id SERIAL PRIMARY KEY,
@@ -92,6 +112,7 @@ async function init() {
     CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
     CREATE INDEX IF NOT EXISTS idx_posts_latest ON posts(is_hidden, is_notice DESC, id DESC);
     CREATE INDEX IF NOT EXISTS idx_posts_best ON posts(is_hidden, likes DESC, id DESC);
+    CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category, is_hidden, id DESC);
     CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
     CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
     CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
@@ -109,6 +130,21 @@ async function init() {
   };
   for (const [key, value] of Object.entries(defaultSettings)) {
     await pool.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING', [key, value]);
+  }
+
+  // One-time migration from the old single-password admin login to the
+  // users table: seed a webmaster account reusing the existing
+  // ADMIN_PASSWORD, so the same credential keeps working (username 'admin').
+  if (process.env.ADMIN_PASSWORD) {
+    const { rows } = await pool.query("SELECT id FROM users WHERE role = 'webmaster' LIMIT 1");
+    if (!rows.length) {
+      await pool.query(
+        `INSERT INTO users (username, password_hash, display_name, role)
+         VALUES ('admin', $1, '웹마스터', 'webmaster')
+         ON CONFLICT (username) DO NOTHING`,
+        [bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10)]
+      );
+    }
   }
 }
 
