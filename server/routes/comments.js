@@ -5,8 +5,20 @@ const { getUserFromRequest } = require('../utils/userAuth');
 
 const router = express.Router();
 
-function canViewPrivate(post, payload) {
+// Strictly the post's target executive — used for posting rights
+// (marking a reply private, giving the badge-carrying "공식답변"), which
+// stay exec-only regardless of who else can view the thread.
+function isTargetExecutive(post, payload) {
   return !!(payload && post.target_user_id && payload.userId === post.target_user_id);
+}
+
+// Viewing rights are broader: the target executive, 웹마스터/익명게시판
+// 지킴이 (moderation oversight), or (checked separately by the caller) the
+// anonymous author via the post password. Kept in sync with routes/posts.js.
+function canViewPrivate(post, payload) {
+  if (!payload) return false;
+  if (payload.role === 'webmaster' || payload.role === 'board_keeper') return true;
+  return isTargetExecutive(post, payload);
 }
 
 // GET /api/posts/:postId/comments
@@ -72,7 +84,7 @@ router.post('/posts/:postId/comments', async (req, res, next) => {
     // Only the post's target 임원/그룹장 (logged in) can mark a reply
     // private, or as the badge-carrying "공식답변" (official answer).
     const payload = getUserFromRequest(req);
-    const isTargetExec = canViewPrivate(post, payload);
+    const isTargetExec = isTargetExecutive(post, payload);
     const isPrivateComment = isTargetExec && !!is_private;
 
     if (post.category === 'suggestion' && post.is_private) {

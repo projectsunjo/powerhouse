@@ -173,7 +173,7 @@ function navMenuItemsFor(me) {
   if (me.role === 'executive') {
     return `
       ${visibilityToggleRow(me)}
-      <a href="/?tab=suggestion&target=me">내 건의 보기</a>
+      <a href="/?tab=suggestion&target=${me.id}">내 건의 보기</a>
       ${infoLink}
     `;
   }
@@ -182,11 +182,13 @@ function navMenuItemsFor(me) {
 
 function renderNavProfile(el, me) {
   // Any logged-in account defaults to the PowerHouse logo until they upload
-  // their own photo — no initials fallback.
+  // their own photo — no initials fallback. While in anon mode, an overlay
+  // on the avatar itself reminds them their photo isn't actually showing.
   el.innerHTML = `
     <div class="nav-avatar-wrap">
       <button class="nav-avatar-btn" id="navAvatarBtn" aria-label="내 메뉴">
         <img class="nav-avatar-img" src="${me.profile_image_url || '/img/logo.png'}" />
+        ${me.profile_visible ? '' : '<span class="nav-avatar-anon-overlay">익명<br>모드</span>'}
       </button>
       <div class="dropdown-menu" id="navDropdown">${navMenuItemsFor(me)}</div>
     </div>
@@ -219,12 +221,30 @@ function bindAnonToggle(me) {
       localStorage.setItem(NAV_ME_CACHE_KEY, JSON.stringify(me));
       document.getElementById('navDropdown').innerHTML = navMenuItemsFor(me);
       bindAnonToggle(me);
+      updateAvatarAnonOverlay(nextVisible);
+      // Other scripts on this page (e.g. write.js) may have their own
+      // cached copy of /api/auth/me and need to know this changed.
+      window.dispatchEvent(new CustomEvent('powerhouse:profile-visible-changed', { detail: { visible: nextVisible } }));
       showToast(nextVisible ? '이제 실명으로 표시됩니다.' : '이제 완전히 익명으로 표시됩니다.');
     } catch (err) {
       anonToggle.checked = !anonToggle.checked;
       showToast(err.message);
     }
   };
+}
+
+function updateAvatarAnonOverlay(visible) {
+  const btn = document.getElementById('navAvatarBtn');
+  if (!btn) return;
+  let overlay = btn.querySelector('.nav-avatar-anon-overlay');
+  if (visible) {
+    if (overlay) overlay.remove();
+  } else if (!overlay) {
+    overlay = document.createElement('span');
+    overlay.className = 'nav-avatar-anon-overlay';
+    overlay.innerHTML = '익명<br>모드';
+    btn.appendChild(overlay);
+  }
 }
 
 function renderNavLoggedOut(el) {

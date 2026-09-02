@@ -91,6 +91,16 @@ api('/api/auth/me')
   .catch(() => { writeMe = null; })
   .then(applyIdentityMode);
 
+// The header dropdown's 익명모드/실명모드 toggle lives in common.js, which
+// has its own separate copy of /api/auth/me — without this, flipping it
+// while already on this page left writeMe (and the nickname field) stale
+// until a reload.
+window.addEventListener('powerhouse:profile-visible-changed', (e) => {
+  if (!writeMe) return;
+  writeMe.profile_visible = e.detail.visible;
+  applyIdentityMode();
+});
+
 document.getElementById('submitBtn').onclick = async () => {
   const title = document.getElementById('title').value.trim();
   const content = document.getElementById('content').value.trim();

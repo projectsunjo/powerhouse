@@ -14,11 +14,14 @@ const router = express.Router();
 const PAGE_SIZE = 20;
 
 // A private 건의(suggestion) post's content — and any individually-marked
-// private reply on it — is only visible to the two parties of that thread:
-// the post's target executive (via login) or its anonymous author (proven
-// by the post password, the same mechanism used for edit/delete).
+// private reply on it — is only visible to: the post's target executive
+// (via login), 웹마스터/익명게시판 지킴이 (moderation oversight), or its
+// anonymous author (proven by the post password elsewhere, the same
+// mechanism used for edit/delete — not handled here).
 function canViewPrivate(post, payload) {
-  return !!(payload && post.target_user_id && payload.userId === post.target_user_id);
+  if (!payload) return false;
+  if (payload.role === 'webmaster' || payload.role === 'board_keeper') return true;
+  return !!(post.target_user_id && payload.userId === post.target_user_id);
 }
 
 // GET /api/posts?page=1&q=검색어&sort=all|best|general|suggestion&target=...

@@ -76,7 +76,7 @@ function renderPost() {
 function renderPostContent() {
   const el = document.getElementById('postContent');
   if (currentPost.restricted) {
-    el.innerHTML = `<div class="private-notice">🔒 비밀글입니다.<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
+    el.innerHTML = `<div class="private-notice">🔒 (비밀글 입니다)<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
     document.getElementById('unlockBtn').onclick = () => {
       promptPassword({
         title: '비밀글 열람',
@@ -110,7 +110,7 @@ async function loadComments() {
 
   const commentForm = document.querySelector('.comment-form');
   if (data.restricted) {
-    listEl.innerHTML = '<div class="private-notice" style="padding:24px;">🔒 비밀글의 댓글입니다.</div>';
+    listEl.innerHTML = '<div class="private-notice" style="padding:24px;">🔒 (비밀글 입니다)</div>';
     if (commentForm) commentForm.style.display = 'none';
     return;
   }
@@ -160,7 +160,7 @@ function renderCommentItem(c, isReply) {
   item.querySelector('.nick').textContent = c.nickname;
   item.querySelector('.when').textContent = formatDate(c.created_at);
   item.querySelector('.comment-body').innerHTML =
-    c.is_private && c.content === null ? '<span class="small-muted">🔒 비밀 답글입니다.</span>' : linkifyContent(c.content);
+    c.is_private && c.content === null ? '<span class="small-muted">🔒 (비밀글 입니다)</span>' : linkifyContent(c.content);
 
   item.querySelector('.delC').onclick = () => {
     if (c.user_id) {
