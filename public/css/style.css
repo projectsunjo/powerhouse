@@ -84,6 +84,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .nav-right {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;

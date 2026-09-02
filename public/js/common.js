@@ -77,7 +77,9 @@ async function api(path, options = {}) {
     data = null;
   }
   if (!res.ok) {
-    throw new Error((data && data.error) || '요청에 실패했습니다.');
+    const err = new Error((data && data.error) || '요청에 실패했습니다.');
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
@@ -194,8 +196,14 @@ async function initNavProfile() {
   try {
     me = await api('/api/auth/me');
   } catch (e) {
-    localStorage.removeItem(NAV_ME_CACHE_KEY);
-    if (cached) renderNavLoggedOut(el);
+    // Only a genuine 401 (session actually invalid/expired) means "log
+    // out" — any other failure (slow query, transient network error,
+    // 500) is inconclusive, so keep showing the cached avatar instead of
+    // flashing to "로그인" and back on every single page load.
+    if (e.status === 401) {
+      localStorage.removeItem(NAV_ME_CACHE_KEY);
+      renderNavLoggedOut(el);
+    }
     return;
   }
   localStorage.setItem(NAV_ME_CACHE_KEY, JSON.stringify(me));
