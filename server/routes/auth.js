@@ -6,7 +6,9 @@ const { issueUserToken, getUserFromRequest, requireRole } = require('../utils/us
 const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+// Kept under Vercel's ~4.5MB serverless request-body cap so an oversized
+// photo fails with our own message instead of a platform-level 413.
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 const ANY_ROLE = requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive');
 
 // POST /api/auth/login { username, password } — single login for every

@@ -43,13 +43,14 @@ function linkifyContent(text) {
   });
 }
 
-(function initMobileNav() {
+(function initNavMenu() {
   const toggle = document.getElementById('navToggle');
   const nav = document.querySelector('.nav-menu');
   const label = document.getElementById('currentPageLabel');
-  if (label) {
-    const active = nav && nav.querySelector('.nav-link.active');
+  if (label && nav) {
+    const active = nav.querySelector('.nav-link.active');
     label.textContent = active ? active.textContent : '';
+    nav.prepend(label); // shows inside the dropdown, not beside the toggle
   }
   if (!toggle || !nav) return;
   toggle.addEventListener('click', () => nav.classList.toggle('open'));
@@ -172,7 +173,7 @@ function bindAnonToggle(me) {
 }
 
 function renderNavLoggedOut(el) {
-  el.innerHTML = '<a href="/login.html" class="nav-avatar-login">로그인</a>';
+  el.innerHTML = '<a href="/login.html" class="nav-avatar-btn nav-avatar-login">로그인</a>';
 }
 
 async function initNavProfile() {

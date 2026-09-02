@@ -1,6 +1,5 @@
 const writeState = { category: 'general', signedIn: false };
-
-setupDimmedNicknameInput(document.getElementById('nickname'));
+let writeMe = null;
 
 const initialCategory = new URLSearchParams(location.search).get('category') === 'suggestion' ? 'suggestion' : 'general';
 
@@ -10,6 +9,7 @@ document.querySelectorAll('#writeCategoryTabs .board-tab').forEach((btn) => {
     btn.classList.add('active');
     writeState.category = btn.dataset.category;
     document.getElementById('suggestionFields').style.display = writeState.category === 'suggestion' ? 'flex' : 'none';
+    applyIdentityMode();
   };
 });
 
@@ -26,16 +26,37 @@ api('/api/auth/executives')
   })
   .catch(() => {});
 
-// A logged-in executive with their profile visible doesn't need an
-// anonymous nickname/password — their post is tied to their own account.
+// 건의(suggestion) posts are always anonymous regardless of login (per the
+// board's design), but on the general board a logged-in executive with
+// their profile visible writes under their real name — shown here as a
+// disabled field with their own photo, instead of the usual random
+// dimmed nickname.
+function applyIdentityMode() {
+  const nicknameInput = document.getElementById('nickname');
+  const avatarImg = document.getElementById('nicknameAvatar');
+  const passwordField = document.getElementById('passwordField');
+  const signedGeneral = !!(writeMe && writeMe.role === 'executive' && writeMe.profile_visible && writeState.category !== 'suggestion');
+
+  writeState.signedIn = signedGeneral;
+  passwordField.style.display = signedGeneral ? 'none' : '';
+
+  if (signedGeneral) {
+    nicknameInput.disabled = true;
+    nicknameInput.classList.remove('input-dimmed');
+    nicknameInput.value = writeMe.display_name;
+    avatarImg.src = writeMe.profile_image_url || '/img/logo.png';
+    avatarImg.style.display = '';
+  } else {
+    nicknameInput.disabled = false;
+    avatarImg.style.display = 'none';
+    setupDimmedNicknameInput(nicknameInput);
+  }
+}
+
 api('/api/auth/me')
-  .then((me) => {
-    if (me.role === 'executive' && me.profile_visible) {
-      writeState.signedIn = true;
-      document.getElementById('anonFields').style.display = 'none';
-    }
-  })
-  .catch(() => {});
+  .then((me) => { writeMe = me; })
+  .catch(() => { writeMe = null; })
+  .then(applyIdentityMode);
 
 document.getElementById('submitBtn').onclick = async () => {
   const title = document.getElementById('title').value.trim();
