@@ -7,6 +7,7 @@ const { uploadProfileImage } = require('../utils/storage');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+const ANY_ROLE = requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive');
 
 // POST /api/auth/login { username, password } — single login for every
 // role (webmaster / marketbot_keeper / board_keeper / executive).
@@ -82,17 +83,26 @@ router.get('/executives', async (req, res, next) => {
   }
 });
 
-// PATCH /api/auth/username { username } — any logged-in role, self-service.
-router.patch('/username', requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'), async (req, res, next) => {
+// PATCH /api/auth/profile { username?, displayName? } — any logged-in role,
+// self-service 내정보 settings save.
+router.patch('/profile', ANY_ROLE, async (req, res, next) => {
   try {
-    const username = ((req.body && req.body.username) || '').trim();
-    if (!username) return res.status(400).json({ error: '아이디를 입력해주세요.' });
-    try {
-      await pool.query('UPDATE users SET username = $1 WHERE id = $2', [username, req.user.userId]);
-      res.json({ ok: true, username });
-    } catch (e) {
-      res.status(409).json({ error: '이미 사용 중인 아이디입니다.' });
+    const { username, displayName } = req.body || {};
+    if (username !== undefined) {
+      const trimmed = username.trim();
+      if (!trimmed) return res.status(400).json({ error: '아이디를 입력해주세요.' });
+      try {
+        await pool.query('UPDATE users SET username = $1 WHERE id = $2', [trimmed, req.user.userId]);
+      } catch (e) {
+        return res.status(409).json({ error: '이미 사용 중인 아이디입니다.' });
+      }
     }
+    if (displayName !== undefined) {
+      const trimmed = displayName.trim();
+      if (!trimmed) return res.status(400).json({ error: '표시 이름을 입력해주세요.' });
+      await pool.query('UPDATE users SET display_name = $1 WHERE id = $2', [trimmed, req.user.userId]);
+    }
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }
@@ -101,7 +111,7 @@ router.patch('/username', requireRole('webmaster', 'marketbot_keeper', 'board_ke
 // POST /api/auth/profile-image — multipart "image" field, any logged-in role.
 router.post(
   '/profile-image',
-  requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'),
+  ANY_ROLE,
   upload.single('image'),
   async (req, res, next) => {
     try {
@@ -120,7 +130,7 @@ router.post(
 // DELETE /api/auth/profile-image
 router.delete(
   '/profile-image',
-  requireRole('webmaster', 'marketbot_keeper', 'board_keeper', 'executive'),
+  ANY_ROLE,
   async (req, res, next) => {
     try {
       await pool.query('UPDATE users SET profile_image_url = NULL WHERE id = $1', [req.user.userId]);

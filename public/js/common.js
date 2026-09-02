@@ -81,6 +81,21 @@ async function api(path, options = {}) {
   return data;
 }
 
+const NAV_ME_CACHE_KEY = 'powerhouse_nav_me';
+
+function visibilityToggleRow(me) {
+  const icon = me.profile_visible
+    ? (me.profile_image_url ? `<img class="avatar-thumb" src="${me.profile_image_url}" />` : '<span class="visibility-icon">🙂</span>')
+    : '<span class="visibility-icon">🕶️</span>';
+  const label = me.profile_visible ? '실명모드' : '익명모드';
+  return `
+    <label class="dropdown-checkbox-row">
+      <input type="checkbox" id="navAnonToggle" ${me.profile_visible ? '' : 'checked'} />
+      ${icon}<span>${label}</span>
+    </label>
+  `;
+}
+
 function navMenuItemsFor(me) {
   const infoLink = '<a href="/my-info.html">내정보</a>';
   if (me.role === 'webmaster') {
@@ -99,7 +114,7 @@ function navMenuItemsFor(me) {
   }
   if (me.role === 'executive') {
     return `
-      <button id="navProfileVisibleBtn">${me.profile_visible ? '프로필 노출 끄기' : '프로필 노출 켜기'}</button>
+      ${visibilityToggleRow(me)}
       <a href="/?sort=suggestion&target=me">내 건의 보기</a>
       ${infoLink}
     `;
@@ -107,18 +122,7 @@ function navMenuItemsFor(me) {
   return infoLink;
 }
 
-async function initNavProfile() {
-  const el = document.getElementById('navProfile');
-  if (!el) return;
-
-  let me;
-  try {
-    me = await api('/api/auth/me');
-  } catch (e) {
-    el.innerHTML = '<a href="/login.html" class="nav-avatar-login">로그인</a>';
-    return;
-  }
-
+function renderNavProfile(el, me) {
   el.innerHTML = `
     <div class="nav-avatar-wrap">
       <button class="nav-avatar-btn" id="navAvatarBtn" aria-label="내 메뉴">
@@ -140,21 +144,63 @@ async function initNavProfile() {
   };
   document.addEventListener('click', () => menu.classList.remove('show'));
 
-  const visBtn = document.getElementById('navProfileVisibleBtn');
-  if (visBtn) {
-    visBtn.onclick = async (e) => {
-      e.stopPropagation();
-      const next = !me.profile_visible;
-      try {
-        await api('/api/auth/profile-visible', { method: 'PATCH', body: { visible: next } });
-        me.profile_visible = next;
-        visBtn.textContent = next ? '프로필 노출 끄기' : '프로필 노출 켜기';
-        showToast(next ? '이제 실명으로 표시됩니다.' : '이제 완전히 익명으로 표시됩니다.');
-      } catch (err) {
-        showToast(err.message);
-      }
-    };
+  bindAnonToggle(me);
+}
+
+// (Re-)attaches the visibility-toggle handler inside the dropdown. Called
+// after the initial render and again after an in-place refresh of the
+// dropdown's innerHTML (toggling visibility swaps the icon/label without
+// tearing down the whole avatar button, so it stays open).
+function bindAnonToggle(me) {
+  const anonToggle = document.getElementById('navAnonToggle');
+  if (!anonToggle) return;
+  anonToggle.onclick = (e) => e.stopPropagation();
+  anonToggle.onchange = async () => {
+    const nextVisible = !anonToggle.checked;
+    try {
+      await api('/api/auth/profile-visible', { method: 'PATCH', body: { visible: nextVisible } });
+      me.profile_visible = nextVisible;
+      localStorage.setItem(NAV_ME_CACHE_KEY, JSON.stringify(me));
+      document.getElementById('navDropdown').innerHTML = navMenuItemsFor(me);
+      bindAnonToggle(me);
+      showToast(nextVisible ? '이제 실명으로 표시됩니다.' : '이제 완전히 익명으로 표시됩니다.');
+    } catch (err) {
+      anonToggle.checked = !anonToggle.checked;
+      showToast(err.message);
+    }
+  };
+}
+
+function renderNavLoggedOut(el) {
+  el.innerHTML = '<a href="/login.html" class="nav-avatar-login">로그인</a>';
+}
+
+async function initNavProfile() {
+  const el = document.getElementById('navProfile');
+  if (!el) return;
+
+  // Render instantly from the last known session so navigating between
+  // pages (a full reload each time on this static site) doesn't flash
+  // blank/logged-out before the fresh /api/auth/me call resolves.
+  let cached = null;
+  try {
+    cached = JSON.parse(localStorage.getItem(NAV_ME_CACHE_KEY) || 'null');
+  } catch (e) {
+    cached = null;
   }
+  if (cached) renderNavProfile(el, cached);
+  else renderNavLoggedOut(el);
+
+  let me;
+  try {
+    me = await api('/api/auth/me');
+  } catch (e) {
+    localStorage.removeItem(NAV_ME_CACHE_KEY);
+    if (cached) renderNavLoggedOut(el);
+    return;
+  }
+  localStorage.setItem(NAV_ME_CACHE_KEY, JSON.stringify(me));
+  renderNavProfile(el, me);
 }
 
 function showToast(message) {

@@ -409,6 +409,11 @@ textarea { min-height: 260px; resize: vertical; }
 .author-meta .nick { font-weight: 700; font-size: 0.92rem; }
 .author-meta .date { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 
+.suggestion-target { display: flex; align-items: center; gap: 10px; margin-left: 4px; }
+.suggestion-arrow { font-size: 1.2rem; color: var(--text-muted); }
+.avatar.avatar-sm { width: 32px; height: 32px; font-size: 0.85rem; overflow: hidden; }
+.avatar.avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+
 .post-menu-wrap { position: relative; }
 .icon-btn {
   background: none;
@@ -450,6 +455,19 @@ textarea { min-height: 260px; resize: vertical; }
 }
 .dropdown-menu button:hover, .dropdown-menu a:hover { background: var(--primary-soft); color: var(--primary); }
 .dropdown-menu button.danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+.dropdown-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.dropdown-checkbox-row:hover { background: var(--primary-soft); color: var(--primary); }
+.dropdown-checkbox-row input { margin: 0; }
+.visibility-icon { font-size: 1rem; line-height: 1; }
 
 .nav-avatar-wrap { position: relative; display: flex; align-items: center; }
 .nav-avatar-btn {

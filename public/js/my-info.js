@@ -32,6 +32,7 @@ photoInput.onchange = async () => {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
     showToast('사진이 변경되었습니다.');
+    localStorage.removeItem(NAV_ME_CACHE_KEY);
     loadMyInfo();
   } catch (e) {
     showToast(e.message);
@@ -43,19 +44,25 @@ document.getElementById('photoDeleteBtn').onclick = async () => {
   try {
     await api('/api/auth/profile-image', { method: 'DELETE' });
     showToast('사진이 삭제되었습니다.');
+    localStorage.removeItem(NAV_ME_CACHE_KEY);
     loadMyInfo();
   } catch (e) {
     showToast(e.message);
   }
 };
 
-document.getElementById('usernameSaveBtn').onclick = async () => {
+document.getElementById('settingsSaveBtn').onclick = async () => {
   const username = document.getElementById('myUsername').value.trim();
+  const displayName = document.getElementById('myDisplayName').value.trim();
   if (!username) return showToast('아이디를 입력해주세요.');
-  if (username === myInfo.username) return showToast('변경 사항이 없습니다.');
+  if (!displayName) return showToast('표시 이름을 입력해주세요.');
+  if (username === myInfo.username && displayName === myInfo.display_name) {
+    return showToast('변경 사항이 없습니다.');
+  }
   try {
-    await api('/api/auth/username', { method: 'PATCH', body: { username } });
-    showToast('아이디가 변경되었습니다. 다음 로그인부터 새 아이디를 사용하세요.');
+    await api('/api/auth/profile', { method: 'PATCH', body: { username, displayName } });
+    showToast('설정이 저장되었습니다.');
+    localStorage.removeItem(NAV_ME_CACHE_KEY); // stale header cache — refetched on next nav
     loadMyInfo();
   } catch (e) {
     showToast(e.message);

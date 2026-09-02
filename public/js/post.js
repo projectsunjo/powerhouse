@@ -33,12 +33,8 @@ async function loadPost() {
 function renderPost() {
   const badges = [];
   if (currentPost.is_notice) badges.push('<span class="badge notice">공지</span>');
-  if (currentPost.category === 'suggestion') {
-    const targetImg = currentPost.target_image_url || '/img/logo.png';
-    badges.push(
-      `<span class="badge"><img class="avatar-thumb" src="${targetImg}" style="vertical-align:middle; margin-right:4px;" />@${escapeHtml(currentPost.target_name || '알 수 없음')}</span>`
-    );
-    if (currentPost.is_private) badges.push('<span class="badge">🔒 비밀글</span>');
+  if (currentPost.category === 'suggestion' && currentPost.is_private) {
+    badges.push('<span class="badge">🔒 비밀글</span>');
   }
   document.getElementById('postBadge').innerHTML = badges.join(' ');
 
@@ -48,6 +44,19 @@ function renderPost() {
     avatarEl.innerHTML = `<img class="avatar-thumb avatar-lg" src="${avatarImgUrl}" />`;
   } else {
     avatarEl.textContent = '?';
+  }
+
+  const targetEl = document.getElementById('suggestionTarget');
+  if (currentPost.category === 'suggestion') {
+    targetEl.style.display = 'flex';
+    const targetImg = currentPost.target_image_url;
+    document.getElementById('targetAvatar').innerHTML = targetImg
+      ? `<img src="${targetImg}" />`
+      : '';
+    if (!targetImg) document.getElementById('targetAvatar').textContent = (currentPost.target_name || '?').charAt(0);
+    document.getElementById('targetNickname').textContent = `@${currentPost.target_name || '알 수 없음'}`;
+  } else {
+    targetEl.style.display = 'none';
   }
 
   document.getElementById('postTitle').textContent = currentPost.title;

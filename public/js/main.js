@@ -55,8 +55,14 @@ function renderList(data) {
         </div>
         <div class="post-meta">
           <span style="display:flex; align-items:center; gap:5px;">
-            ${isSuggestion ? `<img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" />` : ''}
-            <span class="post-nick"></span> · <span class="post-date"></span>
+            ${isSuggestion ? `
+              <img class="avatar-thumb" src="/img/logo.png" />
+              <span class="post-nick"></span>
+              <span class="suggestion-arrow" style="font-size:0.85rem;">→</span>
+              <img class="avatar-thumb" src="${post.target_image_url || '/img/logo.png'}" />
+              <span class="post-target"></span>
+            ` : '<span class="post-nick"></span>'}
+            · <span class="post-date"></span>
           </span>
           <span class="post-stats">
             ${isSuggestion ? `<span class="stat">💬 ${post.comment_count}</span>` : `
@@ -68,7 +74,8 @@ function renderList(data) {
       </div>
     `;
     row.querySelector('.post-title').textContent = post.title;
-    row.querySelector('.post-nick').textContent = isSuggestion ? `@${post.target_name || '알 수 없음'}` : post.nickname;
+    row.querySelector('.post-nick').textContent = post.nickname;
+    if (isSuggestion) row.querySelector('.post-target').textContent = `@${post.target_name || '알 수 없음'}`;
     row.querySelector('.post-date').textContent = formatDate(post.created_at);
     listEl.appendChild(row);
   }
