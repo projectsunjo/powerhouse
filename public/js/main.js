@@ -112,7 +112,7 @@ async function loadPosts() {
 function renderCategoryCell(post) {
   if (post.category === 'suggestion') {
     const sub = post.target_user_id
-      ? `<span class="category-sub-name">${post.target_name}</span><img src="${post.target_image_url || '/img/logo.png'}" />`
+      ? `<span class="category-sub-name"><span class="category-sub-name-inner">${post.target_name}</span></span><img src="${post.target_image_url || '/img/logo.png'}" />`
       : '일반';
     return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
   }
@@ -172,15 +172,21 @@ function renderList(data) {
 
 // The 분류 column is narrow, so a long target name is forced to one line
 // (no wrap) via CSS — anything that still overflows gets a slow back-and-
-// forth scroll instead of being cut off silently.
+// forth scroll instead of being cut off silently. .category-sub-name is
+// the fixed-size clipping window; .category-sub-name-inner is the actual
+// text, which is what actually slides — animating the clipped outer
+// element itself would just drag the whole (still-clipped) window
+// sideways instead of revealing the hidden tail.
 function applyCategoryMarquee() {
-  document.querySelectorAll('.category-sub-name').forEach((el) => {
-    el.classList.remove('marquee');
-    el.style.removeProperty('--marquee-shift');
-    const overflow = el.scrollWidth - el.clientWidth;
+  document.querySelectorAll('.category-sub-name').forEach((outer) => {
+    const inner = outer.querySelector('.category-sub-name-inner');
+    if (!inner) return;
+    inner.classList.remove('marquee');
+    inner.style.removeProperty('--marquee-shift');
+    const overflow = inner.scrollWidth - outer.clientWidth;
     if (overflow > 1) {
-      el.style.setProperty('--marquee-shift', `${-(overflow + 2)}px`);
-      el.classList.add('marquee');
+      inner.style.setProperty('--marquee-shift', `${-(overflow + 4)}px`);
+      inner.classList.add('marquee');
     }
   });
 }
