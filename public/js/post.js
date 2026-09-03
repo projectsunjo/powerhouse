@@ -59,9 +59,9 @@ function renderPost() {
     targetEl.style.display = 'none';
   }
 
-  document.getElementById('postTitle').textContent = currentPost.restricted
-    ? '비밀글: 글쓴이와 당사자만 열람 가능'
-    : currentPost.title;
+  const titleEl = document.getElementById('postTitle');
+  titleEl.textContent = currentPost.restricted ? '비밀글: 글쓴이와 당사자만 열람 가능' : currentPost.title;
+  titleEl.classList.toggle('private-notice-inline', !!currentPost.restricted);
   document.getElementById('postNickname').textContent = currentPost.nickname;
   document.getElementById('postDate').textContent = formatDate(currentPost.created_at);
   document.getElementById('postViews').textContent = currentPost.views;
@@ -88,7 +88,9 @@ function renderPostContent() {
           currentPost.title = result.title;
           currentPost.content = result.content;
           currentPost.restricted = false;
-          document.getElementById('postTitle').textContent = currentPost.title;
+          const titleEl = document.getElementById('postTitle');
+          titleEl.textContent = currentPost.title;
+          titleEl.classList.remove('private-notice-inline');
           renderPostContent();
           loadComments();
         },

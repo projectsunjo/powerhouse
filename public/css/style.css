@@ -384,8 +384,16 @@ a.board-row:hover { background: var(--primary-soft); }
   color: var(--text-muted);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
   justify-content: space-between;
   gap: 10px;
+}
+.board-row .post-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
 .board-row .post-stats {
   display: flex;
@@ -512,8 +520,12 @@ textarea { min-height: 260px; resize: vertical; }
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 14px;
 }
+
+.post-detail-top-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.post-detail-top-right .date { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
 
 .avatar-thumb {
   width: 30px;
@@ -525,7 +537,7 @@ textarea { min-height: 260px; resize: vertical; }
   flex-shrink: 0;
 }
 
-.post-author { display: flex; align-items: center; gap: 10px; }
+.post-author { display: flex; align-items: center; flex-wrap: wrap; row-gap: 6px; gap: 10px; min-width: 0; }
 .avatar {
   width: 40px;
   height: 40px;
@@ -545,13 +557,25 @@ textarea { min-height: 260px; resize: vertical; }
   font-size: 0.62rem;
   font-weight: 700;
 }
-.author-meta .nick { font-weight: 700; font-size: 0.92rem; }
+.avatar-lg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  object-fit: cover;
+}
+.author-meta .nick { font-weight: 700; font-size: 0.92rem; white-space: nowrap; }
 .author-meta .date { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 
-.suggestion-target { display: flex; align-items: center; gap: 10px; margin-left: 4px; }
+.suggestion-target { display: flex; align-items: center; gap: 8px; margin-left: 4px; }
 .suggestion-arrow { font-size: 1.2rem; color: var(--text-muted); }
 .avatar.avatar-sm { width: 32px; height: 32px; font-size: 0.85rem; overflow: hidden; }
 .avatar.avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+@media (max-width: 560px) {
+  .suggestion-target { flex-basis: 100%; margin-left: 50px; }
+}
 
 .post-menu-wrap { position: relative; }
 .icon-btn {
@@ -929,6 +953,7 @@ body.lunch-map-page { overflow: hidden; }
 .lock-icon { color: var(--text-muted); }
 .private-notice { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 .private-notice-inline { color: var(--text-muted); font-style: italic; }
+.post-detail-title.private-notice-inline { font-weight: 600; font-size: 1.15rem; }
 .exec-badge {
   font-size: 0.68rem;
   font-weight: 700;

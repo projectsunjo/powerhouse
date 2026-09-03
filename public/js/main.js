@@ -143,7 +143,7 @@ function renderList(data) {
           <span class="post-title"></span>
         </div>
         <div class="post-meta">
-          <span style="display:flex; align-items:center; gap:5px;">
+          <span class="post-meta-left">
             <span class="post-nick"></span>
             · <span class="post-date"></span>
           </span>
