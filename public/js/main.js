@@ -112,7 +112,7 @@ async function loadPosts() {
 function renderCategoryCell(post) {
   if (post.category === 'suggestion') {
     const sub = post.target_user_id
-      ? `${post.target_name}<img src="${post.target_image_url || '/img/logo.png'}" />`
+      ? `<span class="category-sub-name">${post.target_name}</span><img src="${post.target_image_url || '/img/logo.png'}" />`
       : '일반';
     return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
   }
@@ -145,7 +145,8 @@ function renderList(data) {
         <div class="post-meta">
           <span class="post-meta-left">
             <span class="post-nick"></span>
-            · <span class="post-date"></span>
+            <span class="post-meta-sep">·</span>
+            <span class="post-date"></span>
           </span>
           <span class="post-stats">
             <span class="stat">👁 ${post.views}</span>
@@ -157,7 +158,7 @@ function renderList(data) {
     `;
     row.querySelector('.col-category').innerHTML = renderCategoryCell(post);
     row.querySelector('.post-title').textContent = post.restricted
-      ? '비밀글: 글쓴이와 당사자만 열람 가능'
+      ? '글쓴이와 당사자만 열람 가능'
       : post.title;
     if (post.restricted) row.querySelector('.post-title').classList.add('private-notice-inline');
     row.querySelector('.post-nick').textContent = post.nickname;
@@ -165,7 +166,23 @@ function renderList(data) {
     listEl.appendChild(row);
   }
 
+  applyCategoryMarquee();
   renderPagination(data.page, data.totalPages);
+}
+
+// The 분류 column is narrow, so a long target name is forced to one line
+// (no wrap) via CSS — anything that still overflows gets a slow back-and-
+// forth scroll instead of being cut off silently.
+function applyCategoryMarquee() {
+  document.querySelectorAll('.category-sub-name').forEach((el) => {
+    el.classList.remove('marquee');
+    el.style.removeProperty('--marquee-shift');
+    const overflow = el.scrollWidth - el.clientWidth;
+    if (overflow > 1) {
+      el.style.setProperty('--marquee-shift', `${-(overflow + 2)}px`);
+      el.classList.add('marquee');
+    }
+  });
 }
 
 function renderPagination(page, totalPages) {

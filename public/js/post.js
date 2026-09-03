@@ -60,7 +60,7 @@ function renderPost() {
   }
 
   const titleEl = document.getElementById('postTitle');
-  titleEl.textContent = currentPost.restricted ? '비밀글: 글쓴이와 당사자만 열람 가능' : currentPost.title;
+  titleEl.textContent = currentPost.restricted ? '글쓴이와 당사자만 열람 가능' : currentPost.title;
   titleEl.classList.toggle('private-notice-inline', !!currentPost.restricted);
   document.getElementById('postNickname').textContent = currentPost.nickname;
   document.getElementById('postDate').textContent = formatDate(currentPost.created_at);
@@ -78,7 +78,7 @@ function renderPost() {
 function renderPostContent() {
   const el = document.getElementById('postContent');
   if (currentPost.restricted) {
-    el.innerHTML = `<div class="private-notice">🔒 (비밀글 입니다)<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
+    el.innerHTML = `<div class="private-notice">🔒<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
     document.getElementById('unlockBtn').onclick = () => {
       promptPassword({
         title: '비밀글 열람',
