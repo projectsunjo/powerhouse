@@ -598,6 +598,7 @@ async function loadUsers() {
         </select>
       </td>
       <td>${u.role === 'executive' ? (u.profile_visible ? '노출' : '숨김') : '-'}</td>
+      <td><input type="number" class="input input-sm boardOrderInput" style="width:70px;" value="${u.board_order ?? ''}" placeholder="-" /></td>
       <td>${formatDate(u.created_at)}</td>
       <td class="actions">
         <button class="btn btn-sm btn-ghost pwBtn">비번 재설정</button>
@@ -629,6 +630,16 @@ async function loadUsers() {
       } catch (err) {
         showToast(err.message);
         e.target.value = u.role;
+      }
+    };
+    tr.querySelector('.boardOrderInput').onchange = async (e) => {
+      const val = e.target.value.trim();
+      try {
+        await api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { boardOrder: val === '' ? null : parseInt(val, 10) } });
+        showToast('게시판순서가 변경되었습니다.');
+      } catch (err) {
+        showToast(err.message);
+        e.target.value = u.board_order ?? '';
       }
     };
 

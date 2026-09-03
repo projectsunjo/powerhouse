@@ -20,6 +20,7 @@ async function init() {
     );
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image_url TEXT;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS board_order INTEGER;
 
     CREATE TABLE IF NOT EXISTS posts (
       id SERIAL PRIMARY KEY,

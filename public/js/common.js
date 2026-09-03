@@ -150,11 +150,12 @@ function visibilityToggleRow(me) {
 
 function navMenuItemsFor(me) {
   const infoLink = '<a href="/my-info.html">내정보</a>';
+  const logoutLink = '<a href="#" id="navLogoutBtn">로그아웃</a>';
   if (me.role === 'webmaster') {
-    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html">admin판넬</a>${infoLink}`;
+    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html">admin판넬</a>${infoLink}${logoutLink}`;
   }
   if (me.role === 'marketbot_keeper') {
-    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html?tab=briefings">마켓봇 관리</a>${infoLink}`;
+    return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html?tab=briefings">마켓봇 관리</a>${infoLink}${logoutLink}`;
   }
   if (me.role === 'board_keeper') {
     return `
@@ -162,17 +163,17 @@ function navMenuItemsFor(me) {
       <a href="/admin/dashboard.html?tab=posts">게시글관리</a>
       <a href="/admin/dashboard.html?tab=comments">댓글관리</a>
       <a href="/admin/dashboard.html?tab=suggestions">건의글 관리</a>
-      ${infoLink}
+      ${infoLink}${logoutLink}
     `;
   }
   if (me.role === 'executive') {
     return `
       ${visibilityToggleRow(me)}
       <a href="/?tab=suggestion&target=${me.id}">내 건의 보기</a>
-      ${infoLink}
+      ${infoLink}${logoutLink}
     `;
   }
-  return infoLink;
+  return `${infoLink}${logoutLink}`;
 }
 
 function renderNavProfile(el, me) {
@@ -198,6 +199,17 @@ function renderNavProfile(el, me) {
   document.addEventListener('click', () => menu.classList.remove('show'));
 
   bindAnonToggle(me);
+  bindLogoutButton();
+}
+
+function bindLogoutButton() {
+  const btn = document.getElementById('navLogoutBtn');
+  if (!btn) return;
+  btn.onclick = async (e) => {
+    e.preventDefault();
+    await api('/api/auth/logout', { method: 'POST' });
+    location.href = '/login.html';
+  };
 }
 
 // (Re-)attaches the visibility-toggle handler inside the dropdown. Called
@@ -216,6 +228,7 @@ function bindAnonToggle(me) {
       localStorage.setItem(NAV_ME_CACHE_KEY, JSON.stringify(me));
       document.getElementById('navDropdown').innerHTML = navMenuItemsFor(me);
       bindAnonToggle(me);
+      bindLogoutButton();
       updateAvatarAnonOverlay(nextVisible);
       // Other scripts on this page (e.g. write.js) may have their own
       // cached copy of /api/auth/me and need to know this changed.

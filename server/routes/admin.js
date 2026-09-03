@@ -373,7 +373,7 @@ const VALID_ROLES = ['webmaster', 'marketbot_keeper', 'board_keeper', 'executive
 router.get('/users', webmasterOnly, async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      'SELECT id, username, display_name, role, profile_visible, profile_image_url, created_at FROM users ORDER BY id ASC'
+      'SELECT id, username, display_name, role, profile_visible, profile_image_url, board_order, created_at FROM users ORDER BY id ASC'
     );
     res.json({ users: rows });
   } catch (e) {
@@ -408,7 +408,7 @@ router.post('/users', webmasterOnly, async (req, res, next) => {
 // PATCH /api/admin/users/:id { username?, displayName?, role?, password?, profileVisible? }
 router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
   try {
-    const { username, displayName, role, password, profileVisible } = req.body || {};
+    const { username, displayName, role, password, profileVisible, boardOrder } = req.body || {};
     if (role !== undefined && !VALID_ROLES.includes(role)) {
       return res.status(400).json({ error: '올바르지 않은 권한입니다.' });
     }
@@ -427,6 +427,10 @@ router.patch('/users/:id', webmasterOnly, async (req, res, next) => {
     if (role !== undefined) await pool.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
     if (typeof profileVisible === 'boolean') {
       await pool.query('UPDATE users SET profile_visible = $1 WHERE id = $2', [profileVisible, req.params.id]);
+    }
+    if (boardOrder !== undefined) {
+      const order = boardOrder === null || boardOrder === '' ? null : parseInt(boardOrder, 10);
+      await pool.query('UPDATE users SET board_order = $1 WHERE id = $2', [Number.isInteger(order) ? order : null, req.params.id]);
     }
     if (password) await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [bcrypt.hashSync(password, 10), req.params.id]);
 

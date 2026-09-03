@@ -337,7 +337,7 @@ a { color: inherit; text-decoration: none; }
 
 a.board-row:hover { background: var(--primary-soft); }
 
-.board-row .col-category {
+.board-row:not(.board-head) .col-category {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -360,6 +360,7 @@ a.board-row:hover { background: var(--primary-soft); }
 }
 .category-chip.chip-best { background: var(--warning-soft); color: var(--warning); }
 .category-chip.chip-suggestion { background: var(--success-soft); color: var(--success); }
+.category-chip.chip-general { background: var(--primary-soft); color: var(--primary); }
 .col-category .category-sub {
   display: flex;
   align-items: center;
@@ -830,7 +831,16 @@ button.stat-item.likeable.liked { color: var(--primary); font-weight: 700; }
 .small-muted { font-size: 0.8rem; color: var(--text-muted); }
 
 .market-info-container, .board-container { padding-top: 0; }
+.market-info-container { max-width: 1400px; }
 .market-info-panel { margin-top: 16px; }
+.market-info-layout { display: flex; flex-direction: column; gap: 28px; align-items: flex-start; }
+.market-info-main { min-width: 0; flex: 1 1 auto; width: 100%; }
+.market-info-sidebar { min-width: 0; flex: 1 1 auto; width: 100%; }
+@media (min-width: 861px) {
+  .market-info-layout { flex-direction: row; }
+  .market-info-main { flex: 1 1 62%; }
+  .market-info-sidebar { flex: 0 0 380px; position: sticky; top: 84px; }
+}
 .market-info-head {
   display: flex;
   align-items: flex-start;
@@ -850,7 +860,7 @@ button.stat-item.likeable.liked { color: var(--primary); font-weight: 700; }
   padding: 6px 14px;
   white-space: nowrap;
 }
-.briefing-featured { margin-bottom: 28px; }
+.briefing-featured { margin-bottom: 0; }
 .briefing-card { display: flex; justify-content: center; }
 .briefing-index-title { font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
 

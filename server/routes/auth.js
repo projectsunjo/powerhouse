@@ -74,7 +74,7 @@ router.patch('/profile-visible', ANY_ROLE, async (req, res, next) => {
 router.get('/executives', async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, display_name, profile_image_url FROM users WHERE role = 'executive' ORDER BY display_name ASC"
+      "SELECT id, display_name, profile_image_url FROM users WHERE role = 'executive' ORDER BY board_order ASC NULLS LAST, display_name ASC"
     );
     res.json({ executives: rows });
   } catch (e) {

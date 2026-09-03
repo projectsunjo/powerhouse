@@ -34,23 +34,29 @@
     </div>
 
     <div class="market-info-panel">
-      <div class="market-info-head">
-        <div>
-          <div class="market-info-title">에너지 솔루션 브리핑</div>
-          <div class="market-info-sub">SOFC·PAFC 연료전지, 반도체 전력, 발전사, 데이터센터 동향을 매일 아침 자동 수집합니다.</div>
+      <div class="market-info-layout">
+        <div class="market-info-main">
+          <div class="market-info-head">
+            <div>
+              <div class="market-info-title">에너지 솔루션 브리핑</div>
+              <div class="market-info-sub">SOFC·PAFC 연료전지, 반도체 전력, 발전사, 데이터센터 동향을 매일 아침 자동 수집합니다.</div>
+            </div>
+            <div class="market-info-updated" id="updatedAt">최종 업데이트 확인 중...</div>
+          </div>
+          <div id="briefingFeatured" class="briefing-featured"></div>
         </div>
-        <div class="market-info-updated" id="updatedAt">최종 업데이트 확인 중...</div>
-      </div>
-      <div id="briefingFeatured" class="briefing-featured"></div>
 
-      <div class="briefing-index-title">지난 브리핑</div>
-      <div class="board-table briefing-index-table">
-        <div class="board-row board-head">
-          <div class="col-title">생성일</div>
+        <div class="market-info-sidebar">
+          <div class="briefing-index-title">지난 브리핑</div>
+          <div class="board-table briefing-index-table">
+            <div class="board-row board-head">
+              <div class="col-title">생성일</div>
+            </div>
+            <div id="briefingIndexList"></div>
+          </div>
+          <div id="briefingIndexPagination" class="pagination"></div>
         </div>
-        <div id="briefingIndexList"></div>
       </div>
-      <div id="briefingIndexPagination" class="pagination"></div>
     </div>
   </div>
 

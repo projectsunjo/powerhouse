@@ -2,7 +2,7 @@
 // just narrow/sort that same list. 최신순 shows everything (general +
 // 건의) mixed, newest first; Best filters to likes>=5; 건의 filters to
 // category='suggestion' and reveals a second-level filter row to narrow
-// further by target (일반건의, or a specific 임원/그룹장).
+// further by target (one pill per 임원/그룹장).
 const state = { page: 1, q: '', tab: 'latest', target: '' };
 let executivesCache = null;
 
@@ -38,9 +38,9 @@ function updateWriteLink() {
   link.href = `/write.html?category=suggestion${targetQs}`;
 }
 
-// Second-level filter row, shown only under the 건의 tab: 일반건의 (no
-// specific target) + one pill per 임원/그룹장. Clicking the active pill
-// again clears it back to "건의 전체".
+// Second-level filter row, shown only under the 건의 tab: one pill per
+// 임원/그룹장, in the admin-configured "게시판순서" order. Clicking the
+// active pill again clears it back to "건의 전체".
 async function renderSubFilterRow() {
   const row = document.getElementById('filterRow');
   if (!row) return;
@@ -60,7 +60,6 @@ async function renderSubFilterRow() {
 
   const pills = [
     { value: '', label: '전체' },
-    { value: 'general', label: '일반건의' },
     ...executivesCache.map((e) => ({ value: String(e.id), label: e.display_name, avatar: e.profile_image_url || '/img/logo.png' })),
   ];
   row.innerHTML = pills
@@ -118,7 +117,7 @@ function renderCategoryCell(post) {
     return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
   }
   if (post.likes >= 5) return '<span class="category-chip chip-best">BEST</span>';
-  return '일반';
+  return '<span class="category-chip chip-general">일반</span>';
 }
 
 function renderList(data) {
@@ -149,10 +148,9 @@ function renderList(data) {
             · <span class="post-date"></span>
           </span>
           <span class="post-stats">
-            ${isSuggestion ? `<span class="stat">💬 ${post.comment_count}</span>` : `
             <span class="stat">👁 ${post.views}</span>
             <span class="stat">♡ ${post.likes}</span>
-            <span class="stat">💬 ${post.comment_count}</span>`}
+            <span class="stat">💬 ${post.comment_count}</span>
           </span>
         </div>
       </div>
