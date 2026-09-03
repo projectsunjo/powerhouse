@@ -155,16 +155,6 @@ a { color: inherit; text-decoration: none; }
 }
 .nav-toggle:hover { background: var(--primary-soft); }
 
-.current-page-label {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  padding: 6px 14px 8px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-
 .brand-mark {
   width: 32px;
   height: 32px;
@@ -928,6 +918,7 @@ body.lunch-map-page { overflow: hidden; }
 
 .lock-icon { color: var(--text-muted); }
 .private-notice { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.private-notice-inline { color: var(--text-muted); font-style: italic; }
 .exec-badge {
   font-size: 0.68rem;
   font-weight: 700;

@@ -61,7 +61,7 @@ async function renderSubFilterRow() {
   const pills = [
     { value: '', label: '전체' },
     { value: 'general', label: '일반건의' },
-    ...executivesCache.map((e) => ({ value: String(e.id), label: `@${e.display_name}`, avatar: e.profile_image_url })),
+    ...executivesCache.map((e) => ({ value: String(e.id), label: e.display_name, avatar: e.profile_image_url || '/img/logo.png' })),
   ];
   row.innerHTML = pills
     .map(
@@ -113,7 +113,7 @@ async function loadPosts() {
 function renderCategoryCell(post) {
   if (post.category === 'suggestion') {
     const sub = post.target_user_id
-      ? `@${post.target_name}<img src="${post.target_image_url || '/img/logo.png'}" />`
+      ? `${post.target_name}<img src="${post.target_image_url || '/img/logo.png'}" />`
       : '일반';
     return `<span class="category-chip chip-suggestion">건의</span><span class="category-sub">${sub}</span>`;
   }
@@ -158,7 +158,10 @@ function renderList(data) {
       </div>
     `;
     row.querySelector('.col-category').innerHTML = renderCategoryCell(post);
-    row.querySelector('.post-title').textContent = post.title;
+    row.querySelector('.post-title').textContent = post.restricted
+      ? '비밀글: 글쓴이와 당사자만 열람 가능'
+      : post.title;
+    if (post.restricted) row.querySelector('.post-title').classList.add('private-notice-inline');
     row.querySelector('.post-nick').textContent = post.nickname;
     row.querySelector('.post-date').textContent = formatDate(post.created_at);
     listEl.appendChild(row);

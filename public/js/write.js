@@ -23,19 +23,26 @@ const initialTarget = new URLSearchParams(location.search).get('target') || '';
 // target picker is a plain button + custom dropdown instead; the actual
 // selected value still lives in the hidden #targetUserId input the rest
 // of this file (and the submit handler) already reads.
-let targetOptions = [{ value: '', label: '일반건의', avatar: '/img/logo.png' }];
+//
+// Every 건의 needs a specific target now — there's no untargeted
+// "일반건의" option, so the picker defaults to the first executive once
+// the list loads (or the one named in ?target=, if given).
+let targetOptions = [];
 
 api('/api/auth/executives')
   .then((data) => {
-    targetOptions = targetOptions.concat(
-      data.executives.map((e) => ({
-        value: String(e.id),
-        label: `@${e.display_name}`,
-        avatar: e.profile_image_url || '/img/logo.png',
-      }))
-    );
+    targetOptions = data.executives.map((e) => ({
+      value: String(e.id),
+      label: e.display_name,
+      avatar: e.profile_image_url || '/img/logo.png',
+    }));
     renderTargetMenu();
-    if (initialTarget && initialTarget !== 'general') selectTarget(initialTarget);
+    if (targetOptions.length) {
+      const preset = initialTarget && targetOptions.some((o) => o.value === initialTarget) ? initialTarget : targetOptions[0].value;
+      selectTarget(preset);
+    } else {
+      document.getElementById('targetPickerLabel').textContent = '등록된 대상이 없습니다';
+    }
   })
   .catch(() => {});
 
@@ -64,6 +71,7 @@ function selectTarget(value) {
 function updateTargetPreview() {
   const value = document.getElementById('targetUserId').value;
   const opt = targetOptions.find((o) => o.value === value) || targetOptions[0];
+  if (!opt) return;
   document.getElementById('targetPickerAvatar').src = opt.avatar;
   document.getElementById('targetPickerLabel').textContent = opt.label;
   document.querySelectorAll('#targetPickerMenu .target-picker-option').forEach((row) => {

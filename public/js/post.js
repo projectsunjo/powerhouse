@@ -54,12 +54,14 @@ function renderPost() {
   if (currentPost.category === 'suggestion') {
     targetEl.style.display = 'flex';
     document.getElementById('targetAvatar').innerHTML = `<img src="${currentPost.target_image_url || '/img/logo.png'}" />`;
-    document.getElementById('targetNickname').textContent = currentPost.target_user_id ? `@${currentPost.target_name}` : '전체';
+    document.getElementById('targetNickname').textContent = currentPost.target_user_id ? currentPost.target_name : '전체';
   } else {
     targetEl.style.display = 'none';
   }
 
-  document.getElementById('postTitle').textContent = currentPost.title;
+  document.getElementById('postTitle').textContent = currentPost.restricted
+    ? '비밀글: 글쓴이와 당사자만 열람 가능'
+    : currentPost.title;
   document.getElementById('postNickname').textContent = currentPost.nickname;
   document.getElementById('postDate').textContent = formatDate(currentPost.created_at);
   document.getElementById('postViews').textContent = currentPost.views;
@@ -83,8 +85,10 @@ function renderPostContent() {
         onConfirm: async (pw) => {
           const result = await api(`/api/posts/${postId}/unlock`, { method: 'POST', body: { password: pw } });
           unlockedPassword = pw;
+          currentPost.title = result.title;
           currentPost.content = result.content;
           currentPost.restricted = false;
+          document.getElementById('postTitle').textContent = currentPost.title;
           renderPostContent();
           loadComments();
         },
@@ -326,6 +330,13 @@ document.getElementById('editPostBtn').onclick = () => {
     onConfirm: async (pw) => {
       await api(`/api/posts/${postId}/verify-password`, { method: 'POST', body: { password: pw } });
       currentPost._editPassword = pw;
+      if (currentPost.restricted) {
+        const result = await api(`/api/posts/${postId}/unlock`, { method: 'POST', body: { password: pw } });
+        unlockedPassword = pw;
+        currentPost.title = result.title;
+        currentPost.content = result.content;
+        currentPost.restricted = false;
+      }
       openEditForm();
     },
   });

@@ -101,11 +101,6 @@ function linkifyContent(text) {
   const topLabel = document.getElementById('pageLabelTop');
   if (topLabel) topLabel.textContent = activeText || '';
 
-  const label = document.getElementById('currentPageLabel');
-  if (label && nav) {
-    label.textContent = activeText || '';
-    nav.prepend(label); // shows inside the dropdown, not beside the toggle
-  }
   if (!toggle || !nav) return;
   toggle.addEventListener('click', () => nav.classList.toggle('open'));
   document.addEventListener('click', (e) => {

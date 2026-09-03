@@ -38,6 +38,8 @@ router.get('/', async (req, res, next) => {
     const sort = ['best', 'general', 'suggestion'].includes(req.query.sort) ? req.query.sort : 'all';
     const offset = (page - 1) * PAGE_SIZE;
 
+    const viewer = getUserFromRequest(req);
+
     let where = 'WHERE posts.is_hidden = false';
     const params = [];
     if (q) {
@@ -52,9 +54,8 @@ router.get('/', async (req, res, next) => {
       where += " AND category = 'suggestion'";
       const target = req.query.target;
       if (target === 'me') {
-        const payload = getUserFromRequest(req);
-        if (!payload) return res.status(401).json({ error: '로그인이 필요합니다.' });
-        params.push(payload.userId);
+        if (!viewer) return res.status(401).json({ error: '로그인이 필요합니다.' });
+        params.push(viewer.userId);
         where += ` AND target_user_id = $${params.length}`;
       } else if (target === 'general') {
         where += ' AND target_user_id IS NULL';
@@ -86,6 +87,13 @@ router.get('/', async (req, res, next) => {
        LIMIT $${limitParam} OFFSET $${offsetParam}`,
       [...params, PAGE_SIZE, offset]
     );
+
+    for (const row of rows) {
+      if (row.category === 'suggestion' && row.is_private && !canViewPrivate(row, viewer)) {
+        row.title = null;
+        row.restricted = true;
+      }
+    }
 
     res.json({
       posts: rows,
@@ -125,6 +133,7 @@ router.get('/:id', async (req, res, next) => {
     if (post.category === 'suggestion' && post.is_private) {
       const payload = getUserFromRequest(req);
       if (!canViewPrivate(post, payload)) {
+        post.title = null;
         post.content = null;
         post.restricted = true;
       }
@@ -140,7 +149,7 @@ router.get('/:id', async (req, res, next) => {
 // content for its anonymous author, proven the same way edit/delete are.
 router.post('/:id/unlock', async (req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT content, password_hash FROM posts WHERE id = $1 AND is_hidden = false', [
+    const { rows } = await pool.query('SELECT title, content, password_hash FROM posts WHERE id = $1 AND is_hidden = false', [
       req.params.id,
     ]);
     const post = rows[0];
@@ -150,7 +159,7 @@ router.post('/:id/unlock', async (req, res, next) => {
     if (!password || !checkPassword(password, post.password_hash)) {
       return res.status(403).json({ error: '비밀번호가 일치하지 않습니다.' });
     }
-    res.json({ content: post.content });
+    res.json({ title: post.title, content: post.content });
   } catch (e) {
     next(e);
   }
