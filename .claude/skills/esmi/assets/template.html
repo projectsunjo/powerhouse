@@ -10,6 +10,7 @@
   규칙: 표(table) 기반 레이아웃만 사용 / 모든 스타일은 인라인 style="" / CSS 변수·flexbox·grid·gap 사용 금지
   폰트: Arial, Helvetica, sans-serif (웹세이프 폰트만)
   중요: 섹션 제목에 원문자 번호(①②③...)를 쓰지 않는다. 굵은 텍스트 제목만 사용.
+  중요: "국내 반도체 전력/발전 업체" 하위그룹 제목은 지역명만 쓴다 (예: "평택" — "(삼성전자 평택캠퍼스)" 같은 괄호 설명 붙이지 않음).
   중요: 섹션 순서는 고정이 아니라 "항목 정렬 규칙"에 따라 매번 재배열한다
         (뉴스 있는 섹션 위 → 특이사항 없음 섹션 아래, 그룹 내부는 기본순서 유지:
          SOFC·PAFC업체 → SOFC규제 → 반도체전력(용인/평택/호남/기타) → 국내발전사 → 데이터센터 → 금융조달 → Time-to-Power)
@@ -34,7 +35,7 @@
         </tr>
         <tr>
           <td style="padding-top:10px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#CBD5E1;">
-            조사 날짜 <strong style="color:#ffffff;">2026년 8월 18일</strong>
+            조사 날짜 <strong style="color:#ffffff;">[실행 시점의 실제 오늘 날짜를 YYYY년 M월 D일 형식으로]</strong>
           </td>
         </tr>
       </table>
@@ -109,6 +110,7 @@
   <!-- =====================================================
        예시 B: 국내 반도체 관련 전력/발전 업체
        하위그룹(용인/평택/호남권/기타)도 내용 있는 것을 위로 정렬
+       하위그룹 제목은 지역명만 — 회사명 괄호 설명 붙이지 않음
        ===================================================== -->
   <tr>
     <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;border:1px solid #E4E7EC;border-radius:12px;padding:20px 22px;">
@@ -122,7 +124,7 @@
         <!-- 하위 그룹 라벨: border-left는 td에서 안전하게 동작. 내용 있는 하위그룹을 먼저 배치 -->
         <tr>
           <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#334155;border-left:3px solid #0E7C86;padding:0 0 8px 8px;">
-            호남권 (삼성전자·SK하이닉스) — 예시: 오늘 뉴스가 있는 하위그룹
+            호남권
           </td>
         </tr>
         <tr>
@@ -135,7 +137,7 @@
 
         <tr>
           <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#334155;border-left:3px solid #0E7C86;padding:0 0 8px 8px;">
-            용인 (삼성전자·SK하이닉스)
+            용인
           </td>
         </tr>
         <tr>
@@ -148,7 +150,7 @@
 
         <tr>
           <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;color:#334155;border-left:3px solid #0E7C86;padding:0 0 8px 8px;">
-            평택 (삼성전자 평택캠퍼스)
+            평택
           </td>
         </tr>
         <tr>
@@ -177,7 +179,7 @@
   <tr><td style="height:18px;line-height:18px;font-size:1px;">&nbsp;</td></tr>
 
   <!-- =====================================================
-       예시 C: 국내 발전사(공기업·민간) 동향 (신규 섹션)
+       예시 C: 국내 발전사(공기업·민간) 동향
        ===================================================== -->
   <tr>
     <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;border:1px solid #E4E7EC;border-radius:12px;padding:20px 22px;">
@@ -211,7 +213,7 @@
         </tr>
         <tr>
           <td bgcolor="#F1F3F5" style="background-color:#F1F3F5;color:#94A3B8;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;padding:10px 12px;border-radius:8px;">
-            특이사항 없음 (최근 24~48시간 내 신규 뉴스 없음)
+            특이사항 없음 (검색 기준 시간 내 신규 뉴스 없음 — 평일 24시간 / 월요일 72시간)
           </td>
         </tr>
       </table>
@@ -359,7 +361,7 @@
   <!-- 푸터 -->
   <tr>
     <td align="center" style="font-family:Arial,Helvetica,sans-serif;font-size:11.5px;color:#94A3B8;">
-      ESMI 자동 브리핑 · 조사 시점 기준 최신 24~48시간 이슈 요약
+      ESMI 자동 브리핑 · 조사 시점 기준 최신 이슈 요약 (평일 24시간 / 월요일 72시간)
     </td>
   </tr>
 
