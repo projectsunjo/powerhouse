@@ -119,7 +119,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ error: '서버 오류가 발생했습니다.', _debug: err.message });
+  res.status(500).json({ error: '서버 오류가 발생했습니다.' });
 });
 
 if (require.main === module) {

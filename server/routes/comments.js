@@ -48,7 +48,7 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
         comments.user_id, u.profile_image_url AS user_image_url
        FROM comments LEFT JOIN users u ON u.id = comments.user_id
        WHERE post_id = $1 AND is_hidden = false
-       ORDER BY COALESCE(parent_id, id) ASC, id ASC`,
+       ORDER BY COALESCE(parent_id, comments.id) ASC, comments.id ASC`,
       [req.params.postId]
     );
 
