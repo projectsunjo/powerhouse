@@ -16,7 +16,7 @@
   text-align: center;
 }
 .stat-card .num { font-size: 1.7rem; font-weight: 800; color: var(--primary); }
-.stat-card .label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+.stat-card .label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
 .tabs {
   display: flex;
@@ -49,7 +49,7 @@ table {
 th, td {
   padding: 10px 12px;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: 14px;
   border-bottom: 1px solid var(--border);
 }
 th { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
@@ -63,7 +63,7 @@ td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
   display: inline-block;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 11px;
   font-weight: 700;
 }
 .tag.notice { background: #fff3cd; color: #a67c00; }
@@ -72,7 +72,7 @@ td.actions { display: flex; gap: 6px; flex-wrap: wrap; }
 tr.row-link { cursor: pointer; }
 tr.row-link:hover { background: var(--primary-soft); }
 .report-id { font-weight: 700; color: var(--primary); }
-.last-sent-hint { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+.last-sent-hint { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
 .avatar-thumb {
   width: 32px;
@@ -98,7 +98,7 @@ tr.row-link:hover { background: var(--primary-soft); }
   background: var(--primary-soft);
   color: var(--primary);
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 11px;
 }
 .banned-word-chip button {
   background: none;
@@ -109,7 +109,7 @@ tr.row-link:hover { background: var(--primary-soft); }
 }
 
 .briefing-settings-card { padding: 20px; margin-bottom: 20px; }
-.checkbox-row { display: flex; align-items: center; gap: 6px; height: 44px; font-size: 0.92rem; }
+.checkbox-row { display: flex; align-items: center; gap: 6px; height: 44px; font-size: 14px; }
 .checkbox-row input { width: 16px; height: 16px; }
 
 @media (max-width: 700px) {
