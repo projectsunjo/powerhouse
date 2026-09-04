@@ -33,10 +33,12 @@ async function loadPost() {
 function renderPost() {
   const badges = [];
   if (currentPost.is_notice) badges.push('<span class="badge notice">공지</span>');
-  if (currentPost.category === 'suggestion' && currentPost.is_private) {
-    badges.push('<span class="badge">🔒 비밀글</span>');
-  }
   document.getElementById('postBadge').innerHTML = badges.join(' ');
+
+  const privateBadgeEl = document.getElementById('postPrivateBadge');
+  const isPrivate = currentPost.category === 'suggestion' && currentPost.is_private;
+  privateBadgeEl.textContent = isPrivate ? '🔒 비밀글' : '';
+  privateBadgeEl.style.display = isPrivate ? '' : 'none';
 
   const avatarEl = document.getElementById('postAvatar');
   avatarEl.classList.remove('avatar-anon');
