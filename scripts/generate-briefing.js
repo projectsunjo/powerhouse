@@ -36,8 +36,11 @@ function getKstDateInfo() {
   return { dateStr, isMonday, kstDate };
 }
 
-async function fetchGoogleNews(query, max = 3) {
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
+async function fetchGoogleNews(query, lang = 'ko', max = 3) {
+  const isEn = lang === 'en';
+  const url = isEn
+    ? `https://news.google.com/rss/search?q=${encodeURIComponent(query + ' when:1d')}&hl=en-US&gl=US&ceid=US:en`
+    : `https://news.google.com/rss/search?q=${encodeURIComponent(query + ' when:1d')}&hl=ko&gl=KR&ceid=KR:ko`;
   try {
     const res = await fetch(url);
     if (!res.ok) return [];
@@ -45,13 +48,19 @@ async function fetchGoogleNews(query, max = 3) {
     const items = [];
     const matches = xml.matchAll(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<pubDate>([\s\S]*?)<\/pubDate>[\s\S]*?<source[^>]*>([\s\S]*?)<\/source>[\s\S]*?<\/item>/g);
     for (const m of matches) {
-      items.push({
-        title: m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
-        link: m[2].trim(),
-        pubDate: m[3].trim(),
-        source: m[4].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
-      });
-      if (items.length >= max) break;
+      const pubDate = m[3].trim();
+      const d = new Date(pubDate);
+      const hoursAgo = (Date.now() - d.getTime()) / (3600 * 1000);
+      if (hoursAgo <= 24 && hoursAgo >= -1) {
+        items.push({
+          title: m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
+          link: m[2].trim(),
+          pubDate,
+          hoursAgo: `${hoursAgo.toFixed(1)}시간 전`,
+          source: m[4].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
+        });
+        if (items.length >= max) break;
+      }
     }
     return items;
   } catch (e) {
@@ -61,8 +70,8 @@ async function fetchGoogleNews(query, max = 3) {
 }
 
 async function generateWithGemini() {
-  const { dateStr, isMonday } = getKstDateInfo();
-  console.log(`[ESMI] Generating briefing for ${dateStr} (Monday/Weekend window: ${isMonday ? '72h' : '24h'})...`);
+  const { dateStr } = getKstDateInfo();
+  console.log(`[ESMI] Generating briefing for ${dateStr} (Strict 24h window)...`);
 
   const categoryDefinitions = [
     { key: 'sofc', name: 'SOFC 및 PAFC 관련 국내·해외 업체 동향', query: 'SOFC OR "연료전지" OR "Bloom Energy" OR 두산퓨얼셀 OR HD하이드로젠 OR PAFC' },
@@ -73,7 +82,7 @@ async function generateWithGemini() {
     { key: 'semi_etc', name: '국내 반도체 전력: 기타', query: '전력반도체 OR "SiC" OR "GaN" OR "반도체특별법" OR DB하이텍' },
     { key: 'power_gen', name: '국내 발전사(공기업·민간) 동향', query: '한국전력 OR 발전공기업 OR 한수원 OR "동서발전" OR 전기요금 OR 전력수급기본계획' },
     { key: 'datacenter_domestic', name: '국내 데이터센터 동향', query: '데이터센터 (전력 OR 변전소 OR 계통 OR 알박기 OR 수전 OR 송전 OR 분산)' },
-    { key: 'datacenter_overseas', name: '해외 데이터센터 동향', query: '"data center" power (utility OR grid OR nuclear OR PPA OR financing)' },
+    { key: 'datacenter_overseas', name: '해외 데이터센터 동향', query: '"data center" power (utility OR grid OR nuclear OR PPA OR financing)', lang: 'en' },
     { key: 'time_to_power', name: 'Time-to-Power 대안 발전원 동향', query: '가스터빈 데이터센터 OR 가스엔진 발전 OR 두산에너빌리티 가스터빈 OR 부유식 데이터센터' },
   ];
 
@@ -81,7 +90,7 @@ async function generateWithGemini() {
   const newsData = {};
   await Promise.all(
     categoryDefinitions.map(async (cat) => {
-      const items = await fetchGoogleNews(cat.query, 3);
+      const items = await fetchGoogleNews(cat.query, cat.lang || 'ko', 3);
       newsData[cat.name] = items;
       console.log(`- ${cat.name}: ${items.length} articles found`);
     })
@@ -103,7 +112,8 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 7. Insights: 2-column table with a colored left bar (3px width) and 1~2 lines of clear business takeaways ("시사점").
 8. Source links: MUST use the real news URLs and titles provided in the input: <a href="URL" target="_blank" style="color:#0E7C86;text-decoration:none;font-weight:bold;">기사 제목</a> <span style="color:#64748B;font-size:11px;"> - 언론사명</span>.
 9. Semiconductor subcategories: Group under "국내 반도체 관련 전력/발전 업체 및 뉴스" with clean sub-headers for 용인, 평택, 호남권, 기타. Sort subcategories with news on top.
-10. Time-to-Power: Include comparison insight table comparing SOFC vs Gas Engines vs Aeroderivative Gas Turbines.
+10. Data Centers: Categorize as "국내 데이터센터 동향" and "해외 데이터센터 동향". For overseas articles, translate and explain titles, summaries, and insights clearly in Korean.
+11. Time-to-Power: Include comparison insight table comparing SOFC vs Gas Engines vs Aeroderivative Gas Turbines.
 
 Output ONLY valid HTML starting with <!DOCTYPE html> and ending with </html>. Do not wrap in markdown quotes.
 
@@ -213,7 +223,7 @@ async function main() {
       throw new Error('GEMINI_API_KEY 또는 CLAUDE_CODE_OAUTH_TOKEN 환경변수가 필요합니다.');
     }
 
-    const skipEmail = process.env.SEND_EMAIL === 'true' ? false : true;
+    const skipEmail = process.env.SKIP_EMAIL === 'true';
     const result = await callInternal('complete', { runId, html, skipEmail });
     console.log(`Briefing run ${runId} completed successfully. ${result.emailStatus || ''}`);
   } catch (e) {
