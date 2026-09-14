@@ -13,6 +13,7 @@ const adminRouter = require('./routes/admin');
 const marketInfoRouter = require('./routes/marketInfo');
 const internalRouter = require('./routes/internal');
 const authRouter = require('./routes/auth');
+const cronRouter = require('./routes/cron');
 const { getUserFromRequest } = require('./utils/userAuth');
 
 const app = express();
@@ -81,14 +82,14 @@ const loginLimiter = rateLimit({
 });
 
 app.use('/api', (req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/internal/')) return readLimiter(req, res, next);
+  if (req.method === 'GET' && !req.path.startsWith('/internal/') && !req.path.startsWith('/cron/')) return readLimiter(req, res, next);
   next();
 });
 
 app.use((req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
     if (req.path === '/api/auth/login') return loginLimiter(req, res, next);
-    if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/internal/')) return next();
+    if (req.path.startsWith('/api/admin/') || req.path.startsWith('/api/internal/') || req.path.startsWith('/api/cron/')) return next();
     if (req.path.startsWith('/api/auth/')) return authLimiter(req, res, next);
     return writeLimiter(req, res, next);
   }
@@ -105,6 +106,7 @@ app.use('/api', commentsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/market-info', marketInfoRouter);
 app.use('/api/internal', internalRouter);
+app.use('/api/cron', cronRouter);
 app.use('/api/auth', authRouter);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));

@@ -2,9 +2,12 @@ name: generate-briefing
 
 on:
   schedule:
-    # Runs every hour; scripts/generate-briefing.js decides whether it's
-    # actually time to generate based on the admin-configured schedule
-    # (unless triggered manually below, which always forces a run).
+    # Runs every hour, with targeted slots for 08:00 KST (23:00 UTC);
+    # scripts/generate-briefing.js decides whether it's actually time to generate
+    # based on the admin-configured schedule (unless triggered manually).
+    - cron: '0 23 * * *'
+    - cron: '15 23 * * *'
+    - cron: '30 23 * * *'
     - cron: '7 * * * *'
   workflow_dispatch:
     inputs:
