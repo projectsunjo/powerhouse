@@ -111,38 +111,63 @@ COLLECTED NEWS ARTICLES:
 ${JSON.stringify(newsData, null, 2)}
 `;
 
-  console.log('[ESMI] Synthesizing briefing with Gemini...');
-  const t0 = Date.now();
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 16384,
-        thinkingConfig: { thinkingBudget: 512 },
-      },
-    }),
-  });
+  const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash'];
+  let lastError = null;
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini API error (${res.status}): ${errText}`);
+  for (const model of candidateModels) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      console.log(`[ESMI] Synthesizing briefing with ${model} (attempt ${attempt}/3)...`);
+      try {
+        const t0 = Date.now();
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 16384,
+              thinkingConfig: { thinkingBudget: 512 },
+            },
+          }),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          if (res.status === 503 || res.status === 429) {
+            console.warn(`[ESMI] Model ${model} returned ${res.status}. Waiting 4s...`);
+            lastError = new Error(`Gemini API error (${res.status}): ${errText}`);
+            await new Promise((r) => setTimeout(r, 4000));
+            continue;
+          }
+          throw new Error(`Gemini API error (${res.status}): ${errText}`);
+        }
+
+        const data = await res.json();
+        const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+        console.log(`[ESMI] ${model} generated briefing successfully in ${elapsed}s.`);
+
+        let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        html = html.replace(/^```html\s*/i, '').replace(/```\s*$/, '').trim();
+
+        if (!html.includes('</html>')) {
+          throw new Error('Generated HTML was incomplete or missing </html> tag.');
+        }
+
+        return html;
+      } catch (err) {
+        lastError = err;
+        if (attempt < 3 && (err.message.includes('503') || err.message.includes('429'))) {
+          console.warn(`[ESMI] ${err.message}. Waiting 4s before next attempt...`);
+          await new Promise((r) => setTimeout(r, 4000));
+        } else {
+          break;
+        }
+      }
+    }
   }
 
-  const data = await res.json();
-  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-  console.log(`[ESMI] Gemini generated briefing in ${elapsed}s.`);
-
-  let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  html = html.replace(/^```html\s*/i, '').replace(/```\s*$/, '').trim();
-
-  if (!html.includes('</html>')) {
-    throw new Error('Generated HTML was incomplete or missing </html> tag.');
-  }
-
-  return html;
+  throw lastError || new Error('Failed to generate briefing with Gemini.');
 }
 
 function generateWithClaude() {
