@@ -27,12 +27,11 @@ this session.
 - Node/Express app (`server/`), static frontend (`public/`, `admin/`).
 - Postgres via Supabase (project ref `ywpgpsktmmdkzwisvrpa`).
 - Hosted on Vercel (serverless, `api/index.js` re-exports `server/index.js`).
-- `scripts/generate-briefing.js` runs the ESMI briefing on a self-hosted
-  GitHub Actions runner (this PC) because the Anthropic org's Claude
-  account has an IP allowlist that rejects GitHub-hosted runner IPs;
-  it talks to the deployed app over `/api/internal/*` rather than
-  touching the DB/SMTP directly, since this network also blocks
-  outbound Postgres (6543) and SMTP (465/587).
+- `scripts/generate-briefing.js` runs the ESMI energy market briefing.
+  Powered by Google Gemini API (`GEMINI_API_KEY`) and real-time news aggregation,
+  running on GitHub Actions (`ubuntu-latest`). It communicates with the deployed app
+  over `/api/internal/*` to record the briefing and trigger email distribution.
+  (Claude Code CLI fallback is retained if `CLAUDE_CODE_OAUTH_TOKEN` is used).
 - Local dev only works from WSL (Windows host has no Node toolchain),
   and this network requires `NODE_EXTRA_CA_CERTS`/`https_proxy` for
   most outbound HTTPS — see `~/corp-ca-bundle.pem` and the proxy env
