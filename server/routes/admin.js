@@ -6,6 +6,7 @@ const { triggerBriefingWorkflow } = require('../utils/github');
 const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
 const { uploadProfileImage } = require('../utils/storage');
+const { escapeLike } = require('../utils/helpers');
 
 const router = express.Router();
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -47,8 +48,9 @@ router.get('/posts', boardAccess, async (req, res, next) => {
     let where = 'WHERE 1=1';
     const params = [];
     if (q) {
-      params.push(`%${q}%`, `%${q}%`);
-      where += ` AND (title ILIKE $${params.length - 1} OR content ILIKE $${params.length})`;
+      const escaped = escapeLike(q);
+      params.push(`%${escaped}%`, `%${escaped}%`);
+      where += ` AND (title ILIKE $${params.length - 1} ESCAPE '\\' OR content ILIKE $${params.length} ESCAPE '\\')`;
     }
 
     const total = (await pool.query(`SELECT COUNT(*)::int AS cnt FROM posts ${where}`, params)).rows[0].cnt;

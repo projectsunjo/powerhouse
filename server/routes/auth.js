@@ -107,6 +107,31 @@ router.patch('/profile', ANY_ROLE, async (req, res, next) => {
   }
 });
 
+// PATCH /api/auth/password { currentPassword, newPassword } — any logged-in role
+router.patch('/password', ANY_ROLE, async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.' });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: '새 비밀번호는 4자 이상이어야 합니다.' });
+    }
+
+    const { rows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.userId]);
+    const user = rows[0];
+    if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+      return res.status(403).json({ error: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    const newHash = bcrypt.hashSync(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, req.user.userId]);
+    res.json({ ok: true, message: '비밀번호가 변경되었습니다.' });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // POST /api/auth/profile-image { imageBase64, mimeType } — any logged-in
 // role. Sent as base64 JSON rather than multipart/form-data: this
 // corporate network's proxy silently mangles multipart uploads (the same

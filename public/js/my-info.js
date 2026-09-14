@@ -67,4 +67,31 @@ document.getElementById('settingsSaveBtn').onclick = async () => {
   }
 };
 
+const passwordChangeBtn = document.getElementById('passwordChangeBtn');
+if (passwordChangeBtn) {
+  passwordChangeBtn.onclick = async () => {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const newPasswordConfirm = document.getElementById('newPasswordConfirm').value;
+
+    if (!currentPassword) return showToast('현재 비밀번호를 입력해주세요.');
+    if (!newPassword) return showToast('새 비밀번호를 입력해주세요.');
+    if (newPassword.length < 4) return showToast('새 비밀번호는 4자 이상이어야 합니다.');
+    if (newPassword !== newPasswordConfirm) return showToast('새 비밀번호가 일치하지 않습니다.');
+
+    try {
+      await api('/api/auth/password', {
+        method: 'PATCH',
+        body: { currentPassword, newPassword },
+      });
+      showToast('비밀번호가 성공적으로 변경되었습니다.');
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('newPasswordConfirm').value = '';
+    } catch (e) {
+      showToast(e.message);
+    }
+  };
+}
+
 loadMyInfo();

@@ -43,6 +43,14 @@ async function containsBannedWord(text) {
   return null;
 }
 
+function escapeLike(str) {
+  return String(str || '').replace(/[%_\\]/g, '\\$&');
+}
+
+function cleanOneLineText(str) {
+  return String(str || '').replace(/[\r\n\t]+/g, ' ').trim();
+}
+
 module.exports = {
   hashIp,
   getClientIp,
@@ -50,4 +58,6 @@ module.exports = {
   checkPassword,
   randomNickname,
   containsBannedWord,
+  escapeLike,
+  cleanOneLineText,
 };

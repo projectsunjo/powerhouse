@@ -347,7 +347,14 @@ function promptPassword({ title = '비밀번호 확인', onConfirm }) {
   `;
   document.body.appendChild(backdrop);
   const input = backdrop.querySelector('#pwModalInput');
-  const close = () => backdrop.remove();
+  const onKeydown = (e) => {
+    if (e.key === 'Escape') close();
+  };
+  const close = () => {
+    document.removeEventListener('keydown', onKeydown);
+    backdrop.remove();
+  };
+  document.addEventListener('keydown', onKeydown);
   backdrop.querySelector('#pwModalCancel').onclick = close;
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) close();
@@ -384,7 +391,14 @@ function promptReport({ onConfirm }) {
     </div>
   `;
   document.body.appendChild(backdrop);
-  const close = () => backdrop.remove();
+  const onKeydown = (e) => {
+    if (e.key === 'Escape') close();
+  };
+  const close = () => {
+    document.removeEventListener('keydown', onKeydown);
+    backdrop.remove();
+  };
+  document.addEventListener('keydown', onKeydown);
   backdrop.querySelector('#reportCancel').onclick = close;
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) close();

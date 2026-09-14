@@ -7,6 +7,8 @@ const {
   containsBannedWord,
   hashIp,
   getClientIp,
+  escapeLike,
+  cleanOneLineText,
 } = require('../utils/helpers');
 const { getUserFromRequest } = require('../utils/userAuth');
 
@@ -43,8 +45,9 @@ router.get('/', async (req, res, next) => {
     let where = 'WHERE posts.is_hidden = false';
     const params = [];
     if (q) {
-      params.push(`%${q}%`, `%${q}%`);
-      where += ` AND (title ILIKE $${params.length - 1} OR content ILIKE $${params.length})`;
+      const escaped = escapeLike(q);
+      params.push(`%${escaped}%`, `%${escaped}%`);
+      where += ` AND (title ILIKE $${params.length - 1} ESCAPE '\\' OR content ILIKE $${params.length} ESCAPE '\\')`;
     }
     if (sort === 'general') {
       where += " AND category = 'general'";
@@ -169,9 +172,9 @@ router.post('/:id/unlock', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     let { title, content, nickname, password, category, targetUserId, isPrivate } = req.body || {};
-    title = (title || '').trim();
+    title = cleanOneLineText(title);
     content = (content || '').trim();
-    nickname = (nickname || '').trim();
+    nickname = cleanOneLineText(nickname);
     password = (password || '').trim();
     category = category === 'suggestion' ? 'suggestion' : 'general';
 
@@ -268,7 +271,7 @@ router.put('/:id', async (req, res, next) => {
     if (!ownsPost(post, req)) return res.status(403).json({ error: '수정 권한이 없습니다.' });
 
     let { title, content } = req.body || {};
-    title = (title || '').trim();
+    title = cleanOneLineText(title);
     content = (content || '').trim();
     if (!title || !content) return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
     if (title.length > 100 || content.length > 10000) return res.status(400).json({ error: '입력값이 너무 깁니다.' });

@@ -13,6 +13,7 @@ const adminRouter = require('./routes/admin');
 const marketInfoRouter = require('./routes/marketInfo');
 const internalRouter = require('./routes/internal');
 const authRouter = require('./routes/auth');
+const { getUserFromRequest } = require('./utils/userAuth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -110,7 +111,14 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));
 
 app.get('/admin', (req, res) => {
-  res.redirect('/login.html');
+  const user = getUserFromRequest(req);
+  if (user) {
+    if (['webmaster', 'marketbot_keeper', 'board_keeper'].includes(user.role)) {
+      return res.redirect('/admin/dashboard.html');
+    }
+    return res.redirect('/');
+  }
+  res.redirect('/login.html?redirect=/admin/dashboard.html');
 });
 
 app.use((req, res) => {

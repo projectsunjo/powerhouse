@@ -1,6 +1,6 @@
 const express = require('express');
 const { pool } = require('../db');
-const { hashPassword, checkPassword, randomNickname, containsBannedWord } = require('../utils/helpers');
+const { hashPassword, checkPassword, randomNickname, containsBannedWord, cleanOneLineText } = require('../utils/helpers');
 const { getUserFromRequest } = require('../utils/userAuth');
 
 const router = express.Router();
@@ -74,7 +74,7 @@ router.post('/posts/:postId/comments', async (req, res, next) => {
 
     let { content, nickname, password, parent_id, is_private, is_official } = req.body || {};
     content = (content || '').trim();
-    nickname = (nickname || '').trim();
+    nickname = cleanOneLineText(nickname);
     password = (password || '').trim();
     parent_id = parent_id ? parseInt(parent_id, 10) : null;
 

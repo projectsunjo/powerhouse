@@ -268,6 +268,9 @@ document.getElementById('postSearchBtn').onclick = () => {
   postState.page = 1;
   loadPosts();
 };
+document.getElementById('postSearch').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('postSearchBtn').click();
+});
 document.getElementById('reportStatus').onchange = loadReports;
 document.getElementById('addWordBtn').onclick = async () => {
   const word = document.getElementById('newWord').value.trim();
@@ -280,6 +283,9 @@ document.getElementById('addWordBtn').onclick = async () => {
     showToast(e.message);
   }
 };
+document.getElementById('newWord').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('addWordBtn').click();
+});
 document.getElementById('logoutBtn').onclick = async () => {
   await api('/api/auth/logout', { method: 'POST' });
   location.href = '/login.html';
@@ -710,6 +716,15 @@ document.getElementById('addUserBtn').onclick = async () => {
     showToast(e.message);
   }
 };
+
+['newUserUsername', 'newUserPassword', 'newUserDisplayName'].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('addUserBtn').click();
+    });
+  }
+});
 
 (async function init() {
   await guardAuth();
