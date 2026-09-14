@@ -65,16 +65,16 @@ async function generateWithGemini() {
   console.log(`[ESMI] Generating briefing for ${dateStr} (Monday/Weekend window: ${isMonday ? '72h' : '24h'})...`);
 
   const categoryDefinitions = [
-    { key: 'sofc', name: 'SOFC 및 PAFC 관련 국내·해외 업체 동향', query: 'SOFC OR "Bloom Energy" OR 두산퓨얼셀 OR HD하이드로젠 OR PAFC' },
-    { key: 'regulation', name: 'SOFC 관련 국내 및 해외 규제 변화', query: 'CHPS OR "수소발전 입찰" OR "수소법 개정" OR "수소법 시행령"' },
-    { key: 'semi_yongin', name: '국내 반도체 전력: 용인', query: '용인 반도체 클러스터 (전력 OR 송전선로 OR 변전소 OR LNG)' },
-    { key: 'semi_pyeongtaek', name: '국내 반도체 전력: 평택', query: '평택 삼성전자 (전력 OR 송전선로 OR 변전소)' },
-    { key: 'semi_honam', name: '국내 반도체 전력: 호남권', query: '호남 반도체 전력 OR 광주 전남 반도체 산단 전력' },
-    { key: 'semi_etc', name: '국내 반도체 전력: 기타', query: '전력반도체 OR 반도체특별법 전력 OR DB하이텍' },
-    { key: 'power_gen', name: '국내 발전사(공기업·민간) 동향', query: '한국전력 송전망 OR 발전공기업 OR 전력수급기본계획 OR 신규 발전소 착공' },
-    { key: 'datacenter', name: '국내 및 미국 데이터센터 관련 동향', query: '데이터센터 전력 OR 데이터센터 가스터빈 OR "data center power"' },
-    { key: 'financing', name: '미국 데이터센터 / SOFC 사업 금융 조달 동향', query: '데이터센터 PF OR 인프라펀드 전력 OR "Bloom Energy financing"' },
-    { key: 'time_to_power', name: 'Time-to-Power 대안 발전원 동향', query: '가스터빈 데이터센터 OR 가스엔진 발전 OR 두산에너빌리티 가스터빈' },
+    { key: 'sofc', name: 'SOFC 및 PAFC 관련 국내·해외 업체 동향', query: 'SOFC OR "연료전지" OR "Bloom Energy" OR 두산퓨얼셀 OR HD하이드로젠 OR PAFC' },
+    { key: 'regulation', name: 'SOFC 관련 국내 및 해외 규제·정책 변화', query: 'CHPS OR "청정수소" OR "분산에너지" OR "수소법" OR "전력망 특별법"' },
+    { key: 'semi_yongin', name: '국내 반도체 전력: 용인', query: '용인 반도체 (전력 OR 송전 OR 변전 OR LNG OR 발전소 OR 인프라)' },
+    { key: 'semi_pyeongtaek', name: '국내 반도체 전력: 평택', query: '평택 (삼성전자 OR 반도체) (전력 OR 변전소 OR 송전선로 OR 팹 OR 전기료)' },
+    { key: 'semi_honam', name: '국내 반도체 전력: 호남권', query: '호남 반도체 전력 OR 광주 전남 반도체 OR "신안 해상풍력" 반도체' },
+    { key: 'semi_etc', name: '국내 반도체 전력: 기타', query: '전력반도체 OR "SiC" OR "GaN" OR "반도체특별법" OR DB하이텍' },
+    { key: 'power_gen', name: '국내 발전사(공기업·민간) 동향', query: '한국전력 OR 발전공기업 OR 한수원 OR "동서발전" OR 전기요금 OR 전력수급기본계획' },
+    { key: 'datacenter_domestic', name: '국내 데이터센터 동향', query: '데이터센터 (전력 OR 변전소 OR 계통 OR 알박기 OR 수전 OR 송전 OR 분산)' },
+    { key: 'datacenter_overseas', name: '해외 데이터센터 동향', query: '"data center" power (utility OR grid OR nuclear OR PPA OR financing)' },
+    { key: 'time_to_power', name: 'Time-to-Power 대안 발전원 동향', query: '가스터빈 데이터센터 OR 가스엔진 발전 OR 두산에너빌리티 가스터빈 OR 부유식 데이터센터' },
   ];
 
   console.log('[ESMI] Gathering real-time market news across categories...');
@@ -213,7 +213,8 @@ async function main() {
       throw new Error('GEMINI_API_KEY 또는 CLAUDE_CODE_OAUTH_TOKEN 환경변수가 필요합니다.');
     }
 
-    const result = await callInternal('complete', { runId, html });
+    const skipEmail = process.env.SEND_EMAIL === 'true' ? false : true;
+    const result = await callInternal('complete', { runId, html, skipEmail });
     console.log(`Briefing run ${runId} completed successfully. ${result.emailStatus || ''}`);
   } catch (e) {
     await callInternal('fail', { runId, error: e.message.slice(0, 500) }).catch((e2) => {

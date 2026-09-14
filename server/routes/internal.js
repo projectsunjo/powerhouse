@@ -108,7 +108,7 @@ router.post('/briefing/start', async (req, res, next) => {
 // POST /api/internal/briefing/complete { runId, html }
 router.post('/briefing/complete', async (req, res, next) => {
   try {
-    const { runId, html } = req.body || {};
+    const { runId, html, skipEmail } = req.body || {};
     if (!runId || !html) return res.status(400).json({ error: 'runId, html required' });
 
     const insertResult = await pool.query('INSERT INTO briefings (html) VALUES ($1) RETURNING id, created_at', [html]);
@@ -116,7 +116,11 @@ router.post('/briefing/complete', async (req, res, next) => {
 
     const runResult = await pool.query('SELECT trigger_type FROM briefing_runs WHERE id = $1', [runId]);
     const triggerType = runResult.rows[0] ? runResult.rows[0].trigger_type : 'auto';
-    const emailStatus = await sendAndLogBriefingEmail(briefing.id, html, briefing.created_at.toISOString(), triggerType);
+
+    let emailStatus = '이메일 발송 건너뜀 (테스트 모드)';
+    if (!skipEmail) {
+      emailStatus = await sendAndLogBriefingEmail(briefing.id, html, briefing.created_at.toISOString(), triggerType);
+    }
 
     await pool.query(
       "UPDATE briefing_runs SET completed_at = NOW(), status = 'success', briefing_id = $1, email_status = $2 WHERE id = $3",
