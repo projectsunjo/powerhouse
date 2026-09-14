@@ -58,13 +58,20 @@ async function fetchGoogleNews(query, lang = 'ko', max = 3) {
     const xml = await res.text();
     const items = [];
     const matches = xml.matchAll(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<pubDate>([\s\S]*?)<\/pubDate>[\s\S]*?<source[^>]*>([\s\S]*?)<\/source>[\s\S]*?<\/item>/g);
+    const EXCLUDE_KEYWORDS = [
+      '압수수색', '중대재해', '음주운전', '교통사고', '부고', '인사발령', '화재사고', '사망사고',
+      '고용노동부', '노동부', '검찰', '경찰 수사', '부당노동', '횡령', '배임', '주가조작', '사기'
+    ];
     for (const m of matches) {
+      const title = m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim();
+      if (EXCLUDE_KEYWORDS.some((k) => title.includes(k))) continue;
+
       const pubDate = m[3].trim();
       const d = new Date(pubDate);
       const hoursAgo = (Date.now() - d.getTime()) / (3600 * 1000);
       if (hoursAgo <= 24 && hoursAgo >= -1) {
         items.push({
-          title: m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
+          title,
           link: m[2].trim(),
           pubDate,
           dateKst: formatKstDate(pubDate),
@@ -88,10 +95,10 @@ async function generateWithGemini() {
   const categoryDefinitions = [
     { key: 'sofc', name: 'SOFC 및 PAFC 관련 국내·해외 업체 동향', query: 'SOFC OR "연료전지" OR "Bloom Energy" OR 두산퓨얼셀 OR HD하이드로젠 OR PAFC' },
     { key: 'regulation', name: 'SOFC 관련 국내 및 해외 규제·정책 변화', query: 'CHPS OR "청정수소" OR "분산에너지" OR "수소법" OR "전력망 특별법"' },
-    { key: 'semi_yongin', name: '국내 반도체 전력: 용인', query: '용인 반도체 (전력 OR 송전 OR 변전 OR LNG OR 발전소 OR 인프라)' },
-    { key: 'semi_pyeongtaek', name: '국내 반도체 전력: 평택', query: '평택 (삼성전자 OR 반도체) (전력 OR 변전소 OR 송전선로 OR 팹 OR 전기료)' },
-    { key: 'semi_honam', name: '국내 반도체 전력: 호남권', query: '호남 반도체 전력 OR 광주 전남 반도체 OR "신안 해상풍력" 반도체' },
-    { key: 'semi_etc', name: '국내 반도체 전력: 기타', query: '전력반도체 OR "SiC" OR "GaN" OR "반도체특별법" OR DB하이텍' },
+    { key: 'semi_yongin', name: '국내 반도체 전력: 용인', query: '용인 반도체 (전력 OR 송전 OR 변전 OR LNG 발전 OR 전력망 OR 계통)' },
+    { key: 'semi_pyeongtaek', name: '국내 반도체 전력: 평택', query: '평택 반도체 (전력 OR 변전소 OR 송전선로 OR 발전 OR 전기요금 OR 전력망)' },
+    { key: 'semi_honam', name: '국내 반도체 전력: 호남권', query: '호남 반도체 전력 OR 광주 전남 반도체 전력 OR "신안 해상풍력" 반도체' },
+    { key: 'semi_etc', name: '국내 반도체 전력: 기타', query: '전력반도체 OR "SiC" OR "GaN" OR "반도체특별법 전력"' },
     { key: 'power_gen', name: '국내 발전사(공기업·민간) 동향', query: '한국전력 OR 발전공기업 OR 한수원 OR "동서발전" OR 전기요금 OR 전력수급기본계획' },
     { key: 'datacenter_domestic', name: '국내 데이터센터 동향', query: '데이터센터 (전력 OR 변전소 OR 계통 OR 알박기 OR 수전 OR 송전 OR 분산)' },
     { key: 'datacenter_overseas', name: '해외 데이터센터 동향', query: '"data center" power (utility OR grid OR nuclear OR PPA OR financing)', lang: 'en' },
@@ -102,7 +109,7 @@ async function generateWithGemini() {
   const newsData = {};
   await Promise.all(
     categoryDefinitions.map(async (cat) => {
-      const items = await fetchGoogleNews(cat.query, cat.lang || 'ko', 2);
+      const items = await fetchGoogleNews(cat.query, cat.lang || 'ko', 3);
       newsData[cat.name] = items;
       console.log(`- ${cat.name}: ${items.length} articles found`);
     })
@@ -111,25 +118,32 @@ async function generateWithGemini() {
   const prompt = `You are the lead energy market research analyst for the ESMI (Energy Solution Market Info) daily briefing.
 Based on the following collected real-time news articles, generate a clean, standalone, email-compatible HTML briefing document.
 
-CRITICAL INSTRUCTIONS & FORMATTING RULES:
-1. 조사 날짜: "${dateStr}" (Must be shown in the dark header).
-2. Layout: Pure <table> based layout (width="600" style="width:100%;max-width:600px;margin:0 auto;background-color:#F7F8FA;").
-3. Styling: ALL styles MUST be inline style="...". NEVER use <style> tags, CSS variables, flexbox, or grid (must display perfectly in Outlook/Gmail/Naver mail). Web-safe font: Arial, Helvetica, sans-serif.
-4. Header: Dark background (#0F172A), title "ESMI · Energy Solution Market Info", subtitle "조사 날짜 ${dateStr}".
-5. ABSOLUTELY NO STATIC COMPARISON TABLES:
+CRITICAL CONTENT & FILTERING RULES:
+1. STRICT DEDUPLICATION (중복 기사 엄격 배제):
+   - If multiple articles report on the exact same event, statement, press conference, or announcement (e.g. Mayor Lee Sang-il remarks about 1,600조, identical press release, same project), choose ONLY ONE single best article from the most prominent/authoritative media outlet (예: 한국경제, 매일경제, 연합뉴스, 조선비즈 등 주요 일간/경제지).
+   - NEVER include two or more articles about the exact same event! (Do NOT include two articles about Mayor Lee Sang-il).
+2. STRICT ENERGY/POWER RELEVANCE (에너지/전력 무관 기사 완전 배제):
+   - This briefing is strictly dedicated to energy solutions, power grid, generation, electricity rates, data center power, and semiconductor power infrastructure.
+   - Absolutely exclude any articles related to labor inspections/raids (e.g. 노동부 압수수색), criminal probes, industrial accidents (중대재해/사망), crime, unrelated auto/general manufacturing parts (HL만도 등), or general factory issues unrelated to electric power infrastructure.
+   - If an article is not directly about power/energy infrastructure, DISCARD IT immediately!
+3. 조사 날짜: "${dateStr}" (Must be shown in the dark header).
+4. Layout: Pure <table> based layout (width="600" style="width:100%;max-width:600px;margin:0 auto;background-color:#F7F8FA;").
+5. Styling: ALL styles MUST be inline style="...". NEVER use <style> tags, CSS variables, flexbox, or grid (must display perfectly in Outlook/Gmail/Naver mail). Web-safe font: Arial, Helvetica, sans-serif.
+6. Header: Dark background (#0F172A), title "ESMI · Energy Solution Market Info", subtitle "조사 날짜 ${dateStr}".
+7. ABSOLUTELY NO STATIC COMPARISON TABLES:
    - DO NOT generate any static comparison table or executive summary table (e.g. NEVER generate "Time-to-Power 분산전원 발전원별 특성 비교" or any table comparing SOFC vs Gas Engines vs Aeroderivative Gas Turbines).
-   - The user strictly requested: "Time to power 분산전원 발전원별 특성비교 이거 굳이 필요 없음. 그냥 뉴스만 나오게". Only real news articles should be presented!
-6. Dynamic Section Sorting:
+   - Only real news articles should be presented!
+8. Dynamic Section Sorting:
    - Sections WITH substantial news must appear FIRST (at the top).
    - Sections with NO news or no substantial updates must appear LAST (at the bottom) with "특이사항 없음" in a subtle #F1F3F5 box.
    - Do NOT use circle numbers or digit prefixes (no ①, ②, etc.). Use clean bold headers.
-7. Semiconductor Subcategories:
+9. Semiconductor Subcategories:
    - Group under "국내 반도체 관련 전력/발전 업체 및 뉴스" with clean sub-headers for 용인, 평택, 호남권, 기타. Sort subcategories with news on top.
-8. Data Centers:
-   - Categorize as "국내 데이터센터 동향" and "해외 데이터센터 동향". For overseas articles, translate and explain titles, summaries, and insights clearly in Korean.
-9. Time-to-Power:
-   - "Time-to-Power 대안 발전원 동향" is a regular news section. Only output actual news articles collected using the standard article card layout. NO comparison tables.
-10. MANDATORY ARTICLE CARD STRUCTURE (APPLIED TO EVERY SINGLE ARTICLE, NO EXCEPTIONS):
+10. Data Centers:
+    - Categorize as "국내 데이터센터 동향" and "해외 데이터센터 동향". For overseas articles, translate and explain titles, summaries, and insights clearly in Korean.
+11. Time-to-Power:
+    - "Time-to-Power 대안 발전원 동향" is a regular news section. Only output actual news articles collected using the standard article card layout. NO comparison tables.
+12. MANDATORY ARTICLE CARD STRUCTURE (APPLIED TO EVERY SINGLE ARTICLE, NO EXCEPTIONS):
     Every single article in EVERY section and subcategory (including 용인, 평택, 호남권, 기타) MUST be rendered as an individual card with ALL of the following:
     a) 보도일시 및 언론사 (MANDATORY ON EVERY ARTICLE):
        Must display the date and source at the top of the card:
