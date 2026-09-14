@@ -36,6 +36,17 @@ function getKstDateInfo() {
   return { dateStr, isMonday, kstDate };
 }
 
+function formatKstDate(pubDateStr) {
+  const d = new Date(pubDateStr);
+  if (isNaN(d.getTime())) return '';
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(kst.getUTCDate()).padStart(2, '0');
+  const h = String(kst.getUTCHours()).padStart(2, '0');
+  const min = String(kst.getUTCMinutes()).padStart(2, '0');
+  return `${m}.${day} ${h}:${min}`;
+}
+
 async function fetchGoogleNews(query, lang = 'ko', max = 3) {
   const isEn = lang === 'en';
   const url = isEn
@@ -56,6 +67,7 @@ async function fetchGoogleNews(query, lang = 'ko', max = 3) {
           title: m[1].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
           link: m[2].trim(),
           pubDate,
+          dateKst: formatKstDate(pubDate),
           hoursAgo: `${hoursAgo.toFixed(1)}시간 전`,
           source: m[4].replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim(),
         });
@@ -90,7 +102,7 @@ async function generateWithGemini() {
   const newsData = {};
   await Promise.all(
     categoryDefinitions.map(async (cat) => {
-      const items = await fetchGoogleNews(cat.query, cat.lang || 'ko', 3);
+      const items = await fetchGoogleNews(cat.query, cat.lang || 'ko', 2);
       newsData[cat.name] = items;
       console.log(`- ${cat.name}: ${items.length} articles found`);
     })
@@ -104,16 +116,40 @@ CRITICAL INSTRUCTIONS & FORMATTING RULES:
 2. Layout: Pure <table> based layout (width="600" style="width:100%;max-width:600px;margin:0 auto;background-color:#F7F8FA;").
 3. Styling: ALL styles MUST be inline style="...". NEVER use <style> tags, CSS variables, flexbox, or grid (must display perfectly in Outlook/Gmail/Naver mail). Web-safe font: Arial, Helvetica, sans-serif.
 4. Header: Dark background (#0F172A), title "ESMI · Energy Solution Market Info", subtitle "조사 날짜 ${dateStr}".
-5. Dynamic Section Sorting:
+5. ABSOLUTELY NO STATIC COMPARISON TABLES:
+   - DO NOT generate any static comparison table or executive summary table (e.g. NEVER generate "Time-to-Power 분산전원 발전원별 특성 비교" or any table comparing SOFC vs Gas Engines vs Aeroderivative Gas Turbines).
+   - The user strictly requested: "Time to power 분산전원 발전원별 특성비교 이거 굳이 필요 없음. 그냥 뉴스만 나오게". Only real news articles should be presented!
+6. Dynamic Section Sorting:
    - Sections WITH substantial news must appear FIRST (at the top).
    - Sections with NO news or no substantial updates must appear LAST (at the bottom) with "특이사항 없음" in a subtle #F1F3F5 box.
    - Do NOT use circle numbers or digit prefixes (no ①, ②, etc.). Use clean bold headers.
-6. Badges: Small inline table cells with badges (e.g. MW/GW capacity, fuel type LNG/SOFC, date M/D).
-7. Insights: 2-column table with a colored left bar (3px width) and 1~2 lines of clear business takeaways ("시사점").
-8. Source links: MUST use the real news URLs and titles provided in the input: <a href="URL" target="_blank" style="color:#0E7C86;text-decoration:none;font-weight:bold;">기사 제목</a> <span style="color:#64748B;font-size:11px;"> - 언론사명</span>.
-9. Semiconductor subcategories: Group under "국내 반도체 관련 전력/발전 업체 및 뉴스" with clean sub-headers for 용인, 평택, 호남권, 기타. Sort subcategories with news on top.
-10. Data Centers: Categorize as "국내 데이터센터 동향" and "해외 데이터센터 동향". For overseas articles, translate and explain titles, summaries, and insights clearly in Korean.
-11. Time-to-Power: Include comparison insight table comparing SOFC vs Gas Engines vs Aeroderivative Gas Turbines.
+7. Semiconductor Subcategories:
+   - Group under "국내 반도체 관련 전력/발전 업체 및 뉴스" with clean sub-headers for 용인, 평택, 호남권, 기타. Sort subcategories with news on top.
+8. Data Centers:
+   - Categorize as "국내 데이터센터 동향" and "해외 데이터센터 동향". For overseas articles, translate and explain titles, summaries, and insights clearly in Korean.
+9. Time-to-Power:
+   - "Time-to-Power 대안 발전원 동향" is a regular news section. Only output actual news articles collected using the standard article card layout. NO comparison tables.
+10. MANDATORY ARTICLE CARD STRUCTURE (APPLIED TO EVERY SINGLE ARTICLE, NO EXCEPTIONS):
+    Every single article in EVERY section and subcategory (including 용인, 평택, 호남권, 기타) MUST be rendered as an individual card with ALL of the following:
+    a) 보도일시 및 언론사 (MANDATORY ON EVERY ARTICLE):
+       Must display the date and source at the top of the card:
+       <span style="background-color:#EEF2F6;color:#334155;font-size:11px;font-weight:bold;padding:2px 6px;border-radius:3px;">📅 {dateKst} ({hoursAgo})</span>
+       <span style="color:#64748B;font-size:11px;font-weight:bold;margin-left:6px;">{source}</span>
+       NEVER omit the date or source for any article under any circumstances!
+    b) 기사 제목 링크:
+       <a href="{link}" target="_blank" style="color:#0E7C86;text-decoration:none;font-weight:bold;font-size:14px;line-height:1.4;">{title}</a>
+    c) 핵심 요약:
+       1~2 clear summary sentences in Korean explaining the factual news.
+    d) 💡 시사점 (MANDATORY ON EVERY SINGLE ARTICLE - NEVER OMIT):
+       Every single article MUST have its own tailored insight box at the bottom:
+       <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8FAFC;border-left:3px solid #0E7C86;padding:8px 10px;margin-top:8px;">
+         <tr>
+           <td style="font-size:11.5px;color:#1E293B;line-height:1.4;">
+             <strong style="color:#0E7C86;">💡 시사점:</strong> [반도체 전력망, 데이터센터 전력 적기 공급, 분산에너지, SOFC 사업 관점의 실질적인 시사점 및 영향 분석 1~2문장]
+           </td>
+         </tr>
+       </table>
+       WARNING: Omitting "💡 시사점" on any article is strictly prohibited. Every article MUST have its own insight box.
 
 Output ONLY valid HTML starting with <!DOCTYPE html> and ending with </html>. Do not wrap in markdown quotes.
 
@@ -121,7 +157,7 @@ COLLECTED NEWS ARTICLES:
 ${JSON.stringify(newsData, null, 2)}
 `;
 
-  const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash'];
+  const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash'];
   let lastError = null;
 
   for (const model of candidateModels) {
@@ -136,7 +172,7 @@ ${JSON.stringify(newsData, null, 2)}
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature: 0.2,
-              maxOutputTokens: 16384,
+              maxOutputTokens: 32768,
               thinkingConfig: { thinkingBudget: 512 },
             },
           }),
@@ -157,7 +193,8 @@ ${JSON.stringify(newsData, null, 2)}
         const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
         console.log(`[ESMI] ${model} generated briefing successfully in ${elapsed}s.`);
 
-        let html = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const candidate = data.candidates?.[0];
+        let html = (candidate?.content?.parts || []).map((p) => p.text || '').join('');
         html = html.replace(/^```html\s*/i, '').replace(/```\s*$/, '').trim();
 
         if (!html.includes('</html>')) {
