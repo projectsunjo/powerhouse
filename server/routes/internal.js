@@ -32,37 +32,56 @@ router.use((req, res, next) => {
 // 17:23 instead of the configured 08:00. lastRunAt is only consulted to
 // check whether the current slot was already served (avoids double-firing
 // across consecutive hourly cron ticks within the same slot window).
+// Determines if the scheduled briefing should run right now.
+// Rules:
+// 1. Must be enabled (briefing_schedule_enabled === '1').
+// 2. Window check: Only run during the configured scheduleHour (e.g. 08:00 ~ 08:59 KST).
+//    If a cron tick wakes up outside this window (e.g. 10:19, 14:00, etc.), do NOT fire.
+// 3. Strict 1-per-day limit: Check if a briefing has already been generated today in KST.
+//    If any briefing (manual or auto) was already created today, do NOT generate another one!
+// 4. Check lastRunAt to prevent double-firing across consecutive cron ticks within the same 8 AM window.
 async function shouldRunScheduled() {
   const enabled = (await getSetting('briefing_schedule_enabled', '1')) === '1';
   if (!enabled) return false;
 
-  const intervalHours = parseInt(await getSetting('briefing_interval_hours', '24'), 10);
   const scheduleHour = parseInt(await getSetting('briefing_schedule_hour', '8'), 10);
   const lastRunAt = await getSetting('briefing_last_scheduled_run_at', null);
 
   const now = new Date();
-  const nowMs = now.getTime();
-  const intervalMs = intervalHours * 3600 * 1000;
+  const kstNow = new Date(now.getTime() + KST_OFFSET_MS);
+  const kstHour = kstNow.getUTCHours(); // KST wall-clock hour (0-23)
 
-  // scheduleHour is a KST (UTC+9) wall-clock hour. Shift "now" into a Date
-  // whose UTC-getters read as KST wall-clock, set the hour there, then
-  // shift back to get the real UTC instant for that KST time today.
-  const kstNow = new Date(nowMs + KST_OFFSET_MS);
-  const anchorKst = new Date(kstNow);
-  anchorKst.setUTCHours(scheduleHour, 0, 0, 0);
-  const todayAnchorMs = anchorKst.getTime() - KST_OFFSET_MS;
-
-  // Walk that anchor forward/backward by whole intervals to land on the
-  // latest slot that is not in the future.
-  let slotMs = todayAnchorMs;
-  if (slotMs > nowMs) {
-    slotMs -= Math.ceil((slotMs - nowMs) / intervalMs) * intervalMs;
-  } else {
-    slotMs += Math.floor((nowMs - slotMs) / intervalMs) * intervalMs;
+  // 1. Hour window check (must be within the 8 AM hour window: 08:00 ~ 08:59 KST)
+  if (kstHour !== scheduleHour) {
+    console.log(`[Schedule] Current KST hour (${kstHour}) does not match scheduleHour (${scheduleHour}). Skipping.`);
+    return false;
   }
 
-  if (lastRunAt && new Date(lastRunAt).getTime() >= slotMs) return false;
-  return nowMs >= slotMs;
+  // 2. Strict 1-per-day check: Check if a briefing was already created today in KST
+  const { rows } = await pool.query(`
+    SELECT id, created_at FROM briefings 
+    WHERE (created_at + INTERVAL '9 hours')::date = (NOW() + INTERVAL '9 hours')::date 
+    LIMIT 1
+  `);
+  if (rows.length > 0) {
+    console.log(`[Schedule] Today's briefing (#${rows[0].id}) was already generated. Skipping duplicate run.`);
+    return false;
+  }
+
+  // 3. Last scheduled run check within today
+  if (lastRunAt) {
+    const lastRunKst = new Date(new Date(lastRunAt).getTime() + KST_OFFSET_MS);
+    if (
+      lastRunKst.getUTCFullYear() === kstNow.getUTCFullYear() &&
+      lastRunKst.getUTCMonth() === kstNow.getUTCMonth() &&
+      lastRunKst.getUTCDate() === kstNow.getUTCDate()
+    ) {
+      console.log('[Schedule] Already completed a scheduled run today. Skipping.');
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // POST /api/internal/briefing/start { force, runId? }
@@ -121,6 +140,8 @@ router.post('/briefing/complete', async (req, res, next) => {
     if (!skipEmail) {
       emailStatus = await sendAndLogBriefingEmail(briefing.id, html, briefing.created_at.toISOString(), triggerType);
     }
+
+    await setSetting('briefing_last_scheduled_run_at', new Date().toISOString());
 
     await pool.query(
       "UPDATE briefing_runs SET completed_at = NOW(), status = 'success', briefing_id = $1, email_status = $2 WHERE id = $3",
