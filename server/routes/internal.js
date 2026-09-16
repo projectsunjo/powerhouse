@@ -173,8 +173,8 @@ router.post('/briefing/fail', async (req, res, next) => {
   }
 });
 
-// POST /api/internal/setting { key, value }
-router.post('/setting', async (req, res, next) => {
+// POST /api/internal/briefing/setting or /setting { key, value }
+const handleSetting = async (req, res, next) => {
   try {
     const { key, value } = req.body || {};
     if (!key) return res.status(400).json({ error: 'key required' });
@@ -183,6 +183,8 @@ router.post('/setting', async (req, res, next) => {
   } catch (e) {
     next(e);
   }
-});
+};
+router.post('/briefing/setting', handleSetting);
+router.post('/setting', handleSetting);
 
 module.exports = router;
