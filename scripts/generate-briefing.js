@@ -5,12 +5,39 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { GoogleDecoder } = require('google-news-url-decoder');
+const urlDecoder = new GoogleDecoder();
 
 const APP_BASE_URL = (process.env.APP_BASE_URL || '').replace(/\/$/, '');
 const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
 const FORCE = process.env.FORCE === 'true';
 const RUN_ID = process.env.RUN_ID || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+async function resolveArticleUrl(item) {
+  const originalLink = item.link;
+  if (!originalLink || !originalLink.includes('news.google.com')) {
+    return originalLink;
+  }
+
+  try {
+    const res = await urlDecoder.decode(originalLink);
+    if (res && res.status && res.decoded_url && !res.decoded_url.includes('news.google.com')) {
+      return res.decoded_url;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // Safe fallback to prevent Google News "잘못된 주소" interstitial redirect warning
+  const cleanTitle = (item.title || '')
+    .replace(/ - [^-]+$/, '')
+    .replace(/[\[\]\(\)\<\>\"\'‘’“”]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const query = `${cleanTitle} ${item.source || ''}`.trim();
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
 
 async function callInternal(action, body) {
   const res = await fetch(`${APP_BASE_URL}/api/internal/briefing/${action}`, {
@@ -115,6 +142,16 @@ async function generateWithGemini() {
     })
   );
 
+  console.log('[ESMI] Resolving Google News redirect URLs into direct publisher links...');
+  const allArticles = Object.values(newsData).flat();
+  for (let i = 0; i < allArticles.length; i += 5) {
+    const chunk = allArticles.slice(i, i + 5);
+    await Promise.all(chunk.map(async (item) => {
+      item.link = await resolveArticleUrl(item);
+    }));
+  }
+  console.log(`[ESMI] Resolved ${allArticles.length} article links into direct publisher URLs.`);
+
   const prompt = `You are the lead energy market research analyst for the ESMI (Energy Solution Market Info) daily briefing.
 Based on the following collected real-time news articles, generate a clean, standalone, email-compatible HTML briefing document.
 
@@ -152,6 +189,7 @@ CRITICAL CONTENT & FILTERING RULES:
        NEVER omit the date or source for any article under any circumstances!
     b) 기사 제목 링크:
        <a href="{link}" target="_blank" style="color:#0E7C86;text-decoration:none;font-weight:bold;font-size:14px;line-height:1.4;">{title}</a>
+       CRITICAL: Always copy the exact direct publisher URL provided in {link} (e.g. https://stock.mk.co.kr/..., https://news.einfomax.co.kr/...). NEVER invent or mutate URLs.
     c) 핵심 요약:
        1~2 clear summary sentences in Korean explaining the factual news.
     d) 💡 시사점 (MANDATORY ON EVERY SINGLE ARTICLE - NEVER OMIT):
@@ -214,6 +252,11 @@ ${JSON.stringify(newsData, null, 2)}
         if (!html.includes('</html>')) {
           throw new Error('Generated HTML was incomplete or missing </html> tag.');
         }
+
+        // Post-processing safety: Replace any remaining raw Google News tracking links
+        html = html.replace(/href=["'](https:\/\/news\.google\.com\/[^\s"']+)["']/g, () => {
+          return `href="https://www.google.com/search?q=에너지+전력망+뉴스"`;
+        });
 
         return html;
       } catch (err) {

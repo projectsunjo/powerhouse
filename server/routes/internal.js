@@ -187,4 +187,22 @@ const handleSetting = async (req, res, next) => {
 router.post('/briefing/setting', handleSetting);
 router.post('/setting', handleSetting);
 
+// POST /api/internal/briefing/update-html { id, html, resendEmail }
+router.post('/briefing/update-html', async (req, res, next) => {
+  try {
+    const { id, html, resendEmail } = req.body || {};
+    if (!id || !html) return res.status(400).json({ error: 'id and html required' });
+    await pool.query('UPDATE briefings SET html = $1 WHERE id = $2', [html, id]);
+    let emailStatus = null;
+    if (resendEmail) {
+      const { rows } = await pool.query('SELECT created_at FROM briefings WHERE id = $1', [id]);
+      const createdAt = rows[0] ? rows[0].created_at.toISOString() : new Date().toISOString();
+      emailStatus = await sendAndLogBriefingEmail(id, html, createdAt, 'manual');
+    }
+    res.json({ ok: true, emailStatus });
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;
