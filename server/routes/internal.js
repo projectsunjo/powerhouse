@@ -51,9 +51,12 @@ async function shouldRunScheduled() {
   const kstNow = new Date(now.getTime() + KST_OFFSET_MS);
   const kstHour = kstNow.getUTCHours(); // KST wall-clock hour (0-23)
 
-  // 1. Hour window check (must be within the 8 AM hour window: 08:00 ~ 08:59 KST)
-  if (kstHour !== scheduleHour) {
-    console.log(`[Schedule] Current KST hour (${kstHour}) does not match scheduleHour (${scheduleHour}). Skipping.`);
+  // 1. Morning window check (08:00 ~ 10:59 KST):
+  // Never fire before scheduleHour (8 AM), and never fire after 11 AM.
+  // Within this morning window, allow execution so that any GitHub Actions queue
+  // delays (e.g. cron waking up at 08:30 or 09:15) do NOT cause the daily briefing to be lost.
+  if (kstHour < scheduleHour || kstHour >= 11) {
+    console.log(`[Schedule] Current KST hour (${kstHour}) is outside morning window (${scheduleHour}~10). Skipping.`);
     return false;
   }
 
@@ -141,7 +144,9 @@ router.post('/briefing/complete', async (req, res, next) => {
       emailStatus = await sendAndLogBriefingEmail(briefing.id, html, briefing.created_at.toISOString(), triggerType);
     }
 
-    await setSetting('briefing_last_scheduled_run_at', new Date().toISOString());
+    if (triggerType === 'auto') {
+      await setSetting('briefing_last_scheduled_run_at', new Date().toISOString());
+    }
 
     await pool.query(
       "UPDATE briefing_runs SET completed_at = NOW(), status = 'success', briefing_id = $1, email_status = $2 WHERE id = $3",
@@ -162,6 +167,18 @@ router.post('/briefing/fail', async (req, res, next) => {
       String(error || '알 수 없는 오류').slice(0, 500),
       runId,
     ]);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/internal/setting { key, value }
+router.post('/setting', async (req, res, next) => {
+  try {
+    const { key, value } = req.body || {};
+    if (!key) return res.status(400).json({ error: 'key required' });
+    await setSetting(key, String(value));
     res.json({ ok: true });
   } catch (e) {
     next(e);

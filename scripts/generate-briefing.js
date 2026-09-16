@@ -255,6 +255,15 @@ async function main() {
     throw new Error('APP_BASE_URL/INTERNAL_API_SECRET 환경변수가 설정되어 있지 않습니다.');
   }
 
+  if (process.env.SET_GITHUB_TOKEN) {
+    try {
+      await callInternal('setting', { key: 'github_token', value: process.env.SET_GITHUB_TOKEN });
+      console.log('[ESMI] Synced github_token into app DB settings.');
+    } catch (err) {
+      console.warn('[ESMI] Failed to persist github_token setting:', err.message);
+    }
+  }
+
   const start = await callInternal('start', { force: FORCE, runId: RUN_ID || undefined });
   if (!start.proceed) {
     console.log('Not due yet — skipping this run.');

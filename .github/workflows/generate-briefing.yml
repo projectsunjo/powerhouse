@@ -19,6 +19,10 @@ on:
         description: 'Existing briefing_runs id to report back to (set by the 지금생성 button)'
         required: false
         default: ''
+      set_github_token:
+        description: 'Optional GitHub PAT to store in DB settings'
+        required: false
+        default: ''
 
 jobs:
   generate:
@@ -43,4 +47,5 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           FORCE: ${{ github.event.inputs.force || 'false' }}
           RUN_ID: ${{ github.event.inputs.run_id }}
+          SET_GITHUB_TOKEN: ${{ github.event.inputs.set_github_token }}
         run: node scripts/generate-briefing.js
