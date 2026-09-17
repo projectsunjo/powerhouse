@@ -30,6 +30,7 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
+        connectSrc: ["'self'", 'https://*.supabase.co'],
         imgSrc: ["'self'", 'data:', 'https://*.supabase.co'],
         frameSrc: [
           "'self'",
@@ -42,11 +43,8 @@ app.use(
   })
 );
 app.use(compression());
-// Raised from 200kb: profile-photo uploads are sent as base64 JSON (not
-// multipart/form-data - this corporate network's proxy silently mangles
-// multipart uploads, the same issue that blocked Vercel's own upload API
-// earlier), so a 4MB image needs headroom for ~33% base64 overhead.
 app.use(express.json({ limit: '6mb' }));
+app.use(express.raw({ type: 'application/octet-stream', limit: '10mb' }));
 app.use(cookieParser());
 
 // Basic bot/scraping/flood protection. This is deliberately minimal —

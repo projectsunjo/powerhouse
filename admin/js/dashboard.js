@@ -905,7 +905,7 @@ if (fileUploadBtn) {
     if (progressText) progressText.textContent = '파일 업로드 준비 중...';
 
     try {
-      // 512KB 청크 분할 (Base64 인코딩 시 약 680KB로 사내망 프록시 1MB 제한 및 Vercel 제한을 안전하게 통과)
+      // 512KB 순수 바이너리 청크 분할 (application/octet-stream 전송으로 WAF 문자열 오탐 및 사내망 1MB 제한 완벽 우회)
       const CHUNK_SIZE = 512 * 1024;
       const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
       const totalChunks = Math.ceil(selectedUploadFile.size / CHUNK_SIZE) || 1;
@@ -914,28 +914,43 @@ if (fileUploadBtn) {
         const start = i * CHUNK_SIZE;
         const end = Math.min(start + CHUNK_SIZE, selectedUploadFile.size);
         const slice = selectedUploadFile.slice(start, end);
-        const chunkBase64 = await readFileAsBase64(slice);
 
         const currentPart = i + 1;
         const startPct = Math.round((i / totalChunks) * 100);
         if (progressBar) progressBar.style.width = `${startPct}%`;
         if (progressText) progressText.textContent = `파일 업로드 중... (${currentPart}/${totalChunks} - ${startPct}%)`;
 
-        // 청크 전송 (네트워크 일시 지연 대비 3회 재시도)
+        // 순수 바이너리 스트림 전송 (네트워크 일시 지연 대비 3회 재시도)
         let attempts = 0;
         let success = false;
         let lastErr = null;
         while (attempts < 3 && !success) {
           try {
             attempts++;
-            await api('/api/admin/files/chunk', {
+            const qs = new URLSearchParams({ uploadId, chunkIndex: String(i) });
+            const res = await fetch(`/api/admin/files/chunk?${qs.toString()}`, {
               method: 'POST',
-              body: {
-                uploadId,
-                chunkIndex: i,
-                chunkBase64,
+              headers: {
+                'Content-Type': 'application/octet-stream',
               },
+              credentials: 'same-origin',
+              body: slice,
             });
+
+            if (!res.ok) {
+              const text = await res.text();
+              let errMsg = '';
+              try {
+                const j = JSON.parse(text);
+                errMsg = j.error;
+              } catch (parseErr) {
+                const m = text.match(/<title>([^<]+)<\/title>/i) || text.match(/<h1>([^<]+)<\/h1>/i);
+                errMsg = m ? m[1].trim() : (text.length < 120 ? text.trim() : '');
+              }
+              const err = new Error(errMsg || `청크 전송 실패 (HTTP ${res.status})`);
+              err.status = res.status;
+              throw err;
+            }
             success = true;
           } catch (chunkErr) {
             lastErr = chunkErr;

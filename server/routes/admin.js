@@ -586,14 +586,27 @@ router.get('/files/config', staffAccess, (req, res) => {
   });
 });
 
-// POST /api/admin/files/chunk { uploadId, chunkIndex, chunkBase64 }
+// POST /api/admin/files/chunk (supports raw binary body OR base64 JSON)
 router.post('/files/chunk', staffAccess, async (req, res) => {
   try {
-    const { uploadId, chunkIndex, chunkBase64 } = req.body || {};
-    if (!uploadId || chunkIndex === undefined || !chunkBase64) {
-      return res.status(400).json({ error: '청크 데이터가 부족합니다.' });
+    const uploadId = req.query.uploadId || (req.body && req.body.uploadId);
+    const chunkIndex = req.query.chunkIndex !== undefined ? req.query.chunkIndex : (req.body && req.body.chunkIndex);
+
+    if (!uploadId || chunkIndex === undefined) {
+      return res.status(400).json({ error: '청크 메타데이터(uploadId, chunkIndex)가 부족합니다.' });
     }
-    const buffer = Buffer.from(chunkBase64, 'base64');
+
+    let buffer = null;
+    if (Buffer.isBuffer(req.body)) {
+      buffer = req.body;
+    } else if (req.body && req.body.chunkBase64) {
+      buffer = Buffer.from(req.body.chunkBase64, 'base64');
+    }
+
+    if (!buffer || buffer.length === 0) {
+      return res.status(400).json({ error: '청크 데이터가 비어 있습니다.' });
+    }
+
     try {
       await pool.query(
         `INSERT INTO file_chunks (upload_id, chunk_index, data)
@@ -622,7 +635,7 @@ router.post('/files/chunk', staffAccess, async (req, res) => {
         throw dbErr;
       }
     }
-    res.json({ ok: true, chunkIndex });
+    res.json({ ok: true, chunkIndex: parseInt(chunkIndex, 10) });
   } catch (e) {
     console.error('File chunk upload error:', e);
     res.status(500).json({ error: `청크 저장 실패: ${e.message}` });
