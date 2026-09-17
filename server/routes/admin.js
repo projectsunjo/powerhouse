@@ -587,27 +587,50 @@ router.get('/files/config', staffAccess, (req, res) => {
 });
 
 // POST /api/admin/files/chunk { uploadId, chunkIndex, chunkBase64 }
-router.post('/files/chunk', staffAccess, async (req, res, next) => {
+router.post('/files/chunk', staffAccess, async (req, res) => {
   try {
     const { uploadId, chunkIndex, chunkBase64 } = req.body || {};
     if (!uploadId || chunkIndex === undefined || !chunkBase64) {
       return res.status(400).json({ error: '청크 데이터가 부족합니다.' });
     }
     const buffer = Buffer.from(chunkBase64, 'base64');
-    await pool.query(
-      `INSERT INTO file_chunks (upload_id, chunk_index, data)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (upload_id, chunk_index) DO UPDATE SET data = EXCLUDED.data`,
-      [uploadId, parseInt(chunkIndex, 10), buffer]
-    );
+    try {
+      await pool.query(
+        `INSERT INTO file_chunks (upload_id, chunk_index, data)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (upload_id, chunk_index) DO UPDATE SET data = EXCLUDED.data`,
+        [uploadId, parseInt(chunkIndex, 10), buffer]
+      );
+    } catch (dbErr) {
+      if (dbErr.message && (dbErr.message.includes('file_chunks') || dbErr.code === '42P01')) {
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS file_chunks (
+            upload_id TEXT NOT NULL,
+            chunk_index INTEGER NOT NULL,
+            data BYTEA NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            PRIMARY KEY (upload_id, chunk_index)
+          );
+        `);
+        await pool.query(
+          `INSERT INTO file_chunks (upload_id, chunk_index, data)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (upload_id, chunk_index) DO UPDATE SET data = EXCLUDED.data`,
+          [uploadId, parseInt(chunkIndex, 10), buffer]
+        );
+      } else {
+        throw dbErr;
+      }
+    }
     res.json({ ok: true, chunkIndex });
   } catch (e) {
-    next(e);
+    console.error('File chunk upload error:', e);
+    res.status(500).json({ error: `청크 저장 실패: ${e.message}` });
   }
 });
 
 // POST /api/admin/files/complete-chunk-upload { uploadId, filename, mimeType, totalChunks }
-router.post('/files/complete-chunk-upload', staffAccess, async (req, res, next) => {
+router.post('/files/complete-chunk-upload', staffAccess, async (req, res) => {
   try {
     const { uploadId, filename, mimeType, totalChunks } = req.body || {};
     if (!uploadId || !filename || totalChunks === undefined) {
@@ -622,7 +645,7 @@ router.post('/files/complete-chunk-upload', staffAccess, async (req, res, next) 
     const expectedTotal = parseInt(totalChunks, 10);
     if (rows.length !== expectedTotal) {
       return res.status(400).json({
-        error: `청크 누락: 전체 ${expectedTotal}개 중 ${rows.length}개만 전송되었습니다. 다시 시도해주세요.`,
+        error: `청크 누락: 전체 ${expectedTotal}개 중 ${rows.length}개만 수신되었습니다. 다시 시도해주세요.`,
       });
     }
 
@@ -671,7 +694,8 @@ router.post('/files/complete-chunk-upload', staffAccess, async (req, res, next) 
 
     res.json({ ok: true, file: insertRes.rows[0] });
   } catch (e) {
-    next(e);
+    console.error('Complete chunk upload error:', e);
+    res.status(500).json({ error: `파일 완성 실패: ${e.message}` });
   }
 });
 

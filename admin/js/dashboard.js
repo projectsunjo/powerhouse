@@ -905,8 +905,8 @@ if (fileUploadBtn) {
     if (progressText) progressText.textContent = '파일 업로드 준비 중...';
 
     try {
-      // 2MB 청크 분할 (Base64 인코딩 시 약 2.67MB로 Vercel의 4.5MB 제한을 안전하게 준수)
-      const CHUNK_SIZE = 2 * 1024 * 1024;
+      // 512KB 청크 분할 (Base64 인코딩 시 약 680KB로 사내망 프록시 1MB 제한 및 Vercel 제한을 안전하게 통과)
+      const CHUNK_SIZE = 512 * 1024;
       const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
       const totalChunks = Math.ceil(selectedUploadFile.size / CHUNK_SIZE) || 1;
 
@@ -917,13 +917,14 @@ if (fileUploadBtn) {
         const chunkBase64 = await readFileAsBase64(slice);
 
         const currentPart = i + 1;
-        const pct = Math.round((currentPart / totalChunks) * 100);
-        if (progressBar) progressBar.style.width = `${pct}%`;
-        if (progressText) progressText.textContent = `파일 업로드 중... (${currentPart}/${totalChunks} - ${pct}%)`;
+        const startPct = Math.round((i / totalChunks) * 100);
+        if (progressBar) progressBar.style.width = `${startPct}%`;
+        if (progressText) progressText.textContent = `파일 업로드 중... (${currentPart}/${totalChunks} - ${startPct}%)`;
 
         // 청크 전송 (네트워크 일시 지연 대비 3회 재시도)
         let attempts = 0;
         let success = false;
+        let lastErr = null;
         while (attempts < 3 && !success) {
           try {
             attempts++;
@@ -937,13 +938,18 @@ if (fileUploadBtn) {
             });
             success = true;
           } catch (chunkErr) {
+            lastErr = chunkErr;
             if (attempts >= 3) throw chunkErr;
             await new Promise((r) => setTimeout(r, 1000));
           }
         }
+
+        const endPct = Math.round((currentPart / totalChunks) * 100);
+        if (progressBar) progressBar.style.width = `${endPct}%`;
+        if (progressText) progressText.textContent = `파일 업로드 중... (${currentPart}/${totalChunks} - ${endPct}%)`;
       }
 
-      if (progressText) progressText.textContent = '서버 스토리지 저장 및 동기화 중...';
+      if (progressText) progressText.textContent = '서버 스토리지 저장 및 동기화 중... 잠시만 기다려주세요.';
       if (progressBar) progressBar.style.width = '100%';
 
       await api('/api/admin/files/complete-chunk-upload', {
@@ -961,6 +967,7 @@ if (fileUploadBtn) {
       fileState.page = 1;
       loadFiles();
     } catch (e) {
+      console.error('File upload failed:', e);
       showToast(e.message || '파일 업로드 중 오류가 발생했습니다.');
       fileUploadBtn.disabled = false;
       if (progressEl) progressEl.style.display = 'none';

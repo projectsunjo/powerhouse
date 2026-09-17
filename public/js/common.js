@@ -120,14 +120,31 @@ async function api(path, options = {}) {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   let data = null;
+  let text = '';
   try {
-    data = await res.json();
+    text = await res.text();
+    data = JSON.parse(text);
   } catch (e) {
     data = null;
   }
   if (!res.ok) {
-    const err = new Error((data && data.error) || '요청에 실패했습니다.');
+    let msg = (data && data.error);
+    if (!msg) {
+      if (text && text.length < 150 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+        msg = text.trim();
+      } else if (res.status === 413) {
+        msg = '전송 크기 초과 (413 Payload Too Large)';
+      } else if (res.status === 504) {
+        msg = '게이트웨이 시간 초과 (504 Gateway Timeout)';
+      } else if (res.status === 502) {
+        msg = '게이트웨이 오류 (502 Bad Gateway)';
+      } else {
+        msg = `요청에 실패했습니다 (HTTP ${res.status})`;
+      }
+    }
+    const err = new Error(msg);
     err.status = res.status;
+    err.rawResponse = text;
     throw err;
   }
   return data;
