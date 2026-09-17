@@ -901,18 +901,45 @@ if (fileUploadBtn) {
     progressEl.style.display = 'block';
 
     try {
-      let config = { blobConfigured: false };
+      let config = { storageType: 'direct', supabaseConfigured: false, blobConfigured: false };
       try {
         config = await api('/api/admin/files/config');
       } catch (err) {}
 
-      // If file > 4MB and Blob is not configured in Vercel
-      if (selectedUploadFile.size > 4 * 1024 * 1024 && !config.blobConfigured) {
-        throw new Error('4MB를 초과하는 대용량 파일(최대 100MB)은 Vercel Blob 스토리지가 필요합니다. Vercel 대시보드(Storage > Blob)에서 스토리지를 생성해주세요.');
-      }
+      // 1. Prioritize Supabase Storage (where profile photos are stored)
+      if (config.supabaseConfigured) {
+        const uploadInfo = await api('/api/admin/files/supabase-upload-url', {
+          method: 'POST',
+          body: {
+            filename: selectedUploadFile.name,
+            mimeType: selectedUploadFile.type || 'application/octet-stream',
+          },
+        });
 
-      // If Blob is configured and VercelBlob library is loaded
-      if (config.blobConfigured && window.VercelBlob && window.VercelBlob.upload) {
+        const uploadRes = await fetch(uploadInfo.signedUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': selectedUploadFile.type || 'application/octet-stream',
+          },
+          body: selectedUploadFile,
+        });
+
+        if (!uploadRes.ok) {
+          const errText = await uploadRes.text();
+          throw new Error(`Supabase 스토리지 업로드 실패: ${errText || uploadRes.statusText}`);
+        }
+
+        await api('/api/admin/files/register-blob', {
+          method: 'POST',
+          body: {
+            filename: selectedUploadFile.name,
+            mimeType: selectedUploadFile.type || 'application/octet-stream',
+            sizeBytes: selectedUploadFile.size,
+            blobUrl: uploadInfo.publicUrl,
+          },
+        });
+      } else if (config.blobConfigured && window.VercelBlob && window.VercelBlob.upload) {
+        // 2. Vercel Blob client upload
         const blob = await window.VercelBlob.upload(selectedUploadFile.name, selectedUploadFile, {
           access: 'public',
           handleUploadUrl: '/api/admin/files/blob-upload',
@@ -929,7 +956,11 @@ if (fileUploadBtn) {
           },
         });
       } else {
-        // Direct DB upload fallback (<= 4MB)
+        // 3. Direct DB upload fallback (<= 4MB)
+        if (selectedUploadFile.size > 4 * 1024 * 1024) {
+          throw new Error('4MB를 초과하는 대용량 파일은 Supabase Storage(SUPABASE_URL) 또는 Vercel Blob 연결이 필요합니다.');
+        }
+
         const fileBase64 = await readFileAsBase64(selectedUploadFile);
         await api('/api/admin/files', {
           method: 'POST',

@@ -7,7 +7,12 @@ const { requireRole } = require('../utils/userAuth');
 const { triggerBriefingWorkflow } = require('../utils/github');
 const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
-const { uploadProfileImage } = require('../utils/storage');
+const {
+  uploadProfileImage,
+  createSignedFileUploadUrl,
+  deleteStoredFile,
+  isSupabaseStorageConfigured,
+} = require('../utils/storage');
 const { escapeLike } = require('../utils/helpers');
 const { resolveMimeType } = require('./files');
 const { del } = require('@vercel/blob');
@@ -569,11 +574,28 @@ router.get('/files', staffAccess, async (req, res, next) => {
 
 // GET /api/admin/files/config
 router.get('/files/config', staffAccess, (req, res) => {
+  const supabaseConfigured = isSupabaseStorageConfigured();
+  const blobConfigured = !!process.env.BLOB_READ_WRITE_TOKEN;
   res.json({
-    blobConfigured: !!process.env.BLOB_READ_WRITE_TOKEN,
+    supabaseConfigured,
+    blobConfigured,
+    storageType: supabaseConfigured ? 'supabase' : (blobConfigured ? 'vercel-blob' : 'direct'),
     maxBytes: MAX_BLOB_FILE_BYTES,
     directMaxBytes: MAX_FILE_BYTES,
   });
+});
+
+// POST /api/admin/files/supabase-upload-url { filename }
+router.post('/files/supabase-upload-url', staffAccess, async (req, res, next) => {
+  try {
+    const { filename } = req.body || {};
+    if (!filename) return res.status(400).json({ error: '파일명이 필요합니다.' });
+
+    const result = await createSignedFileUploadUrl(filename);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
 });
 
 // POST /api/admin/files/blob-upload  (handles token generation & callback for Vercel Blob)
@@ -688,13 +710,19 @@ router.post('/files', staffAccess, async (req, res, next) => {
 router.delete('/files/:id', staffAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, blob_url FROM uploaded_files WHERE id = $1', [req.params.id]);
-    if (!rows[0]) return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
-
-    if (rows[0].blob_url && process.env.BLOB_READ_WRITE_TOKEN) {
-      try {
-        await del(rows[0].blob_url);
-      } catch (err) {
-        console.warn('Failed to delete blob from storage:', err.message);
+    if (rows[0].blob_url) {
+      if (rows[0].blob_url.includes('supabase.co')) {
+        try {
+          await deleteStoredFile(rows[0].blob_url);
+        } catch (err) {
+          console.warn('Failed to delete file from Supabase storage:', err.message);
+        }
+      } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+        try {
+          await del(rows[0].blob_url);
+        } catch (err) {
+          console.warn('Failed to delete blob from storage:', err.message);
+        }
       }
     }
 
