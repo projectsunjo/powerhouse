@@ -5,7 +5,8 @@
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public/**,admin/**}"
+      "includeFiles": "{public/**,admin/**}",
+      "maxDuration": 60
     }
   },
   "crons": [

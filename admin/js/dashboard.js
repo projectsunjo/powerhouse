@@ -898,79 +898,63 @@ if (fileUploadBtn) {
 
     fileUploadBtn.disabled = true;
     const progressEl = document.getElementById('fileUploadProgress');
-    progressEl.style.display = 'block';
+    const progressBar = document.getElementById('fileUploadProgressBar');
+    const progressText = document.getElementById('fileUploadProgressText');
+    if (progressEl) progressEl.style.display = 'block';
+    if (progressBar) progressBar.style.width = '0%';
+    if (progressText) progressText.textContent = '파일 업로드 준비 중...';
 
     try {
-      let config = { storageType: 'direct', supabaseConfigured: false, blobConfigured: false };
-      try {
-        config = await api('/api/admin/files/config');
-      } catch (err) {}
+      // 2MB 청크 분할 (Base64 인코딩 시 약 2.67MB로 Vercel의 4.5MB 제한을 안전하게 준수)
+      const CHUNK_SIZE = 2 * 1024 * 1024;
+      const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+      const totalChunks = Math.ceil(selectedUploadFile.size / CHUNK_SIZE) || 1;
 
-      // 1. Prioritize Supabase Storage (where profile photos are stored)
-      if (config.supabaseConfigured) {
-        const uploadInfo = await api('/api/admin/files/supabase-upload-url', {
-          method: 'POST',
-          body: {
-            filename: selectedUploadFile.name,
-            mimeType: selectedUploadFile.type || 'application/octet-stream',
-          },
-        });
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, selectedUploadFile.size);
+        const slice = selectedUploadFile.slice(start, end);
+        const chunkBase64 = await readFileAsBase64(slice);
 
-        const uploadRes = await fetch(uploadInfo.signedUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': selectedUploadFile.type || 'application/octet-stream',
-          },
-          body: selectedUploadFile,
-        });
+        const currentPart = i + 1;
+        const pct = Math.round((currentPart / totalChunks) * 100);
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (progressText) progressText.textContent = `파일 업로드 중... (${currentPart}/${totalChunks} - ${pct}%)`;
 
-        if (!uploadRes.ok) {
-          const errText = await uploadRes.text();
-          throw new Error(`Supabase 스토리지 업로드 실패: ${errText || uploadRes.statusText}`);
+        // 청크 전송 (네트워크 일시 지연 대비 3회 재시도)
+        let attempts = 0;
+        let success = false;
+        while (attempts < 3 && !success) {
+          try {
+            attempts++;
+            await api('/api/admin/files/chunk', {
+              method: 'POST',
+              body: {
+                uploadId,
+                chunkIndex: i,
+                chunkBase64,
+              },
+            });
+            success = true;
+          } catch (chunkErr) {
+            if (attempts >= 3) throw chunkErr;
+            await new Promise((r) => setTimeout(r, 1000));
+          }
         }
-
-        await api('/api/admin/files/register-blob', {
-          method: 'POST',
-          body: {
-            filename: selectedUploadFile.name,
-            mimeType: selectedUploadFile.type || 'application/octet-stream',
-            sizeBytes: selectedUploadFile.size,
-            blobUrl: uploadInfo.publicUrl,
-          },
-        });
-      } else if (config.blobConfigured && window.VercelBlob && window.VercelBlob.upload) {
-        // 2. Vercel Blob client upload
-        const blob = await window.VercelBlob.upload(selectedUploadFile.name, selectedUploadFile, {
-          access: 'public',
-          handleUploadUrl: '/api/admin/files/blob-upload',
-          multipart: true,
-        });
-
-        await api('/api/admin/files/register-blob', {
-          method: 'POST',
-          body: {
-            filename: selectedUploadFile.name,
-            mimeType: selectedUploadFile.type || 'application/octet-stream',
-            sizeBytes: selectedUploadFile.size,
-            blobUrl: blob.url,
-          },
-        });
-      } else {
-        // 3. Direct DB upload fallback (<= 4MB)
-        if (selectedUploadFile.size > 4 * 1024 * 1024) {
-          throw new Error('4MB를 초과하는 대용량 파일은 Supabase Storage(SUPABASE_URL) 또는 Vercel Blob 연결이 필요합니다.');
-        }
-
-        const fileBase64 = await readFileAsBase64(selectedUploadFile);
-        await api('/api/admin/files', {
-          method: 'POST',
-          body: {
-            filename: selectedUploadFile.name,
-            mimeType: selectedUploadFile.type || 'application/octet-stream',
-            fileBase64,
-          },
-        });
       }
+
+      if (progressText) progressText.textContent = '서버 스토리지 저장 및 동기화 중...';
+      if (progressBar) progressBar.style.width = '100%';
+
+      await api('/api/admin/files/complete-chunk-upload', {
+        method: 'POST',
+        body: {
+          uploadId,
+          filename: selectedUploadFile.name,
+          mimeType: selectedUploadFile.type || 'application/octet-stream',
+          totalChunks,
+        },
+      });
 
       showToast('파일이 성공적으로 업로드되었습니다.');
       clearFileSelection();
@@ -979,7 +963,7 @@ if (fileUploadBtn) {
     } catch (e) {
       showToast(e.message || '파일 업로드 중 오류가 발생했습니다.');
       fileUploadBtn.disabled = false;
-      progressEl.style.display = 'none';
+      if (progressEl) progressEl.style.display = 'none';
     }
   };
 }

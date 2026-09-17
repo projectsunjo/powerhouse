@@ -139,6 +139,15 @@ async function init() {
     CREATE INDEX IF NOT EXISTS idx_briefing_runs_started ON briefing_runs(started_at);
     CREATE INDEX IF NOT EXISTS idx_email_logs_created ON email_logs(created_at);
     CREATE INDEX IF NOT EXISTS idx_uploaded_files_created ON uploaded_files(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS file_chunks (
+      upload_id TEXT NOT NULL,
+      chunk_index INTEGER NOT NULL,
+      data BYTEA NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (upload_id, chunk_index)
+    );
+    CREATE INDEX IF NOT EXISTS idx_file_chunks_created ON file_chunks(created_at);
   `);
 
   const defaultSettings = {

@@ -48,13 +48,14 @@ async function serveUploadedFile(req, res, next) {
 
     const file = rows[0];
 
-    // If file is stored on Vercel Blob (supports up to 100MB+)
+    // If file is stored on Supabase Storage or Vercel Blob (supports up to 100MB+)
     if (file.blob_url) {
       const isDangerous = /\.(html?|svg|js|xml)$/i.test(file.filename);
       const isDownload = req.query.download === '1' || req.query.dl === '1' || isDangerous;
       let targetUrl = file.blob_url;
       if (isDownload) {
-        targetUrl = targetUrl.includes('?') ? `${targetUrl}&download=1` : `${targetUrl}?download=1`;
+        const dlParam = `download=${encodeURIComponent(file.filename)}`;
+        targetUrl = targetUrl.includes('?') ? `${targetUrl}&${dlParam}` : `${targetUrl}?${dlParam}`;
       }
       return res.redirect(302, targetUrl);
     }

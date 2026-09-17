@@ -193,9 +193,12 @@
         </div>
 
         <div id="fileUploadProgress" style="display:none; margin-top:12px;">
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
             <span class="spinner" style="width:14px; height:14px; display:inline-block;"></span>
-            <span class="small-muted">파일을 업로드하는 중입니다...</span>
+            <span class="small-muted" id="fileUploadProgressText">파일을 업로드하는 중입니다...</span>
+          </div>
+          <div style="width:100%; background:var(--bg-subtle, #f0f0f0); border-radius:4px; height:6px; overflow:hidden; border:1px solid var(--border);">
+            <div id="fileUploadProgressBar" style="width:0%; height:100%; background:var(--primary, #2563eb); transition:width 0.2s;"></div>
           </div>
         </div>
       </div>

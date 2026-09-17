@@ -28,9 +28,13 @@ async function ensureBucket(supabase, bucketName = AVATAR_BUCKET) {
   if (bucketName === AVATAR_BUCKET && avatarBucketEnsured) return;
   if (bucketName === FILES_BUCKET && filesBucketEnsured) return;
 
-  const { data: buckets } = await supabase.storage.listBuckets();
-  if (!buckets || !buckets.some((b) => b.name === bucketName)) {
-    await supabase.storage.createBucket(bucketName, { public: true });
+  try {
+    const { data: buckets, error } = await supabase.storage.listBuckets();
+    if (!error && buckets && !buckets.some((b) => b.name === bucketName)) {
+      await supabase.storage.createBucket(bucketName, { public: true, fileSizeLimit: 104857600 });
+    }
+  } catch (err) {
+    console.warn(`ensureBucket(${bucketName}) warning:`, err.message);
   }
   if (bucketName === AVATAR_BUCKET) avatarBucketEnsured = true;
   if (bucketName === FILES_BUCKET) filesBucketEnsured = true;
@@ -91,15 +95,40 @@ async function deleteStoredFile(urlOrPath) {
   const supabase = getClient();
   if (!supabase || !urlOrPath) return;
 
-  const match = urlOrPath.match(/\/storage\/v1\/object\/public\/files\/(.+)$/);
+  const match = urlOrPath.match(/\/storage\/v1\/object\/public\/files\/([^?#]+)/);
   if (match) {
     const filePath = decodeURIComponent(match[1]);
     await supabase.storage.from(FILES_BUCKET).remove([filePath]);
   }
 }
 
+// Uploads a file buffer directly from server to Supabase Storage
+async function uploadFileToSupabase(filename, buffer, mimeType) {
+  const supabase = getClient();
+  if (!supabase) {
+    throw new Error('Supabase 저장소가 설정되지 않았습니다 (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 필요).');
+  }
+  await ensureBucket(supabase, FILES_BUCKET);
+
+  const cleanName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_') || 'file';
+  const filePath = `uploads/${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${cleanName}`;
+
+  const { error } = await supabase.storage.from(FILES_BUCKET).upload(filePath, buffer, {
+    contentType: mimeType || 'application/octet-stream',
+    upsert: true,
+  });
+  if (error) throw new Error(`Supabase 스토리지 업로드 실패: ${error.message}`);
+
+  const { data: publicData } = supabase.storage.from(FILES_BUCKET).getPublicUrl(filePath);
+  return {
+    path: filePath,
+    publicUrl: publicData.publicUrl,
+  };
+}
+
 module.exports = {
   uploadProfileImage,
+  uploadFileToSupabase,
   createSignedFileUploadUrl,
   deleteStoredFile,
   isSupabaseStorageConfigured,

@@ -9,6 +9,7 @@ const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
 const {
   uploadProfileImage,
+  uploadFileToSupabase,
   createSignedFileUploadUrl,
   deleteStoredFile,
   isSupabaseStorageConfigured,
@@ -585,6 +586,95 @@ router.get('/files/config', staffAccess, (req, res) => {
   });
 });
 
+// POST /api/admin/files/chunk { uploadId, chunkIndex, chunkBase64 }
+router.post('/files/chunk', staffAccess, async (req, res, next) => {
+  try {
+    const { uploadId, chunkIndex, chunkBase64 } = req.body || {};
+    if (!uploadId || chunkIndex === undefined || !chunkBase64) {
+      return res.status(400).json({ error: '청크 데이터가 부족합니다.' });
+    }
+    const buffer = Buffer.from(chunkBase64, 'base64');
+    await pool.query(
+      `INSERT INTO file_chunks (upload_id, chunk_index, data)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (upload_id, chunk_index) DO UPDATE SET data = EXCLUDED.data`,
+      [uploadId, parseInt(chunkIndex, 10), buffer]
+    );
+    res.json({ ok: true, chunkIndex });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/admin/files/complete-chunk-upload { uploadId, filename, mimeType, totalChunks }
+router.post('/files/complete-chunk-upload', staffAccess, async (req, res, next) => {
+  try {
+    const { uploadId, filename, mimeType, totalChunks } = req.body || {};
+    if (!uploadId || !filename || totalChunks === undefined) {
+      return res.status(400).json({ error: '업로드 정보가 올바르지 않습니다.' });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT chunk_index, data FROM file_chunks WHERE upload_id = $1 ORDER BY chunk_index ASC`,
+      [uploadId]
+    );
+
+    const expectedTotal = parseInt(totalChunks, 10);
+    if (rows.length !== expectedTotal) {
+      return res.status(400).json({
+        error: `청크 누락: 전체 ${expectedTotal}개 중 ${rows.length}개만 전송되었습니다. 다시 시도해주세요.`,
+      });
+    }
+
+    const fullBuffer = Buffer.concat(rows.map((r) => r.data));
+
+    // 청크 임시 데이터 정리
+    await pool.query('DELETE FROM file_chunks WHERE upload_id = $1', [uploadId]);
+    pool.query("DELETE FROM file_chunks WHERE created_at < NOW() - INTERVAL '2 hours'").catch(() => {});
+
+    const cleanFilename = path.basename(filename.trim()).replace(/[\r\n\t]/g, '');
+    const resolvedMime = resolveMimeType(cleanFilename, mimeType);
+    const id = crypto.randomBytes(8).toString('hex');
+    const uploader = req.user ? (req.user.displayName || req.user.username) : '관리자';
+
+    let blobUrl = null;
+    let fileData = null;
+
+    if (isSupabaseStorageConfigured()) {
+      try {
+        const uploadResult = await uploadFileToSupabase(cleanFilename, fullBuffer, resolvedMime);
+        blobUrl = uploadResult.publicUrl;
+      } catch (storageErr) {
+        console.error('Supabase storage upload failed:', storageErr.message);
+        if (fullBuffer.length <= MAX_FILE_BYTES) {
+          fileData = fullBuffer;
+        } else {
+          return res.status(400).json({ error: storageErr.message || 'Supabase 스토리지 업로드에 실패했습니다.' });
+        }
+      }
+    } else {
+      if (fullBuffer.length <= MAX_FILE_BYTES) {
+        fileData = fullBuffer;
+      } else {
+        return res.status(400).json({
+          error: '4MB를 초과하는 대용량 파일은 Supabase Storage(SUPABASE_URL) 연결이 필요합니다.',
+        });
+      }
+    }
+
+    const insertRes = await pool.query(
+      `INSERT INTO uploaded_files (id, filename, mime_type, size_bytes, data, blob_url, uploaded_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, filename, mime_type, size_bytes, blob_url, uploaded_by, created_at`,
+      [id, cleanFilename, resolvedMime, fullBuffer.length, fileData, blobUrl, uploader]
+    );
+
+    res.json({ ok: true, file: insertRes.rows[0] });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // POST /api/admin/files/supabase-upload-url { filename }
 router.post('/files/supabase-upload-url', staffAccess, async (req, res, next) => {
   try {
@@ -710,7 +800,7 @@ router.post('/files', staffAccess, async (req, res, next) => {
 router.delete('/files/:id', staffAccess, async (req, res, next) => {
   try {
     const { rows } = await pool.query('SELECT id, blob_url FROM uploaded_files WHERE id = $1', [req.params.id]);
-    if (rows[0].blob_url) {
+    if (rows && rows.length > 0 && rows[0].blob_url) {
       if (rows[0].blob_url.includes('supabase.co')) {
         try {
           await deleteStoredFile(rows[0].blob_url);
