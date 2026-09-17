@@ -945,7 +945,12 @@ if (fileUploadBtn) {
                 errMsg = j.error;
               } catch (parseErr) {
                 const m = text.match(/<title>([^<]+)<\/title>/i) || text.match(/<h1>([^<]+)<\/h1>/i);
-                errMsg = m ? m[1].trim() : (text.length < 120 ? text.trim() : '');
+                let title = m ? m[1].trim() : (text.length < 120 ? text.trim() : '');
+                if (title.includes('보안 경고') || title.includes('보안') || title.includes('Access Denied') || text.includes('보안정책') || text.includes('DLP')) {
+                  errMsg = '사내 보안 정책(DLP)에 의해 파일 업로드가 차단되었습니다. (사외망 또는 모바일 환경에서 업로드해주세요)';
+                } else {
+                  errMsg = title;
+                }
               }
               const err = new Error(errMsg || `청크 전송 실패 (HTTP ${res.status})`);
               err.status = res.status;

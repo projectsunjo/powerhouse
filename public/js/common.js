@@ -130,8 +130,14 @@ async function api(path, options = {}) {
   if (!res.ok) {
     let msg = (data && data.error);
     if (!msg) {
-      if (text && text.length < 150 && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
-        msg = text.trim();
+      let snippet = '';
+      if (text) {
+        const m = text.match(/<title>([^<]+)<\/title>/i) || text.match(/<h1>([^<]+)<\/h1>/i);
+        if (m) snippet = m[1].trim();
+        else if (text.length < 150) snippet = text.trim();
+      }
+      if (snippet.includes('보안 경고') || snippet.includes('보안') || snippet.includes('Access Denied') || (text && (text.includes('보안정책') || text.includes('DLP')))) {
+        msg = '사내 보안 정책(DLP/프록시)에 의해 파일 전송이 차단되었습니다. (사외망 또는 모바일 환경에서 업로드해주세요)';
       } else if (res.status === 413) {
         msg = '전송 크기 초과 (413 Payload Too Large)';
       } else if (res.status === 504) {
@@ -139,7 +145,7 @@ async function api(path, options = {}) {
       } else if (res.status === 502) {
         msg = '게이트웨이 오류 (502 Bad Gateway)';
       } else {
-        msg = `요청에 실패했습니다 (HTTP ${res.status})`;
+        msg = snippet ? `요청 실패: ${snippet}` : `요청에 실패했습니다 (HTTP ${res.status})`;
       }
     }
     const err = new Error(msg);
