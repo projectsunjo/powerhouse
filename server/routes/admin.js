@@ -1,3 +1,5 @@
+const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
@@ -7,15 +9,18 @@ const { getBriefingSettings, setSetting } = require('../utils/settings');
 const { sendAndLogBriefingEmail } = require('../utils/mailer');
 const { uploadProfileImage } = require('../utils/storage');
 const { escapeLike } = require('../utils/helpers');
+const { resolveMimeType } = require('./files');
 
 const router = express.Router();
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+const MAX_FILE_BYTES = 4 * 1024 * 1024;
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;
 
 // 웹마스터는 모든 구역에 접근; 두 "지킴이" 역할은 각자 담당 구역만.
 const boardAccess = requireRole('webmaster', 'board_keeper');
 const marketAccess = requireRole('webmaster', 'marketbot_keeper');
+const staffAccess = requireRole('webmaster', 'board_keeper', 'marketbot_keeper');
 const webmasterOnly = requireRole('webmaster');
 
 // GET /api/admin/stats
@@ -523,6 +528,87 @@ router.patch('/suggestions/:id', boardAccess, async (req, res, next) => {
 router.delete('/suggestions/:id', boardAccess, async (req, res, next) => {
   try {
     await pool.query("DELETE FROM posts WHERE id = $1 AND category = 'suggestion'", [req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// GET /api/admin/files?page=&q=
+router.get('/files', staffAccess, async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const q = (req.query.q || '').trim();
+    const offset = (page - 1) * PAGE_SIZE;
+
+    let where = 'WHERE 1=1';
+    const params = [];
+    if (q) {
+      const escaped = escapeLike(q);
+      params.push(`%${escaped}%`);
+      where += ` AND filename ILIKE $${params.length} ESCAPE '\\'`;
+    }
+
+    const total = (await pool.query(`SELECT COUNT(*)::int AS cnt FROM uploaded_files ${where}`, params)).rows[0].cnt;
+    const { rows } = await pool.query(
+      `SELECT id, filename, mime_type, size_bytes, uploaded_by, created_at
+       FROM uploaded_files ${where}
+       ORDER BY created_at DESC
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, PAGE_SIZE, offset]
+    );
+
+    res.json({ files: rows, page, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)), total });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/admin/files  { filename, mimeType, fileBase64 }
+router.post('/files', staffAccess, async (req, res, next) => {
+  try {
+    const { filename, mimeType, fileBase64 } = req.body || {};
+    if (!filename || !fileBase64) {
+      return res.status(400).json({ error: '파일명과 파일 데이터를 모두 전달해주세요.' });
+    }
+
+    const cleanFilename = path.basename(filename.trim()).replace(/[\r\n\t]/g, '');
+    if (!cleanFilename) {
+      return res.status(400).json({ error: '유효한 파일명을 입력해주세요.' });
+    }
+
+    const buffer = Buffer.from(fileBase64, 'base64');
+    if (buffer.length === 0) {
+      return res.status(400).json({ error: '파일 내용이 비어 있습니다.' });
+    }
+    if (buffer.length > MAX_FILE_BYTES) {
+      return res.status(400).json({ error: '파일 용량은 4MB 이하여야 합니다.' });
+    }
+
+    const resolvedMime = resolveMimeType(cleanFilename, mimeType);
+    const id = crypto.randomBytes(8).toString('hex');
+    const uploader = req.user ? (req.user.displayName || req.user.username) : '관리자';
+
+    const { rows } = await pool.query(
+      `INSERT INTO uploaded_files (id, filename, mime_type, size_bytes, data, uploaded_by)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, filename, mime_type, size_bytes, uploaded_by, created_at`,
+      [id, cleanFilename, resolvedMime, buffer.length, buffer, uploader]
+    );
+
+    res.json({ ok: true, file: rows[0] });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// DELETE /api/admin/files/:id
+router.delete('/files/:id', staffAccess, async (req, res, next) => {
+  try {
+    const { rows } = await pool.query('SELECT id FROM uploaded_files WHERE id = $1', [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+
+    await pool.query('DELETE FROM uploaded_files WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
   } catch (e) {
     next(e);

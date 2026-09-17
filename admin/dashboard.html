@@ -35,6 +35,7 @@
       <button class="tab-btn" data-tab="words">금지어 관리</button>
       <button class="tab-btn" data-tab="suggestions">건의글 관리</button>
       <button class="tab-btn" data-tab="briefings">마켓봇 관리</button>
+      <button class="tab-btn" data-tab="files">파일 관리/업로드</button>
       <button class="tab-btn" data-tab="users">회원관리</button>
     </div>
 
@@ -164,6 +165,64 @@
         </table>
       </div>
       <div class="pagination" id="emailLogsPagination"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-files">
+      <div class="card" style="padding:22px; margin-bottom:20px;">
+        <div class="file-dropzone" id="fileDropzone">
+          <input type="file" id="fileInput" style="display:none;" />
+          <div class="dropzone-icon">📁</div>
+          <div class="dropzone-text">
+            <strong>파일을 마우스로 끌어다 놓거나</strong> 여기를 클릭하여 선택하세요
+          </div>
+          <div class="dropzone-hint">최대 4MB까지 업로드 가능하며, 업로드된 파일은 누구나 접근 가능한 고유 영구 다운로드 링크가 생성됩니다.</div>
+        </div>
+
+        <div id="fileSelectedWrap" style="display:none; margin-top:14px; align-items:center; justify-content:space-between; background:var(--bg-subtle); padding:12px 16px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+            <span style="font-size:1.4rem;">📎</span>
+            <div style="min-width:0;">
+              <div id="fileSelectedName" style="font-weight:600; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+              <div id="fileSelectedSize" class="small-muted"></div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-shrink:0;">
+            <button class="btn btn-ghost btn-sm" id="fileCancelBtn">취소</button>
+            <button class="btn btn-primary btn-sm" id="fileUploadBtn">업로드 시작</button>
+          </div>
+        </div>
+
+        <div id="fileUploadProgress" style="display:none; margin-top:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="spinner" style="width:14px; height:14px; display:inline-block;"></span>
+            <span class="small-muted">파일을 업로드하는 중입니다...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-row" style="display:flex; gap:8px; align-items:center;">
+        <input type="text" class="input" id="fileSearch" placeholder="파일명 검색" style="max-width:280px;" />
+        <button class="btn btn-ghost" id="fileSearchBtn">검색</button>
+        <span class="small-muted" id="fileTotalCount" style="margin-left:auto;"></span>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:60px;">번호</th>
+              <th>파일명</th>
+              <th style="width:90px;">크기</th>
+              <th style="width:100px;">업로더</th>
+              <th style="width:130px;">업로드일</th>
+              <th style="width:280px;">다운로드 / 공유 링크</th>
+              <th style="width:170px;">관리</th>
+            </tr>
+          </thead>
+          <tbody id="filesTbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="filesPagination"></div>
     </div>
 
     <div class="tab-panel" id="tab-users">

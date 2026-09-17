@@ -115,6 +115,16 @@ async function init() {
       value TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS uploaded_files (
+      id TEXT PRIMARY KEY,
+      filename TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL,
+      data BYTEA NOT NULL,
+      uploaded_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
     CREATE INDEX IF NOT EXISTS idx_posts_latest ON posts(is_hidden, is_notice DESC, id DESC);
     CREATE INDEX IF NOT EXISTS idx_posts_best ON posts(is_hidden, likes DESC, id DESC);
@@ -125,6 +135,7 @@ async function init() {
     CREATE INDEX IF NOT EXISTS idx_briefings_created ON briefings(created_at);
     CREATE INDEX IF NOT EXISTS idx_briefing_runs_started ON briefing_runs(started_at);
     CREATE INDEX IF NOT EXISTS idx_email_logs_created ON email_logs(created_at);
+    CREATE INDEX IF NOT EXISTS idx_uploaded_files_created ON uploaded_files(created_at DESC);
   `);
 
   const defaultSettings = {

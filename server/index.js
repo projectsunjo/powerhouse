@@ -14,6 +14,7 @@ const marketInfoRouter = require('./routes/marketInfo');
 const internalRouter = require('./routes/internal');
 const authRouter = require('./routes/auth');
 const cronRouter = require('./routes/cron');
+const filesRouter = require('./routes/files');
 const { getUserFromRequest } = require('./utils/userAuth');
 
 const app = express();
@@ -82,7 +83,7 @@ const loginLimiter = rateLimit({
 });
 
 app.use('/api', (req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/internal/') && !req.path.startsWith('/cron/')) return readLimiter(req, res, next);
+  if (req.method === 'GET' && !req.path.startsWith('/internal/') && !req.path.startsWith('/cron/') && !req.path.startsWith('/files/')) return readLimiter(req, res, next);
   next();
 });
 
@@ -108,6 +109,7 @@ app.use('/api/market-info', marketInfoRouter);
 app.use('/api/internal', internalRouter);
 app.use('/api/cron', cronRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/files', filesRouter);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')));

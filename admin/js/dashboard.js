@@ -9,6 +9,7 @@ const TAB_ROLES = {
   words: ['webmaster', 'board_keeper'],
   suggestions: ['webmaster', 'board_keeper'],
   briefings: ['webmaster', 'marketbot_keeper'],
+  files: ['webmaster', 'board_keeper', 'marketbot_keeper'],
   users: ['webmaster'],
 };
 
@@ -726,6 +727,214 @@ document.getElementById('addUserBtn').onclick = async () => {
   }
 });
 
+// ==================== 파일 관리 / 업로드 ====================
+const fileState = { page: 1, q: '' };
+let selectedUploadFile = null;
+
+function formatFileSize(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const commaIdx = result.indexOf(',');
+      resolve(commaIdx !== -1 ? result.slice(commaIdx + 1) : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadFiles() {
+  const qs = new URLSearchParams({ page: fileState.page, q: fileState.q });
+  const data = await api(`/api/admin/files?${qs.toString()}`);
+  const tbody = document.getElementById('filesTbody');
+  tbody.innerHTML = '';
+
+  const totalEl = document.getElementById('fileTotalCount');
+  if (totalEl) totalEl.textContent = `총 ${data.total || 0}개 파일`;
+
+  if (!data.files || data.files.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">업로드된 파일이 없습니다.</td></tr>';
+    renderPagination('filesPagination', 1, 1, () => {});
+    return;
+  }
+
+  const offset = (data.page - 1) * 20;
+  data.files.forEach((f, idx) => {
+    const tr = document.createElement('tr');
+    const fileUrl = `${location.origin}/api/files/${f.id}/${encodeURIComponent(f.filename)}`;
+    const downloadUrl = `${fileUrl}?download=1`;
+
+    tr.innerHTML = `
+      <td>${data.total - (offset + idx)}</td>
+      <td class="title-cell"><a class="fileNameLink" href="${fileUrl}" target="_blank" rel="noopener noreferrer"></a></td>
+      <td>${formatFileSize(f.size_bytes)}</td>
+      <td>${escapeHtml(f.uploaded_by || '-')}</td>
+      <td>${formatDate(f.created_at)}</td>
+      <td>
+        <div class="file-link-group">
+          <input type="text" class="file-link-input" readonly value="${fileUrl}" />
+          <button class="btn btn-sm btn-ghost copyBtn" title="링크 복사">복사</button>
+        </div>
+      </td>
+      <td class="actions">
+        <a href="${fileUrl}" target="_blank" rel="noopener noreferrer"><button class="btn btn-sm btn-ghost">보기</button></a>
+        <a href="${downloadUrl}"><button class="btn btn-sm btn-ghost">다운로드</button></a>
+        <button class="btn btn-sm btn-danger delFileBtn">삭제</button>
+      </td>
+    `;
+
+    const nameLink = tr.querySelector('.fileNameLink');
+    nameLink.textContent = f.filename;
+    nameLink.title = f.filename;
+
+    const copyBtn = tr.querySelector('.copyBtn');
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(fileUrl);
+        showToast('다운로드 링크가 복사되었습니다.');
+      } catch (err) {
+        const input = tr.querySelector('.file-link-input');
+        input.select();
+        document.execCommand('copy');
+        showToast('다운로드 링크가 복사되었습니다.');
+      }
+    };
+
+    tr.querySelector('.delFileBtn').onclick = async () => {
+      if (!confirm(`'${f.filename}' 파일을 삭제하시겠습니까?\n삭제 후에는 해당 링크로 더 이상 다운로드할 수 없습니다.`)) return;
+      try {
+        await api(`/api/admin/files/${f.id}`, { method: 'DELETE' });
+        showToast('파일이 삭제되었습니다.');
+        loadFiles();
+      } catch (e) {
+        showToast(e.message || '파일 삭제에 실패했습니다.');
+      }
+    };
+
+    tbody.appendChild(tr);
+  });
+
+  renderPagination('filesPagination', data.page, data.totalPages, (n) => {
+    fileState.page = n;
+    loadFiles();
+  });
+}
+
+function handleFileSelection(file) {
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024) {
+    showToast('파일 용량은 최대 4MB까지 업로드할 수 있습니다.');
+    return;
+  }
+  selectedUploadFile = file;
+  document.getElementById('fileSelectedName').textContent = file.name;
+  document.getElementById('fileSelectedSize').textContent = formatFileSize(file.size);
+  document.getElementById('fileSelectedWrap').style.display = 'flex';
+}
+
+function clearFileSelection() {
+  selectedUploadFile = null;
+  const input = document.getElementById('fileInput');
+  if (input) input.value = '';
+  const wrap = document.getElementById('fileSelectedWrap');
+  if (wrap) wrap.style.display = 'none';
+  const progress = document.getElementById('fileUploadProgress');
+  if (progress) progress.style.display = 'none';
+  const uploadBtn = document.getElementById('fileUploadBtn');
+  if (uploadBtn) uploadBtn.disabled = false;
+}
+
+const dropzone = document.getElementById('fileDropzone');
+const fileInput = document.getElementById('fileInput');
+
+if (dropzone && fileInput) {
+  dropzone.onclick = (e) => {
+    if (e.target !== fileInput) fileInput.click();
+  };
+
+  dropzone.ondragover = (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  };
+
+  dropzone.ondragleave = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+  };
+
+  dropzone.ondrop = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelection(e.dataTransfer.files[0]);
+    }
+  };
+
+  fileInput.onchange = () => {
+    if (fileInput.files && fileInput.files[0]) {
+      handleFileSelection(fileInput.files[0]);
+    }
+  };
+}
+
+const fileCancelBtn = document.getElementById('fileCancelBtn');
+if (fileCancelBtn) {
+  fileCancelBtn.onclick = clearFileSelection;
+}
+
+const fileUploadBtn = document.getElementById('fileUploadBtn');
+if (fileUploadBtn) {
+  fileUploadBtn.onclick = async () => {
+    if (!selectedUploadFile) return;
+
+    fileUploadBtn.disabled = true;
+    document.getElementById('fileUploadProgress').style.display = 'block';
+
+    try {
+      const fileBase64 = await readFileAsBase64(selectedUploadFile);
+      await api('/api/admin/files', {
+        method: 'POST',
+        body: {
+          filename: selectedUploadFile.name,
+          mimeType: selectedUploadFile.type || 'application/octet-stream',
+          fileBase64,
+        },
+      });
+
+      showToast('파일이 성공적으로 업로드되었습니다.');
+      clearFileSelection();
+      fileState.page = 1;
+      loadFiles();
+    } catch (e) {
+      showToast(e.message || '파일 업로드 중 오류가 발생했습니다.');
+      fileUploadBtn.disabled = false;
+      document.getElementById('fileUploadProgress').style.display = 'none';
+    }
+  };
+}
+
+const fileSearchBtn = document.getElementById('fileSearchBtn');
+const fileSearch = document.getElementById('fileSearch');
+if (fileSearchBtn && fileSearch) {
+  fileSearchBtn.onclick = () => {
+    fileState.q = fileSearch.value.trim();
+    fileState.page = 1;
+    loadFiles();
+  };
+  fileSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') fileSearchBtn.click();
+  });
+}
+
 (async function init() {
   await guardAuth();
   if (!myRole) return;
@@ -744,6 +953,9 @@ document.getElementById('addUserBtn').onclick = async () => {
     loadBriefingSettings();
     loadBriefingRuns();
     loadEmailLogs();
+  }
+  if (TAB_ROLES.files.includes(myRole)) {
+    loadFiles();
   }
   if (TAB_ROLES.users.includes(myRole)) {
     loadUsers();
