@@ -281,11 +281,17 @@ document.getElementById('likeBtn').onclick = async () => {
 
 const postMenuBtn = document.getElementById('postMenuBtn');
 const postMenu = document.getElementById('postMenu');
-postMenuBtn.onclick = (e) => {
-  e.stopPropagation();
-  postMenu.classList.toggle('show');
-};
-document.addEventListener('click', () => postMenu.classList.remove('show'));
+if (postMenuBtn && postMenu) {
+  postMenuBtn.onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('navDropdown')?.classList.remove('show');
+    document.querySelector('.nav-menu')?.classList.remove('open');
+    postMenu.classList.toggle('show');
+  };
+  postMenu.querySelectorAll('button').forEach((b) => {
+    b.addEventListener('click', () => postMenu.classList.remove('show'));
+  });
+}
 
 document.getElementById('reportPostBtn').onclick = () => {
   promptReport({

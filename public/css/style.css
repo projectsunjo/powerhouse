@@ -1171,9 +1171,50 @@ button.stat-item.likeable.liked {
 /* ==========================================================================
    Dropdowns & Navigation Avatar
    ========================================================================== */
+.nav-profile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.post-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.icon-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+  border-color: var(--text-subtle);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
 .nav-avatar-wrap {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
 }
 
@@ -1255,6 +1296,7 @@ button.stat-item.likeable.liked {
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   min-width: 170px;
+  max-width: calc(100vw - 32px);
   z-index: 300;
   animation: dropdown-fade-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1269,8 +1311,11 @@ button.stat-item.likeable.liked {
 }
 
 .dropdown-menu button, .dropdown-menu a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+  box-sizing: border-box;
   text-align: left;
   padding: 10px 16px;
   background: none;
@@ -1281,6 +1326,7 @@ button.stat-item.likeable.liked {
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
+  font-family: inherit;
 }
 
 .dropdown-menu button:hover, .dropdown-menu a:hover {
@@ -1288,9 +1334,15 @@ button.stat-item.likeable.liked {
   color: var(--primary);
 }
 
-.dropdown-menu button.danger:hover {
+.dropdown-menu button.danger:hover, .dropdown-menu a.danger:hover {
   background: var(--danger-soft);
   color: var(--danger);
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--border);
 }
 
 .dropdown-checkbox-row {
@@ -1302,6 +1354,7 @@ button.stat-item.likeable.liked {
   color: var(--text);
   cursor: pointer;
   border-bottom: 1px solid var(--border);
+  user-select: none;
 }
 
 .dropdown-checkbox-row:hover {
@@ -1584,17 +1637,23 @@ button.stat-item.likeable.liked {
 /* ==========================================================================
    Lunch Map Page & Misc
    ========================================================================== */
+.lunch-map-page {
+  overflow-y: hidden;
+}
+
 .lunch-map-container {
-  padding-top: 14px;
+  padding-top: 12px;
+  padding-bottom: 0;
 }
 
 .lunch-map-frame {
   width: 100%;
-  height: 82vh;
+  height: calc(100vh - 84px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   background: var(--surface);
+  display: block;
 }
 
 .login-wrap {
@@ -1641,14 +1700,26 @@ button.stat-item.likeable.liked {
   .container {
     padding: 16px 14px 60px;
   }
-  .board-tabs {
+  .board-tabs:not(.market-info-tabs) {
     width: 100%;
     justify-content: space-around;
   }
-  .board-tab {
+  .board-tabs:not(.market-info-tabs) .board-tab {
     flex: 1;
     text-align: center;
     padding: 8px 10px;
+  }
+  .market-info-tabs .board-tab {
+    flex: 0 0 auto;
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  #isPrivateField {
+    align-items: flex-start !important;
+    padding-bottom: 8px !important;
+    margin-top: -6px;
   }
   .board-row {
     grid-template-columns: 78px 1fr;
@@ -1680,7 +1751,18 @@ button.stat-item.likeable.liked {
   .toolbar-row .search-row input {
     max-width: none;
   }
-  .toolbar-row .btn-primary {
+  .toolbar-row #writeLink,
+  .toolbar-row #writeLink .btn-primary {
     width: 100%;
+    display: block;
+  }
+  .comment-reply {
+    margin-left: 12px;
+    padding: 12px 14px;
+  }
+  .reply-form {
+    margin-left: 12px;
+    padding: 12px;
   }
 }
+

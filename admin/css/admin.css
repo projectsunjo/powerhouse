@@ -381,6 +381,10 @@ tr.row-link:hover {
     display: block;
     overflow-x: auto;
   }
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 
 @media (max-width: 480px) {

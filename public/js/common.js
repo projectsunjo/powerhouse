@@ -101,12 +101,47 @@ function linkifyContent(text) {
   const topLabel = document.getElementById('pageLabelTop');
   if (topLabel) topLabel.textContent = activeText || '';
 
-  if (!toggle || !nav) return;
-  toggle.addEventListener('click', () => nav.classList.toggle('open'));
+  if (toggle && nav) {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('navDropdown')?.classList.remove('show');
+      nav.classList.toggle('open');
+    });
+  }
+
+  // Centralized outside click listener for all menus, popovers, and dropdowns
   document.addEventListener('click', (e) => {
-    if (!nav.classList.contains('open')) return;
-    if (nav.contains(e.target) || toggle.contains(e.target)) return;
-    nav.classList.remove('open');
+    if (nav && nav.classList.contains('open') && !nav.contains(e.target) && (!toggle || !toggle.contains(e.target))) {
+      nav.classList.remove('open');
+    }
+
+    const navDropdown = document.getElementById('navDropdown');
+    const navAvatarBtn = document.getElementById('navAvatarBtn');
+    if (navDropdown && navDropdown.classList.contains('show') && !navDropdown.contains(e.target) && (!navAvatarBtn || !navAvatarBtn.contains(e.target))) {
+      navDropdown.classList.remove('show');
+    }
+
+    const postMenu = document.getElementById('postMenu');
+    const postMenuBtn = document.getElementById('postMenuBtn');
+    if (postMenu && postMenu.classList.contains('show') && !postMenu.contains(e.target) && (!postMenuBtn || !postMenuBtn.contains(e.target))) {
+      postMenu.classList.remove('show');
+    }
+
+    const targetPickerMenu = document.getElementById('targetPickerMenu');
+    const targetPickerBtn = document.getElementById('targetPickerBtn');
+    if (targetPickerMenu && targetPickerMenu.classList.contains('show') && !targetPickerMenu.contains(e.target) && (!targetPickerBtn || !targetPickerBtn.contains(e.target))) {
+      targetPickerMenu.classList.remove('show');
+    }
+  });
+
+  // Centralized Escape key dismiss
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (nav) nav.classList.remove('open');
+      document.getElementById('navDropdown')?.classList.remove('show');
+      document.getElementById('postMenu')?.classList.remove('show');
+      document.getElementById('targetPickerMenu')?.classList.remove('show');
+    }
   });
 })();
 
@@ -173,7 +208,7 @@ function visibilityToggleRow(me) {
 
 function navMenuItemsFor(me) {
   const infoLink = '<a href="/my-info.html">내정보</a>';
-  const logoutLink = '<a href="#" id="navLogoutBtn">로그아웃</a>';
+  const logoutLink = '<div class="dropdown-divider"></div><a href="#" id="navLogoutBtn" class="danger">로그아웃</a>';
   if (me.role === 'webmaster') {
     return `${visibilityToggleRow(me)}<a href="/admin/dashboard.html">admin판넬</a>${infoLink}${logoutLink}`;
   }
@@ -217,9 +252,9 @@ function renderNavProfile(el, me) {
   const menu = document.getElementById('navDropdown');
   btn.onclick = (e) => {
     e.stopPropagation();
+    document.querySelector('.nav-menu')?.classList.remove('open');
     menu.classList.toggle('show');
   };
-  document.addEventListener('click', () => menu.classList.remove('show'));
 
   bindAnonToggle(me);
   bindLogoutButton();

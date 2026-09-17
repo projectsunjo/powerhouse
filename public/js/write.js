@@ -87,11 +87,16 @@ function updateTargetPreview() {
   }
 }
 
-document.getElementById('targetPickerBtn').onclick = (e) => {
-  e.stopPropagation();
-  document.getElementById('targetPickerMenu').classList.toggle('show');
-};
-document.addEventListener('click', () => document.getElementById('targetPickerMenu').classList.remove('show'));
+const targetPickerBtn = document.getElementById('targetPickerBtn');
+const targetPickerMenu = document.getElementById('targetPickerMenu');
+if (targetPickerBtn && targetPickerMenu) {
+  targetPickerBtn.onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('navDropdown')?.classList.remove('show');
+    document.querySelector('.nav-menu')?.classList.remove('open');
+    targetPickerMenu.classList.toggle('show');
+  };
+}
 
 // 건의(suggestion) posts are always anonymous regardless of login (per the
 // board's design), but on the general board any logged-in account with
