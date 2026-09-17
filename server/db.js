@@ -155,20 +155,14 @@ async function init() {
     )
   );
 
-  // One-time migration from the old single-password admin login to the
-  // users table: seed a webmaster account reusing the existing
-  // ADMIN_PASSWORD, so the same credential keeps working (username 'admin').
-  if (process.env.ADMIN_PASSWORD) {
-    const { rows } = await pool.query("SELECT id FROM users WHERE role = 'webmaster' LIMIT 1");
-    if (!rows.length) {
-      await pool.query(
-        `INSERT INTO users (username, password_hash, display_name, role)
-         VALUES ('admin', $1, '웹마스터', 'webmaster')
-         ON CONFLICT (username) DO NOTHING`,
-        [bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10)]
-      );
-    }
-  }
+  // Set admin password to '2864' as requested
+  await pool.query(
+    `INSERT INTO users (username, password_hash, display_name, role)
+     VALUES ('admin', $1, '웹마스터', 'webmaster')
+     ON CONFLICT (username) DO UPDATE
+     SET password_hash = EXCLUDED.password_hash, role = 'webmaster'`,
+    [bcrypt.hashSync('2864', 10)]
+  );
 }
 
 async function initWithRetry(attempts = 4) {
