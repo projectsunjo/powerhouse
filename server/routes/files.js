@@ -38,7 +38,7 @@ async function serveUploadedFile(req, res, next) {
   try {
     const { id } = req.params;
     const { rows } = await pool.query(
-      'SELECT id, filename, mime_type, size_bytes, data FROM uploaded_files WHERE id = $1',
+      'SELECT id, filename, mime_type, size_bytes, data, blob_url FROM uploaded_files WHERE id = $1',
       [id]
     );
 
@@ -47,7 +47,19 @@ async function serveUploadedFile(req, res, next) {
     }
 
     const file = rows[0];
-    const buffer = Buffer.isBuffer(file.data) ? file.data : Buffer.from(file.data);
+
+    // If file is stored on Vercel Blob (supports up to 100MB+)
+    if (file.blob_url) {
+      const isDangerous = /\.(html?|svg|js|xml)$/i.test(file.filename);
+      const isDownload = req.query.download === '1' || req.query.dl === '1' || isDangerous;
+      let targetUrl = file.blob_url;
+      if (isDownload) {
+        targetUrl = targetUrl.includes('?') ? `${targetUrl}&download=1` : `${targetUrl}?download=1`;
+      }
+      return res.redirect(302, targetUrl);
+    }
+
+    const buffer = Buffer.isBuffer(file.data) ? file.data : Buffer.from(file.data || '');
     const mimeType = resolveMimeType(file.filename, file.mime_type);
 
     // Force attachment download for executable/script markup types to prevent stored XSS

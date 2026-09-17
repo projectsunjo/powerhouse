@@ -119,11 +119,14 @@ async function init() {
       id TEXT PRIMARY KEY,
       filename TEXT NOT NULL,
       mime_type TEXT NOT NULL,
-      size_bytes INTEGER NOT NULL,
-      data BYTEA NOT NULL,
+      size_bytes BIGINT NOT NULL,
+      data BYTEA,
+      blob_url TEXT,
       uploaded_by TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    ALTER TABLE uploaded_files ADD COLUMN IF NOT EXISTS blob_url TEXT;
+    ALTER TABLE uploaded_files ALTER COLUMN data DROP NOT NULL;
 
     CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
     CREATE INDEX IF NOT EXISTS idx_posts_latest ON posts(is_hidden, is_notice DESC, id DESC);

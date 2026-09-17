@@ -10,10 +10,13 @@ const { sendAndLogBriefingEmail } = require('../utils/mailer');
 const { uploadProfileImage } = require('../utils/storage');
 const { escapeLike } = require('../utils/helpers');
 const { resolveMimeType } = require('./files');
+const { del } = require('@vercel/blob');
+const { handleUpload } = require('@vercel/blob/client');
 
 const router = express.Router();
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_FILE_BYTES = 4 * 1024 * 1024;
+const MAX_BLOB_FILE_BYTES = 100 * 1024 * 1024; // 100MB
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;
 
@@ -564,7 +567,86 @@ router.get('/files', staffAccess, async (req, res, next) => {
   }
 });
 
-// POST /api/admin/files  { filename, mimeType, fileBase64 }
+// GET /api/admin/files/config
+router.get('/files/config', staffAccess, (req, res) => {
+  res.json({
+    blobConfigured: !!process.env.BLOB_READ_WRITE_TOKEN,
+    maxBytes: MAX_BLOB_FILE_BYTES,
+    directMaxBytes: MAX_FILE_BYTES,
+  });
+});
+
+// POST /api/admin/files/blob-upload  (handles token generation & callback for Vercel Blob)
+router.post('/files/blob-upload', staffAccess, async (req, res, next) => {
+  try {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return res.status(400).json({
+        error: 'Vercel Blob 스토리지가 연결되지 않았습니다. Vercel 대시보드(Storage > Blob)에서 스토리지를 생성해주세요.',
+      });
+    }
+
+    const jsonResponse = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async () => {
+        return {
+          maximumSizeInBytes: MAX_BLOB_FILE_BYTES,
+          tokenPayload: JSON.stringify({
+            uploaded_by: req.user ? (req.user.displayName || req.user.username) : '관리자',
+          }),
+        };
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        try {
+          const { uploaded_by } = JSON.parse(tokenPayload || '{}');
+          const id = crypto.randomBytes(8).toString('hex');
+          const cleanFilename = path.basename(blob.pathname);
+          const resolvedMime = resolveMimeType(cleanFilename, blob.contentType);
+          await pool.query(
+            `INSERT INTO uploaded_files (id, filename, mime_type, size_bytes, blob_url, uploaded_by)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (id) DO NOTHING`,
+            [id, cleanFilename, resolvedMime, blob.size || 0, blob.url, uploaded_by || '관리자']
+          );
+        } catch (e) {
+          console.error('onUploadCompleted error:', e);
+        }
+      },
+    });
+
+    return res.json(jsonResponse);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/admin/files/register-blob { filename, mimeType, sizeBytes, blobUrl }
+router.post('/files/register-blob', staffAccess, async (req, res, next) => {
+  try {
+    const { filename, mimeType, sizeBytes, blobUrl } = req.body || {};
+    if (!filename || !blobUrl) {
+      return res.status(400).json({ error: '파일명과 Blob URL을 모두 전달해주세요.' });
+    }
+
+    const cleanFilename = path.basename(filename.trim()).replace(/[\r\n\t]/g, '');
+    const resolvedMime = resolveMimeType(cleanFilename, mimeType);
+    const id = crypto.randomBytes(8).toString('hex');
+    const uploader = req.user ? (req.user.displayName || req.user.username) : '관리자';
+
+    const { rows } = await pool.query(
+      `INSERT INTO uploaded_files (id, filename, mime_type, size_bytes, blob_url, uploaded_by)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, filename, mime_type, size_bytes, blob_url, uploaded_by, created_at`,
+      [id, cleanFilename, resolvedMime, parseInt(sizeBytes, 10) || 0, blobUrl, uploader]
+    );
+
+    res.json({ ok: true, file: rows[0] });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/admin/files  { filename, mimeType, fileBase64 } (Direct DB upload for files <= 4MB)
 router.post('/files', staffAccess, async (req, res, next) => {
   try {
     const { filename, mimeType, fileBase64 } = req.body || {};
@@ -582,7 +664,7 @@ router.post('/files', staffAccess, async (req, res, next) => {
       return res.status(400).json({ error: '파일 내용이 비어 있습니다.' });
     }
     if (buffer.length > MAX_FILE_BYTES) {
-      return res.status(400).json({ error: '파일 용량은 4MB 이하여야 합니다.' });
+      return res.status(400).json({ error: '직접 업로드 용량은 4MB 이하여야 합니다. 대용량 파일(최대 100MB)은 Vercel Blob 스토리지를 연결해주세요.' });
     }
 
     const resolvedMime = resolveMimeType(cleanFilename, mimeType);
@@ -605,8 +687,16 @@ router.post('/files', staffAccess, async (req, res, next) => {
 // DELETE /api/admin/files/:id
 router.delete('/files/:id', staffAccess, async (req, res, next) => {
   try {
-    const { rows } = await pool.query('SELECT id FROM uploaded_files WHERE id = $1', [req.params.id]);
+    const { rows } = await pool.query('SELECT id, blob_url FROM uploaded_files WHERE id = $1', [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+
+    if (rows[0].blob_url && process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        await del(rows[0].blob_url);
+      } catch (err) {
+        console.warn('Failed to delete blob from storage:', err.message);
+      }
+    }
 
     await pool.query('DELETE FROM uploaded_files WHERE id = $1', [req.params.id]);
     res.json({ ok: true });

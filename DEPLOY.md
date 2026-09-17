@@ -33,6 +33,10 @@ VM/SSH 없이 전부 웹 대시보드와 GitHub 연동으로 배포합니다.
 
 4. 저장 후 **Deployments → 최신 배포 → Redeploy** (환경변수는 재배포해야 반영됨)
 
+### Vercel Blob (대용량 파일 최대 100MB 업로드용)
+- Vercel 대시보드 → **Storage** 탭 → **Create Database** → **Blob** 선택 후 생성 완료.
+- 생성 시 `BLOB_READ_WRITE_TOKEN`이 자동 연동되어 관리자 페이지에서 최대 100MB 파일 업로드/다운로드가 활성화됩니다.
+
 ## 3. GitHub Actions Secrets
 
 저장소 → **Settings → Secrets and variables → Actions → New repository secret**로 아래 등록:
