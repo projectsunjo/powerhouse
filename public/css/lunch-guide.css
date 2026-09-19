@@ -1,0 +1,2064 @@
+/* ==========================================================================
+   Lunch Guide (식당도감) - Real Naver Photo Gallery & Building Leader Lines
+   ========================================================================== */
+
+/* Main Layout */
+.lunch-guide-page {
+  background-color: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.guide-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Control Header / Filter Toolbar */
+.guide-toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+/* 1단: 식사 시간 필터 탭 (아침/점심/저녁) */
+.guide-meal-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #edf2f7;
+  padding-bottom: 8px;
+}
+
+.guide-meal-btn {
+  padding: 7px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.guide-meal-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.guide-meal-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+.guide-meal-btn[data-meal="breakfast"].active {
+  background: #ea580c;
+  border-color: #ea580c;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.35);
+}
+
+.guide-meal-btn[data-meal="lunch"].active {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+}
+
+.guide-meal-btn[data-meal="dinner"].active {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+}
+
+/* 2단: 메뉴 카테고리 칩 & 검색창 & 정렬 */
+.guide-toolbar-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.guide-filters-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.guide-chip {
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.guide-chip:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+  border-color: #cbd5e1;
+}
+
+.guide-chip.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+}
+
+.guide-filters-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 500px;
+  justify-content: flex-end;
+}
+
+.guide-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.guide-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.guide-search-input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.guide-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-subtle);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+/* Building Quick Bar */
+.guide-building-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 0 2px 0;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-top: 1px dashed var(--border);
+  margin-top: 6px;
+}
+
+.guide-building-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.building-bar-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.building-quick-btn {
+  padding: 4px 9px;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.building-quick-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.building-quick-btn.active {
+  background: #1e1b4b;
+  color: #c7d2fe;
+  border-color: #6366f1;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+/* Building Active Filter Banner */
+.building-active-banner {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3px 8px rgba(30, 27, 75, 0.25);
+  animation: slideDownBanner 0.2s ease;
+}
+
+@keyframes slideDownBanner {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.banner-text {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e0e7ff;
+}
+
+.banner-text strong {
+  color: #a5b4fc;
+}
+
+.banner-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.banner-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Building Interactive Popup */
+.building-popup-card {
+  width: 290px;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.building-popup-header {
+  background: #1e1b4b;
+  color: #fff;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.building-popup-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #e0e7ff;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.building-popup-count {
+  font-size: 11px;
+  background: #4338ca;
+  color: #c7d2fe;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.building-popup-body {
+  padding: 8px 10px;
+  overflow-y: auto;
+  max-height: 230px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.building-popup-store-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.building-popup-store-row:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  transform: translateX(2px);
+}
+
+.b-store-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.b-store-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.b-store-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.b-store-cat {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.b-store-score {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ea580c;
+}
+
+.b-store-menu {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.building-popup-footer {
+  padding: 8px 10px;
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 6px;
+}
+
+.b-footer-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.b-btn-filter {
+  background: #2563eb;
+  color: #fff;
+}
+
+.b-btn-filter:hover {
+  background: #1d4ed8;
+}
+
+.b-btn-close {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.b-btn-close:hover {
+  background: #cbd5e1;
+}
+
+.guide-select {
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Split View Content Area */
+.guide-content-split {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Left Sidebar: Restaurant List (400px fixed) */
+.guide-sidebar {
+  width: 400px;
+  min-width: 360px;
+  max-width: 420px;
+  height: 100%;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: #f8fafc;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+  z-index: 10;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.03);
+}
+
+.guide-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.guide-count-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.guide-count-badge {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.guide-location-tag {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+/* Restaurant Card */
+.restaurant-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.restaurant-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 6px 14px -2px rgba(37, 99, 235, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.restaurant-card.active-focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow), 0 8px 16px rgba(37, 99, 235, 0.18);
+  background: #f0f7ff;
+}
+
+.card-banner {
+  height: 130px;
+  position: relative;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.card-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover .card-banner img {
+  transform: scale(1.05);
+}
+
+.card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  z-index: 2;
+}
+
+.card-photo-count {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+
+.card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-name {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.card-rating-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ea580c;
+  flex-shrink: 0;
+  background: #fff7ed;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.card-rating-count {
+  font-size: 11px;
+  color: #9a3412;
+  font-weight: 500;
+}
+
+/* Meal Badge Group (아침/점심/저녁 뱃지) */
+.meal-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.meal-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.meal-badge.meal-bf {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.meal-badge.meal-lunch {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.meal-badge.meal-dinner {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+.card-category-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.card-summary {
+  font-size: 12.5px;
+  color: #334155;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Card Menu Preview */
+.card-menu-preview {
+  background: #f1f5f9;
+  border-radius: var(--radius-sm);
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.menu-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-item-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.menu-item-price {
+  font-weight: 700;
+  color: #475569;
+}
+
+/* Card Tip Snippet */
+.card-tip-box {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 6px 9px;
+  font-size: 11.5px;
+  color: #92400e;
+  line-height: 1.4;
+  display: flex;
+  gap: 5px;
+}
+
+.card-tip-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Card Action Buttons */
+.card-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.card-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.card-btn-naver {
+  background: #03c75a;
+  color: #fff;
+}
+.card-btn-naver:hover {
+  background: #02b150;
+}
+
+.card-btn-kakao {
+  background: #fee500;
+  color: #191919;
+}
+.card-btn-kakao:hover {
+  background: #fada0a;
+}
+
+.card-btn-detail {
+  background: #e2e8f0;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+}
+.card-btn-detail:hover {
+  background: #cbd5e1;
+}
+
+/* Right Area: Interactive Map */
+.guide-map-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+#leafletMap {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1;
+}
+
+/* Map Floating Quick Controls */
+.map-floating-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-control-btn {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(4px);
+  border: 1px solid #cbd5e1;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  color: #0f172a;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.map-control-btn:hover {
+  background: #ffffff;
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+}
+
+/* ==========================================================================
+   Leaflet Custom Markers: Minimalist High-Legibility Design
+   - Only Major Buildings show prominent landmark badges (clean & visible)
+   - Individual Restaurants use clean circular category icon pins (zero text clutter)
+   - Hover / Focus dynamically reveals restaurant tooltip
+   - Radar Pulse Ring on Building Centers indicating multi-store hubs
+   ========================================================================== */
+
+/* Custom Leaflet Pin Wrapper - Zero size wrapper that lets Leaflet set exact GPS pixel coordinates via translate3d */
+.custom-leaflet-pin-wrapper {
+  background: transparent !important;
+  border: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* 1. HQ & Coffee Bean Composite Marker */
+.hq-composite-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  transform: translate(-50%, -100%); /* Center on GPS coordinate */
+  z-index: 6500 !important;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.hq-bubble {
+  background: #0f172a;
+  color: #38bdf8;
+  border: 2px solid #38bdf8;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.45), 0 0 10px rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.hq-bubble:hover {
+  transform: scale(1.05);
+}
+
+.hq-pointer {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid #0f172a;
+  margin-top: -1px;
+}
+
+/* Coffee Bean Sub-Leader Line extending from HQ */
+.hq-coffee-subconnector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3px;
+  position: relative;
+}
+
+.hq-coffee-wire {
+  width: 2px;
+  height: 10px;
+  background: #38bdf8;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
+}
+
+.hq-coffee-pill {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* Single Store Pill Marker (When isolated or high zoom) */
+.single-store-pill-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 4000;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.15s;
+}
+
+.single-store-pill-wrapper:hover,
+.single-store-pill-wrapper.active-marker {
+  transform: translate(-50%, -100%) scale(1.1) translateY(-3px);
+  z-index: 8000 !important;
+}
+
+.single-pill-pointer {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid var(--cat-color, #2563eb);
+  margin-top: -1px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+}
+
+/* Street Cluster Callout (Dynamic Overlap Extractor) */
+.street-cluster-callout {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  z-index: 5000 !important;
+}
+
+/* Right-pointing Street Cluster */
+.street-cluster-callout.dir-right {
+  transform: translate(0, -50%);
+}
+
+.street-cluster-callout.dir-right .cluster-origin-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px #2563eb, 0 2px 4px rgba(0, 0, 0, 0.25);
+  margin-left: -4.5px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.street-cluster-callout.dir-right .cluster-stem-line {
+  height: 2px;
+  background: #2563eb;
+  width: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.street-cluster-callout.dir-right .tree-spine-container {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+  border-left: 2px solid #2563eb;
+  gap: 3px;
+  filter: drop-shadow(0 1.5px 4px rgba(0, 0, 0, 0.12));
+}
+
+.street-cluster-callout.dir-right .tree-branch-node::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  background: #2563eb;
+}
+
+/* Left-pointing Street Cluster */
+.street-cluster-callout.dir-left {
+  flex-direction: row-reverse;
+  transform: translate(0, -50%);
+}
+
+.street-cluster-callout.dir-left .cluster-origin-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px #2563eb, 0 2px 4px rgba(0, 0, 0, 0.25);
+  margin-right: -4.5px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.street-cluster-callout.dir-left .cluster-stem-line {
+  height: 2px;
+  background: #2563eb;
+  width: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.street-cluster-callout.dir-left .tree-spine-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 10px;
+  border-right: 2px solid #2563eb;
+  gap: 3px;
+  filter: drop-shadow(0 1.5px 4px rgba(0, 0, 0, 0.12));
+}
+
+.street-cluster-callout.dir-left .tree-branch-node {
+  justify-content: flex-end;
+}
+
+.street-cluster-callout.dir-left .tree-branch-node::before {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 10px;
+  height: 2px;
+  background: #2563eb;
+}
+
+.street-cluster-callout.dir-left .tree-store-pill:hover,
+.street-cluster-callout.dir-left .tree-store-pill.active-pill {
+  transform: translateX(-4px) scale(1.05);
+}
+
+/* ==========================================================================
+   2. Branch Callout Tree: User Sketch Implementation
+   - Connects building anchor to neatly stacked restaurant pills via branch lines
+   - Zero overlap, 100% visible names without clicking!
+   ========================================================================== */
+
+.building-tree-callout {
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+  z-index: 5500 !important;
+  transform: translate(0, -50%); /* Center vertically on the building anchor coordinate */
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* 2-1. Root Building Landmark Badge */
+.tree-root-anchor {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  z-index: 4;
+  position: relative;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tree-root-anchor:hover {
+  transform: scale(1.06);
+}
+
+.root-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 0 0 2px #2563eb, 0 3px 6px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  margin-left: -6.5px;
+}
+
+.root-pulse {
+  position: absolute;
+  left: -13.5px;
+  top: -7px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.4);
+  animation: rootPulseAnim 2.2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes rootPulseAnim {
+  0% { transform: scale(0.6); opacity: 1; }
+  70% { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.root-building-badge {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  border: 1.5px solid #60a5fa;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  margin-left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.45), 0 0 8px rgba(96, 165, 250, 0.35);
+}
+
+.root-building-badge .b-count {
+  background: #2563eb;
+  color: #eff6ff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 9px;
+  border: 1px solid #93c5fd;
+}
+
+/* 2-2. Trunk Stem Line (Root Badge -> Vertical Spine) */
+.tree-stem-line {
+  height: 2.5px;
+  background: #2563eb;
+  width: 22px;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* 2-2b. Up-Right Elbow Stem (for Pacific Tower as sketched by user) */
+.building-tree-callout.callout-dir-up-right {
+  align-items: flex-end;
+  transform: translate(0, -100%);
+}
+
+.building-tree-callout.callout-dir-up-right .root-dot {
+  margin-left: -6.5px;
+  margin-bottom: 2px;
+}
+
+/* Specific Building Tree Positions to eliminate overlap 100% */
+.building-tree-callout.callout-citysquare {
+  transform: translate(0, -82%); /* Shifts upward towards Deoksugung open area */
+}
+
+.building-tree-callout.callout-pacific {
+  transform: translate(0, -100%); /* Up-Right into Booyoung courtyard */
+  align-items: flex-end;
+}
+
+.building-tree-callout.callout-chamber {
+  transform: translate(0, -25%); /* Down-Right into Namdaemun open area */
+}
+
+/* Left-pointing Callout Branches (서소문 / 세종대로11길 등 서쪽 권역 밖으로 인출) */
+.building-tree-callout.dir-left {
+  flex-direction: row-reverse;
+  transform: translate(-100%, -50%);
+}
+
+.building-tree-callout.dir-left .root-dot {
+  margin-left: 0;
+  margin-right: -6.5px;
+}
+
+.building-tree-callout.dir-left .root-pulse {
+  left: auto;
+  right: -13.5px;
+}
+
+.building-tree-callout.dir-left .root-building-badge {
+  margin-left: 0;
+  margin-right: 6px;
+}
+
+.building-tree-callout.dir-left .tree-stem-line {
+  height: 2.5px;
+  background: #2563eb;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.building-tree-callout.dir-left .tree-spine-container {
+  padding-left: 0;
+  border: none;
+  padding-right: 12px;
+  align-items: flex-end;
+}
+
+.building-tree-callout.dir-left .tree-spine-container::before {
+  content: "";
+  position: absolute;
+  left: auto;
+  right: 0;
+  top: 11.5px;
+  bottom: 11.5px;
+  width: 2.5px;
+  background: #2563eb;
+  border-radius: 1px;
+}
+
+.building-tree-callout.dir-left .tree-branch-node {
+  justify-content: flex-end;
+}
+
+.building-tree-callout.dir-left .tree-branch-node::before {
+  left: auto;
+  right: -12px;
+  width: 12px;
+}
+
+.building-tree-callout.dir-left .tree-store-pill:hover,
+.building-tree-callout.dir-left .tree-store-pill.active-pill {
+  transform: translateX(-4px) scale(1.05);
+}
+
+/* Individual Branch Fine-Tuning for 100% Non-Collision */
+.building-tree-callout.callout-seosomun {
+  transform: translate(-100%, -92%);
+}
+
+.building-tree-callout.callout-sejong-north {
+  transform: translate(-100%, -75%);
+}
+
+.building-tree-callout.callout-sejong-south {
+  transform: translate(-100%, 0);
+}
+
+.building-tree-callout.callout-sejong-south .tree-stem-line {
+  width: 38px;
+}
+
+.building-tree-callout.callout-taepyeong-street {
+  transform: translate(0, -50%);
+}
+
+.building-tree-callout.callout-taepyeong-street .tree-stem-line {
+  width: 14px;
+}
+
+/* Bukchang-dong Food Alley - Long stem pushing into Sogong-ro open space */
+.building-tree-callout.callout-bukchang-alley .tree-stem-line {
+  width: 54px;
+}
+
+.building-tree-callout.callout-bukchang-alley {
+  transform: translate(0, -48%);
+}
+
+.tree-elbow-stem {
+  width: 40px;
+  height: 48px;
+  flex-shrink: 0;
+  position: relative;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.elbow-svg {
+  width: 40px;
+  height: 48px;
+  overflow: visible;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.25));
+}
+
+.tree-spine-container.up-right-spine {
+  margin-bottom: 27px;
+}
+
+/* 2-3. Vertical Spine & Branch List Container */
+.tree-spine-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 12px;
+  border: none;
+  gap: 3.5px;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.tree-spine-container::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11.5px;
+  bottom: 11.5px;
+  width: 2.5px;
+  background: #2563eb;
+  border-radius: 1px;
+}
+
+/* ==========================================================================
+   Mini Building Branch Callout (For Zoom >= 18 Multi-Store Buildings)
+   동일 건물/좌표에 2개 이상 매장이 있을 때 겹침 없이 브랜치로 깔끔하게 전개
+   ========================================================================== */
+.mini-building-callout {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  transform: translate(0, -50%);
+  pointer-events: auto;
+  z-index: 1000;
+}
+
+.mini-building-callout.dir-left {
+  flex-direction: row-reverse;
+  transform: translate(-100%, -50%);
+}
+
+.mini-building-callout.mini-citysquare {
+  transform: translate(-100%, -82%);
+}
+
+.mini-building-callout .mini-hub-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px #2563eb, 0 2px 4px rgba(0, 0, 0, 0.25);
+  margin-left: -4px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.mini-building-callout.dir-left .mini-hub-dot {
+  margin-left: 0;
+  margin-right: -4px;
+}
+
+.mini-building-callout .mini-stem-line {
+  height: 2px;
+  background: #2563eb;
+  width: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.mini-building-callout .mini-spine-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 9px;
+  gap: 3px;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.15));
+}
+
+.mini-building-callout .mini-spine-container::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11.5px;
+  bottom: 11.5px;
+  width: 2px;
+  background: #2563eb;
+  border-radius: 1px;
+}
+
+.mini-building-callout.dir-left .mini-spine-container {
+  padding-left: 0;
+  padding-right: 9px;
+  align-items: flex-end;
+}
+
+.mini-building-callout.dir-left .mini-spine-container::before {
+  left: auto;
+  right: 0;
+  top: 11.5px;
+  bottom: 11.5px;
+  width: 2px;
+  background: #2563eb;
+}
+
+.mini-building-callout .mini-branch-node {
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mini-building-callout .mini-branch-node::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  width: 9px;
+  height: 2px;
+  background: #2563eb;
+}
+
+.mini-building-callout.dir-left .mini-branch-node::before {
+  left: auto;
+  right: -9px;
+  width: 9px;
+}
+
+.mini-building-callout.dir-left .tree-store-pill:hover,
+.mini-building-callout.dir-left .tree-store-pill.active-pill {
+  transform: translateX(-4px) scale(1.05);
+}
+
+/* 2-4. Branch Node & Horizontal Wire */
+.tree-branch-node {
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Horizontal branch line (├──) */
+.tree-branch-node::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  background: #2563eb;
+}
+
+/* 2-5. Restaurant Pill Badge (User Sketch Red Oval) */
+.tree-store-pill {
+  background: #ffffff;
+  border: 1.5px solid var(--cat-color, #2563eb);
+  padding: 2.5px 8px 2.5px 6px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.12);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  line-height: 1.25;
+}
+
+.tree-store-pill:hover,
+.tree-store-pill.active-pill {
+  transform: translateX(4px) scale(1.05);
+  background: var(--cat-color, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28), 0 0 10px var(--cat-color, #2563eb);
+  z-index: 10;
+}
+
+.tree-store-pill .pill-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.tree-store-pill .pill-name {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.tree-store-pill .pill-score {
+  color: #ea580c;
+  font-size: 10px;
+  font-weight: 800;
+  margin-left: 2px;
+}
+
+.tree-store-pill:hover .pill-score,
+.tree-store-pill.active-pill .pill-score {
+  color: #fef08a;
+}
+
+/* 2. Building Landmark Hub Marker (모여 있는 곳 중심 랜드마크 & 펄스) */
+.building-landmark-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate(-50%, -100%); /* Exact pointer tip centered on coordinate */
+  z-index: 4000 !important;
+}
+
+.building-landmark-marker:hover,
+.building-landmark-marker.active-building {
+  transform: translate(-50%, -100%) scale(1.1) translateY(-3px);
+  z-index: 9000 !important;
+}
+
+/* 레이더 펄스 링 (모여 있는 지점을 바닥에서 은은하게 발산) */
+.building-pulse-ring {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.3);
+  border: 1.5px solid rgba(99, 102, 241, 0.7);
+  pointer-events: none;
+  animation: buildingPulse 2.2s infinite ease-out;
+  z-index: -1;
+}
+
+@keyframes buildingPulse {
+  0% {
+    transform: translate(-50%, 50%) scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    transform: translate(-50%, 50%) scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 50%) scale(2.4);
+    opacity: 0;
+  }
+}
+
+.building-landmark-bubble {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #ffffff;
+  border: 2px solid #818cf8;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(30, 27, 75, 0.5), 0 0 10px rgba(129, 140, 248, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: -0.2px;
+}
+
+.building-landmark-bubble .building-ico {
+  font-size: 14px;
+}
+
+.building-landmark-bubble .building-name {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.building-landmark-bubble .building-count-badge {
+  background: #4f46e5;
+  color: #e0e7ff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid #a5b4fc;
+}
+
+.building-landmark-pointer {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #1e1b4b;
+  margin-top: -1px;
+}
+
+/* 3. Minimalist Restaurant Category Icon Pin (식당 텍스트 남발 제거 -> 심플 원형 아이콘 핀) */
+.restaurant-icon-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.2s;
+  transform: translate(-50%, -100%); /* Exact pointer tip centered on coordinate */
+}
+
+.pin-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--pin-color, #2563eb);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pin-pointer {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid var(--pin-color, #2563eb);
+  margin-top: -1px;
+  transition: border-color 0.2s ease;
+}
+
+/* 마우스 호버 및 포커스 시 인터랙션 */
+.restaurant-icon-pin:hover,
+.restaurant-icon-pin.active-pin {
+  transform: translate(-50%, -100%) scale(1.22) translateY(-4px);
+  z-index: 8500 !important;
+}
+
+.restaurant-icon-pin:hover .pin-icon-circle,
+.restaurant-icon-pin.active-pin .pin-icon-circle {
+  background: var(--pin-color, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 10px var(--pin-color, #2563eb);
+  border-color: #ffffff;
+}
+
+.restaurant-icon-pin:hover .pin-pointer,
+.restaurant-icon-pin.active-pin .pin-pointer {
+  border-top-color: var(--pin-color, #2563eb);
+}
+
+/* 호버/포커스 시에만 부드럽게 나타나는 세련된 툴팁 말풍선 */
+.pin-hover-tooltip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  padding: 4px 9px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pin-hover-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid rgba(15, 23, 42, 0.95);
+}
+
+.pin-hover-tooltip .tooltip-name {
+  color: #f8fafc;
+}
+
+.pin-hover-tooltip .tooltip-score {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+/* 호버 또는 액티브 시 툴팁 표시 */
+.restaurant-icon-pin:hover .pin-hover-tooltip,
+.restaurant-icon-pin.active-pin .pin-hover-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Leaflet Custom Popup */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.12) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  width: 280px !important;
+}
+
+.popup-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.popup-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.popup-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.popup-rating {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ea580c;
+  background: #fff7ed;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.popup-meta {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.popup-menu {
+  font-size: 12px;
+  color: #1e293b;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.popup-tip {
+  font-size: 11px;
+  color: #92400e;
+  background: #fffbeb;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1.35;
+}
+
+.popup-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.popup-btn {
+  flex: 1;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Building Hub Interactive Popup Card */
+.building-popup-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  width: 100%;
+}
+
+.building-popup-header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #ffffff;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.building-popup-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+}
+
+.building-popup-count {
+  background: #4f46e5;
+  color: #e0e7ff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+}
+
+.building-popup-body {
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.building-popup-store-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.building-popup-store-row:hover {
+  background: #e0e7ff;
+}
+
+.b-store-name {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #0f172a;
+}
+
+.b-store-cat {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.b-store-menu {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.b-store-score {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ea580c;
+  margin-left: 8px;
+}
+
+.building-popup-footer {
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.b-footer-btn {
+  width: 100%;
+  padding: 7px 0;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.b-footer-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Detail Modal & Multi-Photo Gallery */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  padding: 16px;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.guide-modal {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-gallery-container {
+  position: relative;
+  background: #0f172a;
+}
+
+.modal-main-img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-thumb-strip {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.85);
+  overflow-x: auto;
+}
+
+.modal-thumb-item {
+  width: 60px;
+  height: 45px;
+  border-radius: 4px;
+  object-fit: cover;
+  cursor: pointer;
+  opacity: 0.6;
+  border: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.modal-thumb-item:hover,
+.modal-thumb-item.active {
+  opacity: 1;
+  border-color: #38bdf8;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.modal-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.modal-restaurant-name {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.modal-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #64748b;
+  flex-wrap: wrap;
+}
+
+.modal-section-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.modal-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+}
+
+.modal-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.modal-menu-item.signature {
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+/* Empty State */
+.guide-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: #64748b;
+}
+
+.guide-empty-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .guide-content-split {
+    flex-direction: column-reverse;
+  }
+  .guide-map-area {
+    height: 45vh;
+    min-height: 260px;
+  }
+  .guide-sidebar {
+    width: 100%;
+    max-width: unset;
+    min-width: unset;
+    height: 55vh;
+    border-right: none;
+  }
+}

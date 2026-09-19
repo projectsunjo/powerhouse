@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>식당도감 (점심 맛집 가이드) - PowerHouse</title>
+<link rel="icon" href="/img/logo.png" type="image/png" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/lunch-guide.css" />
+</head>
+<body class="lunch-guide-page">
+  <!-- 상단 네비게이션 탑바 -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-group">
+        <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
+        <span class="page-label-inline" id="pageLabelTop">식당도감</span>
+      </div>
+      <div class="nav-right">
+        <nav class="nav-menu">
+          <a class="nav-link" href="/">익명게시판</a>
+          <a class="nav-link" href="/market-info.html">Market Info</a>
+          <a class="nav-link" href="/lunch-map.html">식권대장</a>
+          <a class="nav-link active" href="/lunch-guide.html">식당도감</a>
+          <a class="nav-link" href="/usage-info.html">이용정보</a>
+        </nav>
+        <span class="nav-profile" id="navProfile"></span>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 컨텐츠 영역 -->
+  <main class="guide-main">
+    <!-- 검색 및 필터 툴바 -->
+    <div class="guide-toolbar">
+      <!-- 1단: 식사 시간 필터 (아침/점심/저녁) -->
+      <div class="guide-meal-tabs">
+        <button class="guide-meal-btn active" data-meal="all">전체 식사 (66곳 전수등록)</button>
+        <button class="guide-meal-btn" data-meal="breakfast">🌅 아침 (조식 전용 19곳)</button>
+        <button class="guide-meal-btn" data-meal="lunch">☀️ 점심 (중식 전체 66곳)</button>
+        <button class="guide-meal-btn" data-meal="dinner">🌙 저녁 (석식 55곳)</button>
+      </div>
+
+      <!-- 2단: 카테고리 칩 & 검색창 & 정렬 -->
+      <div class="guide-toolbar-sub">
+        <div class="guide-filters-left">
+          <button class="guide-chip active" data-category="전체">전체메뉴</button>
+          <button class="guide-chip" data-category="한식">🍚 한식</button>
+          <button class="guide-chip" data-category="중식">🥟 중식</button>
+          <button class="guide-chip" data-category="일식">🍱 일식</button>
+          <button class="guide-chip" data-category="양식">🍔 양식</button>
+          <button class="guide-chip" data-category="분식">🍙 분식</button>
+          <button class="guide-chip" data-category="카페">☕ 카페</button>
+        </div>
+
+        <div class="guide-filters-right">
+          <div class="guide-search-wrap">
+            <span class="guide-search-icon">🔍</span>
+            <input type="text" id="guideSearchInput" class="guide-search-input" placeholder="식당명, 메뉴, 위치 검색 (예: 서평옥, 김치찌개, 씨티스퀘어)" />
+          </div>
+
+          <select id="filterSortSelect" class="guide-select" title="정렬 기준">
+            <option value="recommend">추천순</option>
+            <option value="rating">평점 높은 순</option>
+            <option value="review">리뷰 많은 순</option>
+            <option value="name">가나다순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 3단: 빌딩별 빠른 모아보기 바 -->
+      <div class="guide-building-bar" id="buildingQuickBar">
+        <span class="building-bar-label">🏢 주요 건물 모아보기:</span>
+        <button class="building-quick-btn active" data-building="all" onclick="clearBuildingFilter()">전체보기 (66곳)</button>
+        <button class="building-quick-btn" data-building="씨티스퀘어" onclick="selectBuildingQuick('씨티스퀘어')">씨티스퀘어 (8곳)</button>
+        <button class="building-quick-btn" data-building="대한상공회의소" onclick="selectBuildingQuick('대한상공회의소')">대한상공회의소 (6곳)</button>
+        <button class="building-quick-btn" data-building="퍼시픽타워" onclick="selectBuildingQuick('퍼시픽타워')">퍼시픽타워 (2곳)</button>
+      </div>
+    </div>
+
+    <!-- 좌우 스플릿 뷰: 리스트 + 지도 -->
+    <div class="guide-content-split">
+      <!-- 좌측 식당 카드 리스트 -->
+      <aside class="guide-sidebar">
+        <!-- 건물 필터 활성화 알림 배너 -->
+        <div id="buildingActiveBanner" class="building-active-banner" style="display: none;">
+          <div class="banner-text">🏢 <strong id="buildingBannerTitle">씨티스퀘어</strong> 모아보는 중 (<span id="buildingBannerCount">0</span>곳)</div>
+          <button class="banner-close-btn" onclick="clearBuildingFilter()" title="전체 식당 보기">전체보기 ✕</button>
+        </div>
+
+        <div class="guide-list-header">
+          <div class="guide-count-text">
+            가맹점 <span id="restaurantCount" class="guide-count-badge">0</span>곳
+          </div>
+          <div class="guide-location-tag" id="activeFilterSummary">
+            태평로 · 시청역 식권대장
+          </div>
+        </div>
+
+        <div id="restaurantList" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- JS 렌더링 영역 -->
+        </div>
+      </aside>
+
+      <!-- 우측 인터랙티브 지도 영역 -->
+      <section class="guide-map-area">
+        <div id="leafletMap"></div>
+        <div class="map-floating-controls">
+          <button class="map-control-btn" onclick="resetMapToHQ()" title="삼성본관 중심으로 이동">🏢 본관 중심</button>
+          <button class="map-control-btn" onclick="fitAllPinsOnMap()" title="모든 식당 핀을 한눈에">🔍 핀 전체보기</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 상세 정보 모달 다이얼로그 -->
+  <div id="detailModalOverlay" class="modal-overlay">
+    <div id="detailModalContent" class="guide-modal">
+      <!-- JS 렌더링 영역 -->
+    </div>
+  </div>
+
+  <!-- 스크립트 라이브러리 (오픈소스 Leaflet + 정적 데이터 + 앱 로직) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/lunch-data.js"></script>
+  <script src="/js/lunch-guide.js"></script>
+</body>
+</html>

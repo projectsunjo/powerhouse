@@ -1,0 +1,10 @@
+{
+  "profile": "balanced",
+  "version": "1.0.0",
+  "lifecycleSymmetry": true,
+  "events": {
+    "onTaskStart": { "lane": "P0-safety", "enabled": true },
+    "onTaskVerify": { "lane": "P1-quality", "enabled": true },
+    "onTaskComplete": { "lane": "P0-cleanup", "enabled": true }
+  }
+}

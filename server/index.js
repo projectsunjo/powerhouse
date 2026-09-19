@@ -28,10 +28,11 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        connectSrc: ["'self'", 'https://*.supabase.co'],
-        imgSrc: ["'self'", 'data:', 'https://*.supabase.co'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', 'https://fonts.googleapis.com'],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
+        connectSrc: ["'self'", 'https://*.supabase.co', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co', 'https://*.tile.openstreetmap.org', 'https://*.pstatic.net', 'https://search.pstatic.net', 'https://*.naver.net', 'https://images.unsplash.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
         frameSrc: [
           "'self'",
           'https://deacon1876.github.io',
