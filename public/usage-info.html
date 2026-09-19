@@ -19,7 +19,6 @@
         <nav class="nav-menu">
           <a class="nav-link" href="/">익명게시판</a>
           <a class="nav-link" href="/market-info.html">Market Info</a>
-          <a class="nav-link" href="/lunch-map.html">식권대장</a>
           <a class="nav-link" href="/lunch-guide.html">식당도감</a>
           <a class="nav-link active" href="/usage-info.html">이용정보</a>
         </nav>
@@ -30,35 +29,88 @@
   </div>
 
   <div class="container">
-    <div class="card" style="padding:24px;">
-      <h2 style="margin-top:0;">ℹ️ 이용정보</h2>
-      <p class="small-muted">PowerHouse는 별도 로그인 없이 누구나 자유롭게 글을 쓸 수 있는 익명게시판입니다. 다만 일부 역할은 로그인 계정으로 관리·운영됩니다. 아래에서 각 역할의 권한과 할 수 있는 일을 안내합니다.</p>
+    <div class="card" style="padding:28px; line-height: 1.65;">
+      <h2 style="margin-top:0; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
+        <span>ℹ️</span> PowerHouse 이용정보
+      </h2>
+      <p class="small-muted" style="font-size: 0.95rem; margin-bottom: 24px;">
+        PowerHouse는 사우 여러분의 자유로운 사내 소통(익명게시판), 글로벌 에너지 비즈니스 인사이트(Market Info), 그리고 임직원 복지 식사 라이프(식당도감)를 지원하는 통합 플랫폼입니다.
+      </p>
 
-      <h3>일반 익명 인원</h3>
-      <p>로그인 없이 누구나 이용할 수 있습니다. 글/댓글 작성 시 비밀번호만 설정하면 되고, 그 비밀번호로만 본인 글을 수정·삭제할 수 있습니다. 닉네임은 자동 생성되며 원하면 직접 입력할 수 있습니다.</p>
+      <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
+        <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
+          <span>🍱</span> 1. 식당도감 (Food Guide & Map)
+        </h3>
+        <p>사내 복지 식사 지원 전수 등록 가맹점(66곳)의 상세 정보와 스마트 지도를 제공합니다.</p>
+        <ul style="padding-left: 20px; margin-bottom: 16px;">
+          <li><strong>시간대별 맞춤 검색</strong>: 조식 가능 매장(19곳), 중식(66곳 전체), 석식 가능 매장(54곳) 필터와 한식·중식·일식·양식·카페 등 카테고리 필터를 제공합니다.</li>
+          <li><strong>비충돌 브랜치 맵 (Branch Tree Map)</strong>: 씨티스퀘어(8곳), 대한상공회의소(6곳), 서소문로 등 주요 복합 건물이나 밀집 구역의 식당들이 지도에서 겹치지 않고 깔끔하게 펼쳐져 한눈에 확인할 수 있습니다.</li>
+          <li><strong>정확한 핀포인트 딥링크</strong>: 모바일 및 PC에서 네이버 지도 및 카카오맵 버튼 클릭 시, 동음이의어 검색 혼선 없이 <strong>시청역 가맹점 전용 정확한 위치</strong>로 바로 연결됩니다.</li>
+        </ul>
+      </div>
 
-      <h3>임원 및 그룹장</h3>
-      <p>로그인 계정을 받은 임원/그룹장은 두 가지가 다릅니다.</p>
-      <ul>
-        <li><strong>프로필 노출</strong> — 로그인 후 헤더의 "프로필 노출" 체크를 켜면, 게시판에 글/댓글을 쓸 때 실명으로 표시됩니다. 끄면 일반 익명 인원과 똑같이 익명으로 글을 쓸 수 있습니다. 기본값은 노출입니다.</li>
-        <li><strong>건의 탭 답변</strong> — 익명게시판의 "건의" 탭에서 본인을 대상으로 올라온 건의글을 확인하고 답글을 달 수 있습니다. 답글은 공개 또는 비밀글로 선택해 남길 수 있습니다.</li>
-      </ul>
+      <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
+        <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
+          <span>💬</span> 2. 익명게시판 & 건의함 (Voice of Employee)
+        </h3>
+        <p>별도의 회원가입이나 복잡한 절차 없이 누구나 자유롭고 솔직하게 의견을 나눌 수 있습니다.</p>
+        <ul style="padding-left: 20px; margin-bottom: 16px;">
+          <li><strong>일반 사우</strong>: 글/댓글 작성 시 설정한 비밀번호로 본인의 글을 수정 및 삭제할 수 있습니다. 닉네임은 자동 랜덤 생성되며 직접 입력도 가능합니다.</li>
+          <li><strong>건의함 탭 & 비밀글 보장</strong>: 특정 임원이나 그룹장을 지정하여 건의를 남길 수 있습니다. "비밀글" 옵션 활성화 시 글쓴이와 지정된 수신자만 열람할 수 있어 안전한 소통을 보장합니다.</li>
+          <li><strong>임원 및 그룹장 피드백</strong>: 전용 계정으로 로그인한 임원/그룹장은 건의 탭에서 본인 대상 건의글을 확인하고 공개 또는 비밀 답글을 남길 수 있으며, 프로필 실명 노출 여부를 자유롭게 설정할 수 있습니다.</li>
+        </ul>
+      </div>
 
-      <h3>건의 탭 이용 안내</h3>
-      <p>누구나 특정 임원/그룹장을 지정해 건의글을 작성할 수 있습니다. "비밀글"로 지정하면 목록과 본문의 제목·내용·답글 모두 "비밀글: 글쓴이와 당사자만 열람 가능"으로 가려지며, 작성자 본인(비밀번호로 확인)과 지정된 임원/그룹장만 볼 수 있습니다. 비공개로 지정하지 않으면 일반 게시글처럼 누구나 볼 수 있습니다.</p>
+      <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
+        <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
+          <span>⚡</span> 3. Market Info (에너지 솔루션 브리핑)
+        </h3>
+        <p>글로벌 에너지 솔루션 시장 동향, 재생에너지, ESS, 전력 그리드 등 주요 비즈니스 뉴스와 전문 리포트를 큐레이션하여 제공합니다.</p>
+      </div>
 
-      <h3>관리자 권한</h3>
-      <table>
-        <thead><tr><th>역할</th><th>권한</th></tr></thead>
-        <tbody>
-          <tr><td>웹마스터</td><td>모든 관리 기능 (게시판, 마켓봇, 회원관리 전체)</td></tr>
-          <tr><td>마켓봇 지킴이</td><td>Market Info(에너지 솔루션 브리핑) 관리만</td></tr>
-          <tr><td>익명게시판 지킴이</td><td>게시글·댓글·신고·금지어 등 익명게시판 관리만</td></tr>
-          <tr><td>임원 및 그룹장</td><td>관리자 권한 없음 — 본인 프로필 노출 여부와 건의 탭 답변만 가능</td></tr>
-        </tbody>
-      </table>
+      <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
+        <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
+          <span>🛡️</span> 4. 시스템 운영 역할 및 권한
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 16px;">
+          <thead>
+            <tr style="background: var(--table-th, #f8fafc); border-bottom: 2px solid var(--border, #e2e8f0); text-align: left;">
+              <th style="padding: 10px 14px; width: 25%;">역할</th>
+              <th style="padding: 10px 14px;">권한 및 업무 범위</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border, #f1f5f9);">
+              <td style="padding: 10px 14px; font-weight: 600;">웹마스터</td>
+              <td style="padding: 10px 14px;">시스템 전체 관리 (게시판 운영, 회원 및 권한 관리, 식당도감 데이터 관리 등)</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border, #f1f5f9);">
+              <td style="padding: 10px 14px; font-weight: 600;">마켓봇 지킴이</td>
+              <td style="padding: 10px 14px;">Market Info(에너지 솔루션 브리핑) 콘텐츠 및 데이터 관리</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border, #f1f5f9);">
+              <td style="padding: 10px 14px; font-weight: 600;">익명게시판 지킴이</td>
+              <td style="padding: 10px 14px;">게시글·댓글 모니터링, 신고 처리 및 클린 게시판 환경 관리</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border, #f1f5f9);">
+              <td style="padding: 10px 14px; font-weight: 600;">임원 및 그룹장</td>
+              <td style="padding: 10px 14px;">건의 탭 1:1 비밀/공개 답변 작성 및 실명 프로필 노출 전환</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; font-weight: 600;">일반 사우</td>
+              <td style="padding: 10px 14px;">익명 글/댓글 작성 및 수정/삭제, 건의함 작성, 식당도감 조회 및 길찾기 이용</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <p class="small-muted" style="margin-top:20px;">계정 발급이 필요하면 웹마스터에게 문의해주세요.<br />sunjo.hwang@samsung.com</p>
+      <div style="background: var(--sub-bg, #f8fafc); border-radius: 8px; padding: 16px; margin-top: 24px; border: 1px solid var(--border, #e2e8f0);">
+        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted, #64748b);">
+          💡 <strong>문의 및 계정 발급</strong><br />
+          임원/지킴이 계정 발급이나 신규 기능 제안, 식당 정보 수정 요청은 웹마스터에게 편하게 문의해 주시기 바랍니다.<br />
+          ✉️ 문의: <a href="mailto:sunjo.hwang@samsung.com" style="color: var(--primary, #2563eb); font-weight: 500;">sunjo.hwang@samsung.com</a>
+        </p>
+      </div>
     </div>
   </div>
 
