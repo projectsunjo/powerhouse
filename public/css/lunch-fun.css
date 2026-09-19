@@ -1,0 +1,899 @@
+/* ==========================================================================
+   Lunch Fun Tools (식당도감 점심 재미 도구)
+   - 툴바: 룰렛/사다리 버튼, 테마 코스 칩 바
+   - "오늘 뭐 먹지?" 룰렛 모달
+   - 음료 내기 사다리 타기 모달
+   ========================================================================== */
+
+/* 1. 툴바 버튼 (식사 시간 탭 행 우측) */
+.guide-fun-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fun-tool-btn {
+  padding: 7px 13px;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+
+.fun-tool-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.22);
+}
+
+.fun-tool-btn.fun-roulette {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+}
+
+.fun-tool-btn.fun-ladder {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+}
+
+/* 2. 테마 코스 칩 바 (툴바 4단) */
+.guide-theme-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 6px 0 2px 0;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-top: 1px dashed var(--border);
+  margin-top: 2px;
+}
+
+.guide-theme-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.theme-bar-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.theme-chip {
+  padding: 4px 9px;
+  border-radius: 14px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.theme-chip:hover {
+  background: #ffedd5;
+  border-color: #fdba74;
+  color: #7c2d12;
+}
+
+.theme-chip.active {
+  background: #7c2d12;
+  color: #fed7aa;
+  border-color: #f97316;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+}
+
+.theme-chip-count {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(124, 45, 18, 0.1);
+  padding: 0 5px;
+  border-radius: 8px;
+  margin-left: 2px;
+}
+
+.theme-chip.active .theme-chip-count {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.theme-today-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  background: #fbbf24;
+  color: #78350f;
+  padding: 1px 5px;
+  border-radius: 6px;
+  margin-left: 3px;
+}
+
+/* 3. 공통 모달 껍데기 */
+.fun-modal {
+  max-width: 880px;
+}
+
+.fun-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: #ffffff;
+}
+
+.fun-header-roulette {
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+}
+
+.fun-header-ladder {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+}
+
+.fun-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.fun-modal-sub {
+  font-size: 12.5px;
+  opacity: 0.9;
+  margin-top: 3px;
+}
+
+.fun-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.fun-close-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.fun-modal-body {
+  padding: 18px 20px 20px;
+}
+
+/* 4. 룰렛 모달 */
+.roulette-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.roulette-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.roulette-wheel-wrap {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top: 26px solid #0f172a;
+  z-index: 3;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+#rouletteCanvas {
+  border-radius: 50%;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.25);
+  display: block;
+}
+
+.roulette-spin-btn {
+  width: 300px;
+  margin-top: 14px;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 800;
+  border: none;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  transition: all 0.15s ease;
+}
+
+.roulette-spin-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.roulette-spin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.roulette-hint {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
+  max-width: 300px;
+}
+
+.roulette-section-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.roulette-theme-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.roulette-result-placeholder {
+  text-align: center;
+  padding: 34px 16px;
+  color: #94a3b8;
+  border: 2px dashed #e2e8f0;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.roulette-result-placeholder.spinning {
+  border-color: #fdba74;
+  color: #c2410c;
+  background: #fff7ed;
+  animation: rouletteDrum 0.6s infinite alternate ease-in-out;
+}
+
+@keyframes rouletteDrum {
+  from { transform: scale(1); }
+  to { transform: scale(1.02); }
+}
+
+.roulette-result-card {
+  display: flex;
+  gap: 14px;
+  border: 1.5px solid #fdba74;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-radius: var(--radius);
+  padding: 14px;
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roulette-result-img {
+  width: 104px;
+  height: 104px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.roulette-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.roulette-result-kicker {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #c2410c;
+}
+
+.roulette-result-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.roulette-result-meta {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.roulette-result-summary {
+  font-size: 12.5px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.roulette-result-tip {
+  font-size: 11.5px;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.roulette-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.roulette-result-actions .card-btn {
+  flex: 1 1 auto;
+  padding: 7px 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.roulette-to-ladder-btn {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none !important;
+}
+
+.roulette-to-ladder-btn:hover {
+  filter: brightness(1.06);
+}
+
+/* 5. 사다리 모달 */
+.ladder-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.ladder-setting-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ladder-setting-actions {
+  margin-left: auto;
+}
+
+.ladder-setting-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.ladder-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ladder-stepper button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.ladder-stepper button:hover:not(:disabled) {
+  background: #e0e7ff;
+  border-color: #6366f1;
+  color: #4338ca;
+}
+
+.ladder-stepper button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#ladderCountText {
+  font-size: 15px;
+  font-weight: 800;
+  color: #4338ca;
+  min-width: 18px;
+  text-align: center;
+}
+
+.ladder-action-btn {
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ladder-action-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.ladder-action-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ladder-action-primary {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.ladder-action-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+  border: none;
+}
+
+.ladder-custom-results {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.ladder-custom-input {
+  width: 108px;
+  padding: 5px 8px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+}
+
+.ladder-custom-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.ladder-board {
+  overflow-x: auto;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.ladder-row {
+  display: flex;
+}
+
+.ladder-col {
+  width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.ladder-name-input {
+  width: 100%;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 4px;
+  border: 1.5px solid var(--c, #cbd5e1);
+  border-radius: 8px;
+  color: #0f172a;
+  outline: none;
+  background: #ffffff;
+  transition: box-shadow 0.15s ease;
+}
+
+.ladder-name-input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.ladder-go-btn {
+  width: 100%;
+  padding: 4px 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  background: var(--c, #2563eb);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ladder-go-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.ladder-go-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#ladderCanvas {
+  display: block;
+}
+
+.ladder-result-box {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #94a3b8;
+  padding: 4px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.ladder-result-box.revealed {
+  border-style: solid;
+  border-color: var(--c, #2563eb);
+  color: #0f172a;
+  background: #f0fdf4;
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ladder-result-box.revealed.loser {
+  background: #fef2f2;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.ladder-result-label {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ladder-result-who {
+  font-size: 11px;
+  color: var(--c, #475569);
+  font-weight: 700;
+}
+
+.ladder-summary {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #ffffff;
+  border-radius: var(--radius);
+  font-weight: 800;
+  text-align: center;
+  font-size: 14.5px;
+  line-height: 1.5;
+  animation: slideDownBanner 0.25s ease;
+}
+
+/* 6. 반응형 */
+@media (max-width: 860px) {
+  .roulette-layout {
+    grid-template-columns: 1fr;
+  }
+  .guide-fun-tools {
+    margin-left: 0;
+    width: 100%;
+  }
+  .fun-tool-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 12.5px;
+    padding: 7px 8px;
+  }
+  .ladder-setting-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .ladder-setting-actions .ladder-action-btn {
+    flex: 1;
+  }
+}
+
+/* ==========================================================================
+   7. 공유·복사 / 빠른 결정 / 날씨 추천 / 토스트
+   ========================================================================== */
+
+/* 리스트 헤더 우측: 필터 요약 + 링크 복사 */
+.guide-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-width: 0;
+  text-align: right;
+}
+
+.guide-list-header .guide-count-text {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.link-copy-btn {
+  padding: 4px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.link-copy-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+/* 헤더 날씨 칩 (☀️ 26°) */
+.weather-chip {
+  display: block;
+  width: max-content;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1px 7px;
+  vertical-align: middle;
+  cursor: help;
+}
+
+.weather-chip:empty {
+  display: none;
+}
+
+/* 날씨 자동 추천 배너 */
+.weather-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  color: #ffffff;
+  animation: slideDownBanner 0.2s ease;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+}
+
+.weather-banner.weather-rain {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+}
+
+.weather-banner.weather-hot {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
+}
+
+.weather-banner.weather-cold {
+  background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+}
+
+.weather-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.weather-banner-text strong {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.weather-banner-text span {
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+
+.weather-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.weather-banner-btn {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.weather-banner-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.weather-banner-btn.active {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.weather-banner-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.weather-banner-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* 빠른 결정 (동전·주사위) */
+.quick-decide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+}
+
+.quick-decide-result {
+  font-size: 13px;
+  font-weight: 700;
+  color: #92400e;
+  min-height: 20px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.quick-decide-result.settled {
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #0f172a;
+}
+
+.quick-decide-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* 사다리 요약 안 복사 버튼 */
+.ladder-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.ladder-copy-btn {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ladder-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* 토스트 */
+.fun-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 12px);
+  background: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 10050;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
+
+.fun-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 860px) {
+  .weather-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .weather-banner-actions {
+    justify-content: flex-end;
+  }
+}

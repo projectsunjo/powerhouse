@@ -8,6 +8,7 @@ let activeMeal = "all";       // all, breakfast, lunch, dinner
 let activeCategory = "전체";
 let activeBuildingFilter = null; // null or buildingCluster key
 let activeSort = "recommend";  // recommend, rating, review, name
+let activeTheme = null;        // null or LUNCH_THEMES key (lunch-fun.js)
 let searchQuery = "";
 let activeFocusedId = null;
 
@@ -25,9 +26,79 @@ const CATEGORY_STYLES = {
 
 // Initialize when DOM is ready
 function initLunchGuide() {
+  const pendingFocusId = applyFiltersFromUrl();
   initLeafletMap();
   setupFilterEvents();
   renderRestaurantList();
+
+  // ?r=<id> 공유 링크로 들어오면 해당 식당을 지도·목록에서 포커스하고 상세를 연다
+  if (pendingFocusId) {
+    setTimeout(() => {
+      focusCardInList(pendingFocusId);
+      focusRestaurantOnMap(pendingFocusId);
+      openRestaurantModal(pendingFocusId);
+    }, 500);
+  }
+}
+
+// URL 쿼리 ↔ 필터 상태 동기화 (링크 공유용). 반환값: ?r= 로 지정된 식당 id (없으면 null)
+const URL_MEALS = ["all", "breakfast", "lunch", "dinner"];
+const URL_SORTS = ["recommend", "rating", "review", "name"];
+
+function applyFiltersFromUrl() {
+  const p = new URLSearchParams(location.search);
+  const meal = p.get("meal");
+  const cat = p.get("cat");
+  const b = p.get("b");
+  const theme = p.get("theme");
+  const sort = p.get("sort");
+  const q = p.get("q");
+  const r = parseInt(p.get("r"), 10);
+
+  if (meal && URL_MEALS.includes(meal)) activeMeal = meal;
+  if (cat && document.querySelector(`.guide-chip[data-category="${CSS.escape(cat)}"]`)) activeCategory = cat;
+  if (b && BUILDING_CLUSTERS[b]) activeBuildingFilter = b;
+  if (theme && typeof getLunchTheme === "function" && getLunchTheme(theme)) activeTheme = theme;
+  if (sort && URL_SORTS.includes(sort)) activeSort = sort;
+  if (q) searchQuery = q;
+
+  // 툴바 UI 를 상태에 맞춤
+  document.querySelectorAll(".guide-meal-btn[data-meal]").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-meal") === activeMeal);
+  });
+  document.querySelectorAll(".guide-chip[data-category]").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-category") === activeCategory);
+  });
+  const sortSelect = document.getElementById("filterSortSelect");
+  if (sortSelect) sortSelect.value = activeSort;
+  const searchInput = document.getElementById("guideSearchInput");
+  if (searchInput) searchInput.value = searchQuery;
+
+  return (Number.isInteger(r) && RESTAURANTS_DATA.some(x => x.id === r)) ? r : null;
+}
+
+function syncFiltersToUrl() {
+  const p = new URLSearchParams();
+  if (activeMeal !== "all") p.set("meal", activeMeal);
+  if (activeCategory !== "전체") p.set("cat", activeCategory);
+  if (activeBuildingFilter) p.set("b", activeBuildingFilter);
+  if (activeTheme) p.set("theme", activeTheme);
+  if (activeSort !== "recommend") p.set("sort", activeSort);
+  if (searchQuery.trim()) p.set("q", searchQuery.trim());
+  const qs = p.toString();
+  const next = location.pathname + (qs ? `?${qs}` : "");
+  if (next !== location.pathname + location.search) {
+    history.replaceState(null, "", next);
+  }
+}
+
+function copyFilterLink() {
+  syncFiltersToUrl();
+  const label = document.getElementById("activeFilterSummary")?.innerText?.trim() || "식당도감";
+  const text = `🍽️ 식당도감 · ${label}\n${location.href}`;
+  if (typeof copyTextToClipboard === "function") {
+    copyTextToClipboard(text, "🔗 필터 링크를 복사했습니다");
+  }
 }
 
 if (document.readyState === "loading") {
@@ -161,13 +232,14 @@ function initLeafletMap() {
     zoomSnap: 0.5,
     zoomDelta: 0.5,
     zoomControl: true,
-    attributionControl: false
+    attributionControl: true   // OSM 타일 이용정책 필수 조건 — 끄면 "Access blocked" 타일이 오거나 도메인이 차단된다
   });
 
-  // Standard Pure OpenStreetMap (Completely free, no API key, no watermark)
+  // Standard Pure OpenStreetMap (Completely free, no API key)
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    minZoom: 13
+    minZoom: 13,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
   }).addTo(map);
 
   window.map = map;
@@ -819,6 +891,11 @@ function getFilteredRestaurants() {
     list = list.filter(r => r.category === activeCategory);
   }
 
+  // 2-1) Theme Course Filter (국물·해장, 고기·구이, 면, 매운맛 등 음식 종류 — lunch-fun.js)
+  if (activeTheme && typeof matchesLunchTheme === "function") {
+    list = list.filter(r => matchesLunchTheme(r, activeTheme));
+  }
+
   // 3) Search Keyword Filter
   if (searchQuery.trim()) {
     const q = searchQuery.trim().toLowerCase();
@@ -882,6 +959,7 @@ function renderRestaurantList() {
 
   const list = getFilteredRestaurants();
   if (countEl) countEl.innerText = list.length;
+  syncFiltersToUrl();
 
   // Active Building Banner update
   const bannerEl = document.getElementById("buildingActiveBanner");
@@ -915,7 +993,8 @@ function renderRestaurantList() {
     if (activeMeal === "lunch") mealName = "☀️ 점심(중식)";
     if (activeMeal === "dinner") mealName = "🌙 저녁(석식)";
     let bText = activeBuildingFilter ? ` · 🏢 ${BUILDING_CLUSTERS[activeBuildingFilter]?.name}` : "";
-    summaryEl.innerText = `${mealName} · ${activeCategory}${bText}`;
+    let tText = (activeTheme && typeof getLunchThemeLabel === "function") ? ` · ${getLunchThemeLabel(activeTheme)}` : "";
+    summaryEl.innerText = `${mealName} · ${activeCategory}${bText}${tText}`;
   }
 
   if (list.length === 0) {
@@ -1316,5 +1395,6 @@ window.closeRestaurantModal = closeRestaurantModal;
 window.switchModalPhoto = switchModalPhoto;
 window.resetMapToHQ = resetMapToHQ;
 window.fitAllPinsOnMap = fitAllPinsOnMap;
+window.copyFilterLink = copyFilterLink;
 
 

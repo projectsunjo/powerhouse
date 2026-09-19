@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="/css/style.css" />
 <link rel="stylesheet" href="/css/lunch-guide.css" />
+<link rel="stylesheet" href="/css/lunch-fun.css" />
 </head>
 <body class="lunch-guide-page">
   <!-- 상단 네비게이션 탑바 -->
@@ -41,6 +42,12 @@
         <button class="guide-meal-btn" data-meal="breakfast">🌅 아침 (조식 전용 19곳)</button>
         <button class="guide-meal-btn" data-meal="lunch">☀️ 점심 (중식 전체 66곳)</button>
         <button class="guide-meal-btn" data-meal="dinner">🌙 저녁 (석식 55곳)</button>
+
+        <!-- 점심 재미 도구 (Zero-API 프론트 전용) -->
+        <div class="guide-fun-tools">
+          <button class="fun-tool-btn fun-roulette" onclick="openRouletteModal()" title="현재 필터 조건 안에서 한 곳을 무작위로 뽑아 줍니다">🎡 오늘 뭐 먹지? 룰렛</button>
+          <button class="fun-tool-btn fun-ladder" onclick="openLadderModal()" title="음료수·커피 내기 사다리 타기">🪜 음료 내기 사다리</button>
+        </div>
       </div>
 
       <!-- 2단: 카테고리 칩 & 검색창 & 정렬 -->
@@ -78,6 +85,9 @@
         <button class="building-quick-btn" data-building="대한상공회의소" onclick="selectBuildingQuick('대한상공회의소')">대한상공회의소 (6곳)</button>
         <button class="building-quick-btn" data-building="퍼시픽타워" onclick="selectBuildingQuick('퍼시픽타워')">퍼시픽타워 (2곳)</button>
       </div>
+
+      <!-- 4단: 테마 코스 필터 (국물·해장, 고기·구이, 면, 매운맛 등 음식 종류 기준 — JS 렌더링) -->
+      <div class="guide-theme-bar" id="themeBar"></div>
     </div>
 
     <!-- 좌우 스플릿 뷰: 리스트 + 지도 -->
@@ -90,12 +100,19 @@
           <button class="banner-close-btn" onclick="clearBuildingFilter()" title="전체 식당 보기">전체보기 ✕</button>
         </div>
 
+        <!-- 날씨 자동 추천 배너 (Open-Meteo, 비/더위/추위일 때만 JS 렌더링) -->
+        <div id="weatherBanner" class="weather-banner" style="display: none;"></div>
+
         <div class="guide-list-header">
           <div class="guide-count-text">
             가맹점 <span id="restaurantCount" class="guide-count-badge">0</span>곳
+            <span id="weatherChip" class="weather-chip" title="삼성본관 기준 현재 날씨 (Open-Meteo)"></span>
           </div>
-          <div class="guide-location-tag" id="activeFilterSummary">
-            태평로 · 시청역 식당도감
+          <div class="guide-header-right">
+            <div class="guide-location-tag" id="activeFilterSummary">
+              태평로 · 시청역 식당도감
+            </div>
+            <button class="link-copy-btn" onclick="copyFilterLink()" title="지금 보고 있는 필터 조건을 링크로 복사">🔗 링크 복사</button>
           </div>
         </div>
 
@@ -122,10 +139,98 @@
     </div>
   </div>
 
+  <!-- "오늘 뭐 먹지?" 룰렛 모달 -->
+  <div id="rouletteModalOverlay" class="modal-overlay">
+    <div class="guide-modal fun-modal">
+      <div class="fun-modal-header fun-header-roulette">
+        <div>
+          <div class="fun-modal-title">🎡 오늘 뭐 먹지? 룰렛</div>
+          <div class="fun-modal-sub" id="roulettePoolInfo">현재 필터 조건 안에서 한 곳을 뽑아 드립니다.</div>
+        </div>
+        <button class="fun-close-btn" onclick="closeRouletteModal()" aria-label="닫기">✕</button>
+      </div>
+      <div class="fun-modal-body roulette-layout">
+        <div class="roulette-left">
+          <div class="roulette-wheel-wrap">
+            <div class="roulette-pointer"></div>
+            <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+          </div>
+          <button class="roulette-spin-btn" id="rouletteSpinBtn" onclick="spinRoulette()">🎲 돌리기!</button>
+          <div class="roulette-hint" id="rouletteHint"></div>
+        </div>
+        <div class="roulette-right">
+          <div class="roulette-section-title">🎯 테마 코스 (목록 필터와 연동)</div>
+          <div class="roulette-theme-chips" id="rouletteThemeChips"></div>
+          <div class="roulette-section-title">🍽️ 추첨 결과</div>
+          <div id="rouletteResult" class="roulette-result">
+            <div class="roulette-result-placeholder">
+              <div style="font-size: 30px;">🤔</div>
+              <div>돌리기 버튼을 누르면 오늘 점심이 정해집니다</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 음료 내기 사다리 타기 모달 -->
+  <div id="ladderModalOverlay" class="modal-overlay">
+    <div class="guide-modal fun-modal">
+      <div class="fun-modal-header fun-header-ladder">
+        <div>
+          <div class="fun-modal-title">🪜 음료 내기 사다리 타기</div>
+          <div class="fun-modal-sub" id="ladderContextNote">이름을 적고 위쪽 이름을 누르면 사다리를 타고 내려갑니다.</div>
+        </div>
+        <button class="fun-close-btn" onclick="closeLadderModal()" aria-label="닫기">✕</button>
+      </div>
+      <div class="fun-modal-body">
+        <!-- 빠른 결정: 동전 던지기(참가자1 vs 2) · 주사위(참가자 중 1명) -->
+        <div class="quick-decide">
+          <span class="ladder-setting-label">⚡ 빠른 결정</span>
+          <button type="button" class="ladder-action-btn" id="coinBtn" onclick="flipCoin()">🪙 동전 던지기</button>
+          <button type="button" class="ladder-action-btn" id="diceBtn" onclick="rollDice()">🎲 주사위</button>
+          <span id="quickDecideResult" class="quick-decide-result"></span>
+        </div>
+
+        <div class="ladder-settings">
+          <div class="ladder-setting-group">
+            <span class="ladder-setting-label">👥 인원</span>
+            <div class="ladder-stepper">
+              <button type="button" onclick="changeLadderCount(-1)" aria-label="인원 줄이기">−</button>
+              <span id="ladderCountText">4</span>
+              <button type="button" onclick="changeLadderCount(1)" aria-label="인원 늘리기">＋</button>
+            </div>
+          </div>
+          <div class="ladder-setting-group">
+            <span class="ladder-setting-label">🎁 내기 종류</span>
+            <select id="ladderPresetSelect" class="guide-select" onchange="changeLadderPreset(this.value)"></select>
+          </div>
+          <div class="ladder-setting-group ladder-setting-actions">
+            <button type="button" class="ladder-action-btn" onclick="regenerateLadder()">🔀 사다리 새로 섞기</button>
+            <button type="button" class="ladder-action-btn ladder-action-primary" id="ladderRevealAllBtn" onclick="revealAllLadder()">▶ 전체 결과 보기</button>
+          </div>
+          <div id="ladderCustomResults" class="ladder-custom-results" style="display: none;"></div>
+        </div>
+
+        <div class="ladder-board">
+          <div class="ladder-row" id="ladderNamesRow"></div>
+          <canvas id="ladderCanvas"></canvas>
+          <div class="ladder-row" id="ladderResultsRow"></div>
+        </div>
+
+        <div id="ladderSummary" class="ladder-summary" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 복사 완료 등 짧은 알림 토스트 -->
+  <div id="funToast" class="fun-toast" role="status" aria-live="polite"></div>
+
   <!-- 스크립트 라이브러리 (오픈소스 Leaflet + 정적 데이터 + 앱 로직) -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/lunch-data.js"></script>
   <script src="/js/lunch-guide.js"></script>
+  <script src="/js/lunch-fun.js"></script>
 </body>
 </html>

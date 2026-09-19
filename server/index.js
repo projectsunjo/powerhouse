@@ -30,8 +30,12 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com', 'https://cdn.jsdelivr.net', 'https://fonts.googleapis.com'],
         scriptSrc: ["'self'", "'unsafe-inline'", 'https://unpkg.com'],
-        connectSrc: ["'self'", 'https://*.supabase.co', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com'],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co', 'https://*.tile.openstreetmap.org', 'https://*.pstatic.net', 'https://search.pstatic.net', 'https://*.naver.net', 'https://images.unsplash.com'],
+        // helmet 기본값 script-src-attr 'none' 은 식당도감의 onclick 인라인 핸들러(지도 핀·건물 모아보기·룰렛 등)를 전부 차단하므로 허용
+        scriptSrcAttr: ["'unsafe-inline'"],
+        // api.open-meteo.com: 식당도감 날씨 자동 추천 (키 없는 무료 API, 30분 캐시)
+        connectSrc: ["'self'", 'https://*.supabase.co', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://*.basemaps.cartocdn.com', 'https://api.open-meteo.com'],
+        // OSM 타일은 서브도메인 없는 tile.openstreetmap.org 에서 오므로 와일드카드와 별도로 명시
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://*.supabase.co', 'https://tile.openstreetmap.org', 'https://*.tile.openstreetmap.org', 'https://*.pstatic.net', 'https://search.pstatic.net', 'https://*.naver.net', 'https://images.unsplash.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net'],
         frameSrc: [
           "'self'",
@@ -41,6 +45,9 @@ app.use(
         ],
       },
     },
+    // helmet 기본값 no-referrer 면 브라우저가 Referer 를 안 보내고, OSM 타일 서버는 출처 불명 요청을 "Access blocked" 타일로 거절한다.
+    // strict-origin-when-cross-origin 은 타 사이트에 오리진(도메인)만 보내므로 경로·쿼리는 여전히 새지 않는다.
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   })
 );
 app.use(compression());
