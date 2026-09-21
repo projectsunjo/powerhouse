@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>식권대장 - PowerHouse</title>
+<title>회의보조 - PowerHouse</title>
 <link rel="icon" href="/img/logo.png" type="image/png" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <link rel="stylesheet" href="/css/style.css" />
 </head>
-<body class="lunch-map-page">
+<body class="meeting-page">
   <div class="topbar">
     <div class="topbar-inner">
       <div class="brand-group">
         <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
-        <span class="page-label-inline" id="pageLabelTop"></span>
+        <span class="page-label-inline" id="pageLabelTop">회의보조</span>
       </div>
       <div class="nav-right">
         <nav class="nav-menu">
           <a class="nav-link" href="/">익명게시판</a>
           <a class="nav-link" href="/market-info.html">Market Info</a>
-          <a class="nav-link active" href="/lunch-guide.html">식당도감</a>
-          <a class="nav-link" href="/meeting.html">회의보조</a>
+          <a class="nav-link" href="/lunch-guide.html">식당도감</a>
+          <a class="nav-link active" href="/meeting.html">회의보조</a>
           <a class="nav-link" href="/usage-info.html">이용정보</a>
         </nav>
         <span class="nav-profile" id="navProfile"></span>
@@ -29,17 +29,17 @@
     </div>
   </div>
 
-  <div class="container lunch-map-container">
+  <div class="meeting-container">
     <iframe
-      id="lunchMapFrame"
-      class="lunch-map-frame"
-      src="https://deacon1876.github.io/lunch-map/"
-      title="식권대장"
-      loading="lazy"
+      id="meetingFrame"
+      class="meeting-frame"
+      src="https://qhisper.vercel.app/byok"
+      title="회의보조 (Qhisper)"
+      allow="microphone; camera; display-capture; clipboard-read; clipboard-write; autoplay"
+      allowfullscreen
     ></iframe>
   </div>
 
   <script src="/js/common.js"></script>
-  <script src="/js/lunch-map.js"></script>
 </body>
 </html>

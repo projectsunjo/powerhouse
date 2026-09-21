@@ -1955,6 +1955,38 @@ button.stat-item.likeable.liked {
   display: block;
 }
 
+/* ==========================================================================
+   Meeting Assistant Page (회의보조)
+   ========================================================================== */
+.meeting-page {
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.meeting-page .topbar {
+  flex-shrink: 0;
+}
+
+.meeting-container {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  position: relative;
+  background: #020617;
+}
+
+.meeting-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 .login-wrap {
   max-width: 400px;
   margin: 80px auto;

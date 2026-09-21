@@ -42,6 +42,7 @@ app.use(
           'https://deacon1876.github.io',
           'https://www.youtube.com',
           'https://player.vimeo.com',
+          'https://qhisper.vercel.app',
         ],
       },
     },
