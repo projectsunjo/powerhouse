@@ -73,11 +73,21 @@ function renderIndexPagination(page, totalPages) {
   }
 }
 
+function updateGenBtn(loading = false) {
+  const btn = document.getElementById('generateNowBtn');
+  if (!btn) return;
+  const zap = window.Icons ? window.Icons.zap() : '';
+  btn.innerHTML = loading ? `${zap} <span>생성 중...</span>` : `${zap} <span>지금생성</span>`;
+}
+
 async function checkAdmin() {
   try {
     const me = await api('/api/auth/me');
     isAdmin = me.role === 'webmaster' || me.role === 'marketbot_keeper';
-    if (isAdmin) document.getElementById('generateNowBtn').style.display = 'inline-flex';
+    if (isAdmin) {
+      updateGenBtn(false);
+      document.getElementById('generateNowBtn').style.display = 'inline-flex';
+    }
   } catch (e) {
     isAdmin = false;
   }
@@ -88,7 +98,7 @@ async function pollGenerateStatus() {
   polling = true;
   const btn = document.getElementById('generateNowBtn');
   btn.disabled = true;
-  btn.textContent = '⚡ 생성 중...';
+  updateGenBtn(true);
 
   const tick = async () => {
     try {
@@ -99,7 +109,7 @@ async function pollGenerateStatus() {
       }
       polling = false;
       btn.disabled = false;
-      btn.textContent = '⚡ 지금생성';
+      updateGenBtn(false);
       if (status.lastError) {
         showToast(`생성 실패: ${status.lastError}`);
       } else {
@@ -110,7 +120,7 @@ async function pollGenerateStatus() {
     } catch (e) {
       polling = false;
       btn.disabled = false;
-      btn.textContent = '⚡ 지금생성';
+      updateGenBtn(false);
     }
   };
   setTimeout(tick, 5000);

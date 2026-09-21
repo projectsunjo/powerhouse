@@ -23,14 +23,14 @@
           <a class="nav-link" href="/usage-info.html">이용정보</a>
         </nav>
         <span class="nav-profile" id="navProfile"></span>
-        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기"></button>
       </div>
     </div>
   </div>
 
   <div class="container">
     <div class="card" style="padding: 24px;">
-      <h2 style="margin-top:0; margin-bottom:4px;">✏️ 새 글 작성</h2>
+      <h2 style="margin-top:0; margin-bottom:4px; display:flex; align-items:center; gap:8px;"><span id="writeTitleIcon"></span> 새 글 작성</h2>
       <p class="small-muted" style="margin-top:0;">맹목적인 비난이나 부적절한 글은 예고없이 삭제 될 수 있습니다.</p>
 
       <div class="board-tabs" id="writeCategoryTabs" style="margin-bottom:16px;">
@@ -45,7 +45,7 @@
             <button type="button" class="target-picker-btn" id="targetPickerBtn">
               <span id="targetPickerLabel">불러오는 중...</span>
               <img id="targetPickerAvatar" class="avatar-thumb" src="/img/logo.png" />
-              <span class="target-picker-chevron">▾</span>
+              <span class="target-picker-chevron" id="targetPickerChevron"></span>
             </button>
             <div class="target-picker-menu" id="targetPickerMenu"></div>
           </div>
@@ -53,7 +53,7 @@
         </div>
         <div class="form-group" id="isPrivateField" style="flex:0 0 auto; align-items:flex-end; padding-bottom:12px; display:none;">
           <label class="checkbox-row" style="display:flex; align-items:center; gap:6px;">
-            <input type="checkbox" id="isPrivate" /> 비밀글로 작성
+            <input type="checkbox" id="isPrivate" /> <span id="writePrivateLock"></span> 비밀글로 작성
           </label>
         </div>
       </div>
@@ -80,7 +80,7 @@
 
       <div class="action-row">
         <a href="/"><button class="btn btn-ghost">취소</button></a>
-        <button class="btn btn-primary" id="submitBtn">등록하기</button>
+        <button class="btn btn-primary" id="submitBtn"><span id="submitBtnIcon"></span><span>등록하기</span></button>
       </div>
     </div>
   </div>

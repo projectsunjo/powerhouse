@@ -23,7 +23,7 @@
           <a class="nav-link" href="/usage-info.html">이용정보</a>
         </nav>
         <span class="nav-profile" id="navProfile"></span>
-        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기"></button>
       </div>
     </div>
   </div>
@@ -56,7 +56,7 @@
               </div>
             </div>
             <div class="suggestion-target" id="suggestionTarget" style="display:none;">
-              <span class="suggestion-arrow">→</span>
+              <span class="suggestion-arrow" id="suggestionArrow"></span>
               <div class="suggestion-target-id">
                 <div class="avatar avatar-sm" id="targetAvatar"></div>
                 <div class="author-meta">
@@ -69,11 +69,11 @@
             <span class="lock-badge" id="postPrivateBadge" style="display:none;"></span>
             <div class="date" id="postDate"></div>
             <div class="post-menu-wrap">
-              <button class="icon-btn" id="postMenuBtn">⋯</button>
+              <button class="icon-btn" id="postMenuBtn" aria-label="메뉴"></button>
               <div class="dropdown-menu" id="postMenu">
-                <button id="reportPostBtn" class="report-hidden">🚩 신고</button>
-                <button id="editPostBtn">✏️ 수정</button>
-                <button id="deletePostBtn" class="danger">🗑 삭제</button>
+                <button id="reportPostBtn" class="report-hidden"><span class="menu-icon" id="reportPostIcon"></span><span>신고</span></button>
+                <button id="editPostBtn"><span class="menu-icon" id="editPostIcon"></span><span>수정</span></button>
+                <button id="deletePostBtn" class="danger"><span class="menu-icon" id="deletePostIcon"></span><span>삭제</span></button>
               </div>
             </div>
           </div>
@@ -84,14 +84,14 @@
         <div class="post-detail-body" id="postContent"></div>
 
         <div class="post-stats-row">
-          <span class="stat-item">👁 <span id="postViews">0</span></span>
-          <button class="stat-item likeable" id="likeBtn"><span class="heart-icon">♡</span> <span id="likeCount">0</span></button>
-          <span class="stat-item">💬 <span id="commentStatCount">0</span></span>
+          <span class="stat-item" title="조회수"><span class="stat-icon" id="viewStatIcon"></span> <span id="postViews">0</span></span>
+          <button class="stat-item likeable" id="likeBtn"><span class="heart-icon"></span> <span id="likeCount">0</span></button>
+          <span class="stat-item" title="댓글"><span class="stat-icon" id="commentStatIcon"></span> <span id="commentStatCount">0</span></span>
         </div>
       </div>
 
       <div class="comments-section">
-        <div class="comments-title">댓글 <span id="commentCount">0</span></div>
+        <div class="comments-title"><span id="commentsHeaderIcon"></span> 댓글 <span id="commentCount">0</span></div>
         <div class="card" id="commentList"></div>
 
         <div class="comment-form">

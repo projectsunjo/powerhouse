@@ -6,3 +6,4 @@ corp-ca-bundle.pem
 *.pem
 *.log
 .env*
+.omc/

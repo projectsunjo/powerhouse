@@ -18,6 +18,12 @@ if (['best', 'suggestion'].includes(params.get('tab'))) {
   document.querySelector(`.board-tab[data-tab="${state.tab}"]`).classList.add('active');
 }
 if (state.tab === 'suggestion' && params.get('target')) state.target = params.get('target');
+
+const searchIconWrap = document.getElementById('searchIconWrap');
+if (searchIconWrap && window.Icons) searchIconWrap.innerHTML = window.Icons.search();
+const writeBtnIcon = document.getElementById('writeBtnIcon');
+if (writeBtnIcon && window.Icons) writeBtnIcon.innerHTML = window.Icons.pen();
+
 updateWriteLink();
 renderSubFilterRow();
 
@@ -133,13 +139,14 @@ function renderList(data) {
     const row = document.createElement('a');
     row.href = `/post.html?id=${post.id}`;
     row.className = 'board-row';
+    const isLiked = localStorage.getItem(`liked_post_${post.id}`) === '1';
     row.innerHTML = `
       <div class="col-category"></div>
       <div class="col-title">
         <div class="post-title-line">
           ${post.is_notice ? '<span class="badge notice">공지</span>' : ''}
           ${isSuggestion && post.has_official_reply ? '<span class="category-chip chip-best">답변</span>' : ''}
-          ${post.is_private ? '<span class="lock-icon">🔒</span>' : ''}
+          ${post.is_private ? `<span class="lock-icon">${window.Icons ? window.Icons.lock() : ''}</span>` : ''}
           <span class="post-title"></span>
         </div>
         <div class="post-meta">
@@ -149,9 +156,9 @@ function renderList(data) {
             <span class="post-date"></span>
           </span>
           <span class="post-stats">
-            <span class="stat">👁 ${post.views}</span>
-            <span class="stat">♡ ${post.likes}</span>
-            <span class="stat">💬 ${post.comment_count}</span>
+            <span class="stat stat-view" title="조회수">${window.Icons ? window.Icons.eye() : ''} <span>${post.views}</span></span>
+            <span class="stat stat-like ${isLiked ? 'liked' : ''} ${post.likes > 0 ? 'has-likes' : ''}" title="좋아요">${window.Icons ? window.Icons.heart(isLiked) : ''} <span>${post.likes}</span></span>
+            <span class="stat stat-comment" title="댓글">${window.Icons ? window.Icons.chat() : ''} <span>${post.comment_count}</span></span>
           </span>
         </div>
       </div>

@@ -23,7 +23,7 @@
           <a class="nav-link" href="/usage-info.html">이용정보</a>
         </nav>
         <span class="nav-profile" id="navProfile"></span>
-        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기"></button>
       </div>
     </div>
   </div>
@@ -47,10 +47,13 @@
 
     <div class="toolbar-row">
       <div class="search-row">
-        <input type="text" class="input" id="searchInput" placeholder="검색어를 입력하세요..." />
+        <div class="search-input-wrap">
+          <span class="search-icon-wrap" id="searchIconWrap"></span>
+          <input type="text" class="input search-input" id="searchInput" placeholder="검색어를 입력하세요..." />
+        </div>
         <button class="btn btn-ghost" id="searchBtn">검색</button>
       </div>
-      <a href="/write.html" id="writeLink"><button class="btn btn-primary">✏️ 글쓰기</button></a>
+      <a href="/write.html" id="writeLink"><button class="btn btn-primary btn-write"><span id="writeBtnIcon"></span><span>글쓰기</span></button></a>
     </div>
   </div>
 

@@ -1,6 +1,19 @@
 const writeState = { category: 'general', signedIn: false };
 let writeMe = null;
 
+function initWriteIcons() {
+  if (!window.Icons) return;
+  const titleIcon = document.getElementById('writeTitleIcon');
+  if (titleIcon) titleIcon.innerHTML = window.Icons.pen();
+  const chevron = document.getElementById('targetPickerChevron');
+  if (chevron) chevron.innerHTML = window.Icons.chevronDown();
+  const lock = document.getElementById('writePrivateLock');
+  if (lock) lock.innerHTML = window.Icons.lock();
+  const submitIcon = document.getElementById('submitBtnIcon');
+  if (submitIcon) submitIcon.innerHTML = window.Icons.check();
+}
+initWriteIcons();
+
 const initialCategory = new URLSearchParams(location.search).get('category') === 'suggestion' ? 'suggestion' : 'general';
 
 document.querySelectorAll('#writeCategoryTabs .board-tab').forEach((btn) => {

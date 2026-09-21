@@ -23,15 +23,15 @@
           <a class="nav-link active" href="/usage-info.html">이용정보</a>
         </nav>
         <span class="nav-profile" id="navProfile"></span>
-        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기">☰</button>
+        <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기"></button>
       </div>
     </div>
   </div>
 
   <div class="container">
     <div class="card" style="padding:28px; line-height: 1.65;">
-      <h2 style="margin-top:0; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        <span>ℹ️</span> PowerHouse 이용정보
+      <h2 style="margin-top:0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px;">
+        <span class="section-icon-badge" id="infoMainIcon"></span> PowerHouse 이용정보
       </h2>
       <p class="small-muted" style="font-size: 0.95rem; margin-bottom: 24px;">
         PowerHouse는 사우 여러분의 자유로운 사내 소통(익명게시판), 글로벌 에너지 비즈니스 인사이트(Market Info), 그리고 임직원 복지 식사 라이프(식당도감)를 지원하는 통합 플랫폼입니다.
@@ -39,7 +39,7 @@
 
       <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
         <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
-          <span>💬</span> 1. 익명게시판 & 건의함 (Voice of Employee)
+          <span class="section-icon-badge" id="infoBoardIcon"></span> 1. 익명게시판 & 건의함 (Voice of Employee)
         </h3>
         <p>별도의 회원가입이나 복잡한 절차 없이 누구나 자유롭고 솔직하게 의견을 나눌 수 있습니다.</p>
         <ul style="padding-left: 20px; margin-bottom: 16px;">
@@ -51,21 +51,21 @@
 
       <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
         <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
-          <span>⚡</span> 2. Market Info (에너지 솔루션 브리핑)
+          <span class="section-icon-badge" id="infoMarketIcon"></span> 2. Market Info (에너지 솔루션 브리핑)
         </h3>
         <p>글로벌 에너지 솔루션 시장 동향, 재생에너지, ESS, 전력 그리드 등 주요 비즈니스 뉴스와 전문 리포트를 큐레이션하여 제공합니다.</p>
       </div>
 
       <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
         <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
-          <span>🍱</span> 3. 식당도감 (Food Guide & Map)
+          <span class="section-icon-badge" id="infoLunchIcon"></span> 3. 식당도감 (Food Guide & Map)
         </h3>
         <p>사내 복지 식사 지원 전수 등록 가맹점(66곳)의 상세 정보와 지도를 제공합니다.</p>
       </div>
 
       <div style="border-top: 1px solid var(--border, #e5e7eb); padding-top: 20px; margin-top: 20px;">
         <h3 style="margin-top:0; color: var(--primary, #2563eb); display: flex; align-items: center; gap: 8px;">
-          <span>🛡️</span> 4. 시스템 운영 역할 및 권한
+          <span class="section-icon-badge" id="infoShieldIcon"></span> 4. 시스템 운영 역할 및 권한
         </h3>
         <table style="width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 16px;">
           <thead>
@@ -99,16 +99,29 @@
         </table>
       </div>
 
-      <div style="background: var(--sub-bg, #f8fafc); border-radius: 8px; padding: 16px; margin-top: 24px; border: 1px solid var(--border, #e2e8f0);">
-        <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted, #64748b);">
-          💡 <strong>문의 및 계정 발급</strong><br />
+      <div style="background: var(--sub-bg, #f8fafc); border-radius: 12px; padding: 16px 20px; margin-top: 24px; border: 1px solid var(--border, #e2e8f0);">
+        <p style="margin: 0; font-size: 0.92rem; color: var(--text-muted, #64748b); line-height: 1.6;">
+          <strong style="color: var(--text); display: inline-flex; align-items: center; gap: 6px;"><span id="infoContactIcon"></span> 문의 및 계정 발급</strong><br />
           임원/지킴이 계정 발급이나 신규 기능 제안, 식당 정보 수정 요청은 웹마스터에게 편하게 문의해 주시기 바랍니다.<br />
-          ✉️ 문의: <a href="mailto:sunjo.hwang@samsung.com" style="color: var(--primary, #2563eb); font-weight: 500;">sunjo.hwang@samsung.com</a>
+          <span style="display: inline-flex; align-items: center; gap: 6px; margin-top: 4px;"><span id="infoMailIcon"></span> <strong>문의:</strong> <a href="mailto:sunjo.hwang@samsung.com" style="color: var(--primary, #2563eb); font-weight: 500;">sunjo.hwang@samsung.com</a></span>
         </p>
       </div>
     </div>
   </div>
 
   <script src="/js/common.js"></script>
+  <script>
+    (function() {
+      if (!window.Icons) return;
+      const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+      set('infoMainIcon', window.Icons.info());
+      set('infoBoardIcon', window.Icons.chat());
+      set('infoMarketIcon', window.Icons.zap());
+      set('infoLunchIcon', window.Icons.food());
+      set('infoShieldIcon', window.Icons.shield());
+      set('infoContactIcon', window.Icons.info());
+      set('infoMailIcon', window.Icons.mail());
+    })();
+  </script>
 </body>
 </html>

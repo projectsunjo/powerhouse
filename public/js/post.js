@@ -14,6 +14,27 @@ function isTargetExec() {
   return !!(me && currentPost && currentPost.target_user_id && me.id === currentPost.target_user_id);
 }
 
+function initPostIcons() {
+  if (!window.Icons) return;
+  const postMenuBtn = document.getElementById('postMenuBtn');
+  if (postMenuBtn) postMenuBtn.innerHTML = window.Icons.more();
+  const reportPostIcon = document.getElementById('reportPostIcon');
+  if (reportPostIcon) reportPostIcon.innerHTML = window.Icons.flag();
+  const editPostIcon = document.getElementById('editPostIcon');
+  if (editPostIcon) editPostIcon.innerHTML = window.Icons.edit();
+  const deletePostIcon = document.getElementById('deletePostIcon');
+  if (deletePostIcon) deletePostIcon.innerHTML = window.Icons.trash();
+  const viewStatIcon = document.getElementById('viewStatIcon');
+  if (viewStatIcon) viewStatIcon.innerHTML = window.Icons.eye();
+  const commentStatIcon = document.getElementById('commentStatIcon');
+  if (commentStatIcon) commentStatIcon.innerHTML = window.Icons.chat();
+  const commentsHeaderIcon = document.getElementById('commentsHeaderIcon');
+  if (commentsHeaderIcon) commentsHeaderIcon.innerHTML = window.Icons.chat();
+  const suggestionArrow = document.getElementById('suggestionArrow');
+  if (suggestionArrow) suggestionArrow.innerHTML = window.Icons.arrowRight();
+}
+initPostIcons();
+
 async function loadPost() {
   try {
     me = await api('/api/auth/me');
@@ -37,8 +58,8 @@ function renderPost() {
 
   const privateBadgeEl = document.getElementById('postPrivateBadge');
   const isPrivate = currentPost.category === 'suggestion' && currentPost.is_private;
-  privateBadgeEl.textContent = isPrivate ? '🔒 비밀글' : '';
-  privateBadgeEl.style.display = isPrivate ? '' : 'none';
+  privateBadgeEl.innerHTML = isPrivate ? `${window.Icons ? window.Icons.lock() : ''} 비밀글` : '';
+  privateBadgeEl.style.display = isPrivate ? 'inline-flex' : 'none';
 
   const avatarEl = document.getElementById('postAvatar');
   avatarEl.classList.remove('avatar-anon');
@@ -71,16 +92,21 @@ function renderPost() {
   renderPostContent();
 
   liked = localStorage.getItem(LIKED_KEY) === '1';
+  const likeBtn = document.getElementById('likeBtn');
+  const heartIcon = likeBtn ? likeBtn.querySelector('.heart-icon') : null;
   if (liked) {
-    document.getElementById('likeBtn').classList.add('liked');
-    document.querySelector('#likeBtn .heart-icon').textContent = '♥';
+    if (likeBtn) likeBtn.classList.add('liked');
+    if (heartIcon && window.Icons) heartIcon.innerHTML = window.Icons.heart(true);
+  } else {
+    if (likeBtn) likeBtn.classList.remove('liked');
+    if (heartIcon && window.Icons) heartIcon.innerHTML = window.Icons.heart(false);
   }
 }
 
 function renderPostContent() {
   const el = document.getElementById('postContent');
   if (currentPost.restricted) {
-    el.innerHTML = `<div class="private-notice">🔒<br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
+    el.innerHTML = `<div class="private-notice"><span class="private-icon-wrap">${window.Icons ? window.Icons.lock() : '🔒'}</span><br><button class="btn btn-primary btn-sm" id="unlockBtn" style="margin-top:10px;">비밀번호로 열람</button></div>`;
     document.getElementById('unlockBtn').onclick = () => {
       promptPassword({
         title: '비밀글 열람',
@@ -118,7 +144,7 @@ async function loadComments() {
 
   const commentForm = document.querySelector('.comment-form');
   if (data.restricted) {
-    listEl.innerHTML = '<div class="private-notice" style="padding:24px;">🔒 (비밀글 입니다)</div>';
+    listEl.innerHTML = `<div class="private-notice" style="padding:24px;">${window.Icons ? window.Icons.lock() : '🔒'} (비밀글 입니다)</div>`;
     if (commentForm) commentForm.style.display = 'none';
     return;
   }
@@ -154,13 +180,13 @@ function renderCommentItem(c, isReply) {
       <span>
         ${c.user_id ? `<img class="avatar-thumb" src="${c.user_image_url || '/img/logo.png'}" style="vertical-align:middle; margin-right:4px;" />` : ''}
         ${c.is_official ? '<span class="badge" style="background:var(--success); color:#fff;">공식답변</span> ' : ''}
-        ${c.is_private ? '🔒 ' : ''}<span class="nick"></span> · <span class="when"></span>
+        ${c.is_private ? (window.Icons ? window.Icons.lock() + ' ' : '🔒 ') : ''}<span class="nick"></span> · <span class="when"></span>
       </span>
       <span class="comment-actions">
-        ${!isReply ? '<button class="replyC">답글</button>' : ''}
+        ${!isReply ? `<button class="replyC">${window.Icons ? window.Icons.chat() : ''} 답글</button>` : ''}
         ${!isReply && isTargetExec() ? '<button class="officialReplyC">공식답변</button>' : ''}
-        <button class="reportC report-hidden">신고</button>
-        <button class="delC">삭제</button>
+        <button class="reportC report-hidden">${window.Icons ? window.Icons.flag() : ''} 신고</button>
+        <button class="delC">${window.Icons ? window.Icons.trash() : ''} 삭제</button>
       </span>
     </div>
     <div class="comment-body"></div>
@@ -168,7 +194,7 @@ function renderCommentItem(c, isReply) {
   item.querySelector('.nick').textContent = c.nickname;
   item.querySelector('.when').textContent = formatDate(c.created_at);
   item.querySelector('.comment-body').innerHTML =
-    c.is_private && c.content === null ? '<span class="small-muted">🔒 (비밀글 입니다)</span>' : linkifyContent(c.content);
+    c.is_private && c.content === null ? `<span class="small-muted">${window.Icons ? window.Icons.lock() : '🔒'} (비밀글 입니다)</span>` : linkifyContent(c.content);
 
   item.querySelector('.delC').onclick = () => {
     if (c.user_id) {
@@ -270,8 +296,15 @@ document.getElementById('likeBtn').onclick = async () => {
   try {
     const data = await api(`/api/posts/${postId}/like`, { method: 'POST' });
     document.getElementById('likeCount').textContent = data.likes;
-    document.getElementById('likeBtn').classList.add('liked');
-    document.querySelector('#likeBtn .heart-icon').textContent = '♥';
+    const btn = document.getElementById('likeBtn');
+    btn.classList.add('liked');
+    const heartIcon = btn.querySelector('.heart-icon');
+    if (heartIcon && window.Icons) {
+      heartIcon.innerHTML = window.Icons.heart(true);
+      heartIcon.classList.remove('insta-heart-pop');
+      void heartIcon.offsetWidth; // trigger reflow
+      heartIcon.classList.add('insta-heart-pop');
+    }
     localStorage.setItem(LIKED_KEY, '1');
     liked = true;
   } catch (e) {

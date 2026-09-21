@@ -114,6 +114,56 @@
   }
 }
 
+/* ==========================================================================
+   Instagram-Style Vector Icons & Micro-Animations
+   ========================================================================== */
+.insta-icon {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.16em;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), stroke var(--transition-fast), fill var(--transition-fast);
+}
+
+.insta-icon.insta-icon-filled,
+.insta-icon.insta-heart-filled {
+  fill: #ff2d55;
+  stroke: #ff2d55;
+}
+
+.insta-icon.icon-sm {
+  width: 13px;
+  height: 13px;
+}
+
+.insta-icon.icon-lg {
+  width: 20px;
+  height: 20px;
+}
+
+.insta-icon.icon-xl {
+  width: 28px;
+  height: 28px;
+}
+
+@keyframes insta-heart-pop {
+  0% { transform: scale(1); }
+  32% { transform: scale(1.42) rotate(-8deg); }
+  65% { transform: scale(0.92) rotate(4deg); }
+  85% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.insta-heart-pop {
+  animation: insta-heart-pop 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 /* Base Resets & Global Styles */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -268,17 +318,23 @@ img {
   justify-content: center;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
-  font-size: 1.25rem;
-  line-height: 1;
   color: var(--text);
   cursor: pointer;
-  padding: 6px 10px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .nav-toggle:hover {
   background: var(--surface-hover);
+  border-color: var(--text-subtle);
+}
+
+.nav-toggle .insta-icon {
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 768px) {
@@ -479,23 +535,23 @@ textarea {
 .board-tabs {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--bg-subtle);
-  padding: 5px;
-  border-radius: var(--radius);
+  padding: 4px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   margin-top: 8px;
   width: fit-content;
 }
 
 .board-tab {
-  padding: 8px 18px;
+  padding: 7px 18px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-muted);
   transition: all var(--transition-fast);
 }
@@ -787,36 +843,138 @@ a.board-row:hover .post-title {
 
 .board-row .post-stats {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .board-row .post-stats .stat {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  white-space: nowrap;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  border: 1px solid transparent;
   color: var(--text-muted);
+  font-size: 11.5px;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.board-row .post-stats .stat .insta-icon {
+  width: 12.5px;
+  height: 12.5px;
+  vertical-align: 0;
+}
+
+.board-row .post-stats .stat-like.has-likes {
+  color: #e11d48;
+  background: #fff1f2;
+  border-color: #ffe4e6;
+}
+
+.board-row .post-stats .stat-like.liked {
+  color: #ff2d55;
+  background: #fff0f3;
+  border-color: #ffccd5;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .board-row .post-stats .stat-like.has-likes {
+    color: #fb7185;
+    background: rgba(244, 63, 94, 0.15);
+    border-color: rgba(244, 63, 94, 0.25);
+  }
+  .board-row .post-stats .stat-like.liked {
+    color: #ff4d6d;
+    background: rgba(255, 45, 85, 0.2);
+    border-color: rgba(255, 45, 85, 0.35);
+  }
 }
 
 /* Toolbar & Search Row */
 .toolbar-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin: 18px 0 24px;
+  margin: 20px 0 24px;
 }
 
 .toolbar-row .search-row {
   flex: 1;
   margin: 0;
   display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.search-row input {
+.search-input-wrap {
+  position: relative;
+  flex: 1;
   max-width: 320px;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrap .search-icon-wrap {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-subtle);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.search-input-wrap .search-icon-wrap .insta-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.search-input-wrap .search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13.5px;
+  transition: all var(--transition-fast);
+}
+
+.search-input-wrap .search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.search-row .btn-ghost {
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.btn-write {
+  border-radius: var(--radius-full);
+  padding: 9px 20px;
+  gap: 7px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.btn-write:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--primary-glow);
+}
+
+.btn-write .insta-icon {
+  width: 15px;
+  height: 15px;
 }
 
 /* Pagination */
@@ -829,10 +987,10 @@ a.board-row:hover .post-title {
 }
 
 .pagination button {
-  min-width: 36px;
-  height: 36px;
+  min-width: 38px;
+  height: 38px;
   padding: 0 8px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -852,7 +1010,7 @@ a.board-row:hover .post-title {
   border-color: var(--primary);
   color: #ffffff;
   font-weight: 700;
-  box-shadow: 0 2px 6px var(--primary-glow);
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 /* ==========================================================================
@@ -928,8 +1086,14 @@ a.board-row:hover .post-title {
 
 .suggestion-arrow {
   color: var(--text-subtle);
-  font-weight: 700;
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestion-arrow .insta-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .suggestion-target-id {
@@ -964,9 +1128,19 @@ a.board-row:hover .post-title {
   font-weight: 600;
   color: var(--purple);
   background: var(--purple-soft);
-  padding: 3px 9px;
-  border-radius: var(--radius-xs);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--purple-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lock-badge .insta-icon,
+.lock-icon .insta-icon {
+  width: 13px;
+  height: 13px;
+  vertical-align: -0.1em;
 }
 
 .post-detail-title {
@@ -1010,7 +1184,7 @@ a.board-row:hover .post-title {
 }
 
 .stat-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 13.5px;
@@ -1018,34 +1192,74 @@ a.board-row:hover .post-title {
   background: none;
   border: none;
   padding: 0;
+  line-height: 1;
+}
+
+.stat-item .stat-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stat-item .stat-icon .insta-icon {
+  width: 15px;
+  height: 15px;
 }
 
 button.stat-item.likeable {
   cursor: pointer;
-  padding: 6px 14px;
+  padding: 7px 18px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 600;
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 button.stat-item.likeable:hover {
-  color: var(--danger);
-  border-color: var(--danger-border);
-  background: var(--danger-soft);
+  color: #ff2d55;
+  border-color: #ffccd5;
+  background: #fff0f3;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 45, 85, 0.15);
+}
+
+button.stat-item.likeable:active {
+  transform: scale(0.96);
 }
 
 button.stat-item.likeable.liked {
-  color: var(--danger);
-  background: var(--danger-soft);
-  border-color: var(--danger);
+  color: #ff2d55;
+  background: #fff0f3;
+  border-color: #ff8599;
   font-weight: 700;
+  box-shadow: 0 2px 10px rgba(255, 45, 85, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  button.stat-item.likeable:hover {
+    background: rgba(255, 45, 85, 0.12);
+    border-color: rgba(255, 45, 85, 0.3);
+  }
+  button.stat-item.likeable.liked {
+    background: rgba(255, 45, 85, 0.18);
+    border-color: rgba(255, 45, 85, 0.4);
+  }
 }
 
 .heart-icon {
-  font-size: 1.05rem;
+  display: inline-flex;
+  align-items: center;
   line-height: 1;
+}
+
+.heart-icon .insta-icon {
+  width: 17px;
+  height: 17px;
 }
 
 /* Comments Section */
@@ -1054,10 +1268,19 @@ button.stat-item.likeable.liked {
 }
 
 .comments-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 800;
   margin-bottom: 14px;
   font-size: 1.15rem;
   letter-spacing: -0.01em;
+}
+
+.comments-title .insta-icon {
+  width: 19px;
+  height: 19px;
+  color: var(--primary);
 }
 
 .comment-item {
@@ -1106,9 +1329,17 @@ button.stat-item.likeable.liked {
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: var(--radius-xs);
   transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.comment-actions button .insta-icon {
+  width: 12px;
+  height: 12px;
 }
 
 .comment-actions button:hover {
@@ -1187,19 +1418,21 @@ button.stat-item.likeable.liked {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: inherit;
+}
+
+.icon-btn .insta-icon {
+  width: 17px;
+  height: 17px;
 }
 
 .icon-btn:hover {
@@ -1313,7 +1546,7 @@ button.stat-item.likeable.liked {
 .dropdown-menu button, .dropdown-menu a {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
   text-align: left;
@@ -1327,6 +1560,19 @@ button.stat-item.likeable.liked {
   white-space: nowrap;
   transition: all var(--transition-fast);
   font-family: inherit;
+}
+
+.dropdown-menu .menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  line-height: 1;
+}
+
+.dropdown-menu .menu-icon .insta-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .dropdown-menu button:hover, .dropdown-menu a:hover {
@@ -1359,6 +1605,18 @@ button.stat-item.likeable.liked {
 
 .dropdown-checkbox-row:hover {
   background: var(--bg-subtle);
+}
+
+.visibility-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visibility-icon .insta-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
 }
 
 .avatar-thumb {
@@ -1399,7 +1657,48 @@ button.stat-item.likeable.liked {
 .target-picker-chevron {
   margin-left: auto;
   color: var(--text-muted);
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.target-picker-chevron .insta-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.section-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  color: var(--primary);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.section-icon-badge .insta-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.private-notice .private-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--purple-soft);
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+
+.private-notice .private-icon-wrap .insta-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .target-picker-menu {
