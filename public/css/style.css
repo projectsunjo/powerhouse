@@ -194,10 +194,11 @@ img {
   max-width: 100%;
 }
 
-.container {
+.container,
+.board-container {
   max-width: var(--page-width);
   margin: 0 auto;
-  padding: 28px 20px 80px;
+  padding: 14px;
 }
 
 /* ==========================================================================
@@ -540,7 +541,7 @@ textarea {
   padding: 4px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
-  margin-top: 8px;
+  margin: 0;
   width: fit-content;
 }
 
@@ -2028,12 +2029,14 @@ button.stat-item.likeable.liked {
 
 /* Responsive Overrides */
 @media (max-width: 640px) {
-  .container {
-    padding: 16px 14px 60px;
+  .container,
+  .board-container {
+    padding: 14px;
   }
   .board-tabs:not(.market-info-tabs) {
     width: 100%;
     justify-content: space-around;
+    margin: 0;
   }
   .board-tabs:not(.market-info-tabs) .board-tab {
     flex: 1;
@@ -2056,6 +2059,37 @@ button.stat-item.likeable.liked {
     grid-template-columns: 78px 1fr;
     padding: 12px 14px;
     gap: 10px;
+  }
+  .board-row .post-nick,
+  .board-row .post-meta-sep {
+    display: none !important;
+  }
+  .board-row .post-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: nowrap;
+    margin-top: 4px;
+  }
+  .board-row .post-meta-left {
+    display: inline-flex;
+    align-items: center;
+  }
+  .board-row .post-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .board-row .post-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .board-row .post-stats .stat {
+    padding: 2px 6px;
+    font-size: 11px;
   }
   .post-detail-card {
     padding: 20px 16px;
