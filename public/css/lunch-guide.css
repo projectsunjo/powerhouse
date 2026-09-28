@@ -25,20 +25,20 @@
 .guide-toolbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 10px 20px;
+  padding: 8px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   z-index: 20;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
 }
 
-/* 1단: 식사 시간 필터 탭 (아침/점심/저녁) */
+/* 1단: 식사 시간 필터 탭 (전체/아침/점심/저녁) */
 .guide-meal-tabs {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: nowrap;
   overflow-x: auto;
   white-space: nowrap;
@@ -46,12 +46,130 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  border-bottom: 1px solid #edf2f7;
-  padding-bottom: 8px;
+  padding: 2px 0;
+  width: 100%;
 }
 
 .guide-meal-tabs::-webkit-scrollbar {
   display: none;
+}
+
+/* 2단: 룰렛/사다리 왼쪽 정렬 + 우측 심플 동그란 V 아이콘 버튼 */
+.guide-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* 심플 동그란 V 토글 아이콘 버튼 */
+.guide-circle-toggle-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  padding: 0;
+  user-select: none;
+}
+
+.guide-circle-toggle-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.guide-circle-toggle-btn.is-open {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.guide-circle-toggle-btn.has-active-filters {
+  border-color: #f97316;
+  color: #c2410c;
+}
+
+.guide-circle-toggle-btn.is-open.has-active-filters {
+  background: #c2410c;
+  border-color: #c2410c;
+  color: #ffffff;
+}
+
+.guide-circle-toggle-btn .toggle-icon {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.guide-circle-toggle-btn .toggle-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: #ea580c;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid #ffffff;
+}
+
+/* V 메뉴로 접히는 상세 필터 래퍼 */
+.guide-collapse-wrap {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  border-top: 1px solid #edf2f7;
+  padding-top: 8px;
+  animation: slideDownCollapse 0.2s ease forwards;
+}
+
+.guide-collapse-wrap.is-open {
+  display: flex;
+}
+
+@keyframes slideDownCollapse {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2단: 검색창 & 정렬 드롭다운 행 */
+.guide-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .guide-meal-btn {
@@ -809,24 +927,42 @@
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(4px);
   border: 1px solid #cbd5e1;
-  padding: 7px 12px;
-  font-size: 12px;
+  padding: 6px 10px;
+  font-size: 11.5px;
   font-weight: 700;
-  border-radius: var(--radius-sm);
+  border-radius: 20px;
   color: #0f172a;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
   transition: all 0.15s ease;
+  user-select: none;
 }
 
 .map-control-btn:hover {
   background: #ffffff;
-  border-color: var(--primary);
-  color: var(--primary);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+  border-color: #ea4335;
+  color: #ea4335;
+  box-shadow: 0 4px 10px rgba(234, 67, 53, 0.2);
+  transform: translateY(-1px);
+}
+
+.map-control-hq-btn svg {
+  flex-shrink: 0;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.map-control-hq-btn .hq-btn-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.map-control-hq-btn:hover .hq-btn-text {
+  color: #ea4335;
 }
 
 /* ==========================================================================
@@ -855,41 +991,28 @@
   flex-direction: column;
   align-items: center;
   pointer-events: auto;
-  transform: translate(-50%, -100%); /* Center on GPS coordinate */
+  transform: translate(-50%, -100%); /* Center pin tip on GPS coordinate */
   z-index: 6500 !important;
   position: absolute;
   left: 0;
   top: 0;
 }
 
-.hq-bubble {
-  background: #0f172a;
-  color: #38bdf8;
-  border: 2px solid #38bdf8;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 800;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.45), 0 0 10px rgba(56, 189, 248, 0.4);
+.hq-pin-marker {
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  transition: transform 0.15s ease;
+  justify-content: center;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.32));
 }
 
-.hq-bubble:hover {
-  transform: scale(1.05);
+.hq-pin-marker:hover {
+  transform: scale(1.15) translateY(-2px);
 }
 
-.hq-pointer {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 7px solid #0f172a;
-  margin-top: -1px;
+.hq-pin-svg {
+  display: block;
 }
 
 /* Coffee Bean Sub-Leader Line extending from HQ */
@@ -897,15 +1020,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 3px;
+  margin-top: 2px;
   position: relative;
 }
 
 .hq-coffee-wire {
   width: 2px;
-  height: 10px;
-  background: #38bdf8;
-  box-shadow: 0 0 4px rgba(56, 189, 248, 0.5);
+  height: 8px;
+  background: #ea4335;
+  box-shadow: 0 0 4px rgba(234, 67, 53, 0.4);
 }
 
 .hq-coffee-pill {
@@ -2083,34 +2206,29 @@
     padding: 6px 10px;
     gap: 6px;
   }
+  .guide-action-row {
+    gap: 6px;
+  }
   .guide-meal-tabs {
-    padding-bottom: 6px;
-    gap: 6px;
-  }
-  .guide-meal-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-  .guide-toolbar-sub {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-  }
-  .guide-filters-left {
-    width: 100%;
-    padding: 1px 0;
+    padding: 2px 0;
     gap: 5px;
   }
-  .guide-chip {
-    padding: 4px 9px;
+  .guide-meal-btn {
+    padding: 5px 8px;
     font-size: 12px;
   }
-  .guide-filters-right {
-    width: 100%;
-    max-width: none;
-    display: flex;
-    align-items: center;
+  .guide-circle-toggle-btn {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+  }
+  .guide-circle-toggle-btn .toggle-icon {
+    font-size: 12px;
+  }
+  .guide-collapse-wrap {
     gap: 6px;
+    padding-top: 6px;
   }
   .guide-search-wrap {
     flex: 1;
@@ -2127,6 +2245,15 @@
   .guide-select {
     flex-shrink: 0;
     padding: 5px 8px;
+    font-size: 12px;
+  }
+  .guide-filters-left {
+    width: 100%;
+    padding: 1px 0;
+    gap: 5px;
+  }
+  .guide-chip {
+    padding: 4px 9px;
     font-size: 12px;
   }
   .guide-building-bar {
@@ -2146,14 +2273,14 @@
     flex-direction: column-reverse;
   }
   .guide-map-area {
-    height: 48vh;
+    height: 52vh;
     min-height: 260px;
   }
   .guide-sidebar {
     width: 100%;
     max-width: unset;
     min-width: unset;
-    height: 52vh;
+    height: 48vh;
     border-right: none;
   }
 }

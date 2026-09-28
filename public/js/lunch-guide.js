@@ -31,6 +31,19 @@ function initLunchGuide() {
   setupFilterEvents();
   renderRestaurantList();
 
+  // Mobile (<= 900px): V 메뉴 기본 접힘; Desktop (> 900px): 기본 펼침
+  // URL 에 특정 검색어/카테고리/건물/테마가 있으면 해당 필터를 볼 수 있게 열어둠
+  const isMobile = window.innerWidth <= 900;
+  const hasSpecificFilter = (activeCategory && activeCategory !== "전체") ||
+                            (searchQuery && searchQuery.trim().length > 0) ||
+                            Boolean(activeBuildingFilter) ||
+                            Boolean(activeTheme);
+  if (isMobile) {
+    toggleGuideFilter(Boolean(hasSpecificFilter));
+  } else {
+    toggleGuideFilter(true);
+  }
+
   // ?r=<id> 공유 링크로 들어오면 해당 식당을 지도·목록에서 포커스하고 상세를 연다
   if (pendingFocusId) {
     setTimeout(() => {
@@ -299,11 +312,12 @@ function drawHQMarker(showCoffeeBean = true) {
     className: "custom-leaflet-pin-wrapper",
     html: `
       <div class="hq-composite-marker">
-        <div class="hq-bubble" title="${HQ_CONFIG.name}" onclick="window.resetMapToHQ();">
-          <span>🏢</span>
-          <span>${HQ_CONFIG.name}</span>
+        <div class="hq-pin-marker" title="${HQ_CONFIG.name}" onclick="window.resetMapToHQ();">
+          <svg viewBox="0 0 24 32" width="24" height="32" fill="none" class="hq-pin-svg">
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 20 12 20s12-11.5 12-20c0-6.627-5.373-12-12-12z" fill="#ea4335"/>
+            <circle cx="12" cy="11" r="5" fill="#ffffff"/>
+          </svg>
         </div>
-        <div class="hq-pointer"></div>
         ${coffeePillHtml}
       </div>
     `,
@@ -960,6 +974,7 @@ function renderRestaurantList() {
   const list = getFilteredRestaurants();
   if (countEl) countEl.innerText = list.length;
   syncFiltersToUrl();
+  updateFilterActiveBadge();
 
   // Active Building Banner update
   const bannerEl = document.getElementById("buildingActiveBanner");
@@ -1396,6 +1411,51 @@ function fitAllPinsOnMap() {
   map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 });
 }
 
+// Toggle collapsible filter menu (V menu)
+function toggleGuideFilter(forceState) {
+  const wrap = document.getElementById("guideCollapseWrap");
+  const btn = document.getElementById("guideToggleBtn");
+  const icon = document.getElementById("toggleIcon");
+  if (!wrap || !btn) return;
+
+  const isCurrentlyOpen = wrap.classList.contains("is-open");
+  const willOpen = (typeof forceState === "boolean") ? forceState : !isCurrentlyOpen;
+
+  if (willOpen) {
+    wrap.classList.add("is-open");
+    btn.setAttribute("aria-expanded", "true");
+    if (icon) icon.innerText = "∧";
+    btn.classList.add("is-open");
+  } else {
+    wrap.classList.remove("is-open");
+    btn.setAttribute("aria-expanded", "false");
+    if (icon) icon.innerText = "∨";
+    btn.classList.remove("is-open");
+  }
+  updateFilterActiveBadge();
+}
+
+function updateFilterActiveBadge() {
+  const badge = document.getElementById("filterActiveBadge");
+  const btn = document.getElementById("guideToggleBtn");
+  if (!badge) return;
+
+  let activeCount = 0;
+  if (activeCategory && activeCategory !== "전체") activeCount++;
+  if (searchQuery && searchQuery.trim().length > 0) activeCount++;
+  if (activeBuildingFilter) activeCount++;
+  if (activeTheme) activeCount++;
+
+  if (activeCount > 0) {
+    badge.innerText = `${activeCount}`;
+    badge.style.display = "inline-flex";
+    btn?.classList.add("has-active-filters");
+  } else {
+    badge.style.display = "none";
+    btn?.classList.remove("has-active-filters");
+  }
+}
+
 // Global window bindings for inline HTML onclick handlers
 window.handleMarkerBubbleClick = handleMarkerBubbleClick;
 window.handleBranchStoreClick = handleBranchStoreClick;
@@ -1412,5 +1472,7 @@ window.switchModalPhoto = switchModalPhoto;
 window.resetMapToHQ = resetMapToHQ;
 window.fitAllPinsOnMap = fitAllPinsOnMap;
 window.copyFilterLink = copyFilterLink;
+window.toggleGuideFilter = toggleGuideFilter;
+window.updateFilterActiveBadge = updateFilterActiveBadge;
 
 

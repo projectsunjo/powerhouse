@@ -5,9 +5,11 @@
    - 음료 내기 사다리 타기 모달
    ========================================================================== */
 
-/* 1. 툴바 버튼 (식사 시간 탭 행 우측) */
+/* 1. 툴바 버튼 (2단 액션 행 좌측 정렬) */
 .guide-fun-tools {
-  margin-left: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -641,9 +643,9 @@
     grid-template-columns: 1fr;
   }
   .guide-fun-tools {
-    margin-left: 8px;
-    padding-left: 8px;
-    border-left: 1px solid var(--border, #e2e8f0);
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
     display: inline-flex;
     align-items: center;
     gap: 6px;

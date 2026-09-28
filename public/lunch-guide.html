@@ -37,22 +37,31 @@
   <main class="guide-main">
     <!-- 검색 및 필터 툴바 -->
     <div class="guide-toolbar">
-      <!-- 1단: 식사 시간 필터 (아침/점심/저녁) -->
+      <!-- 1단: 식사 시간 필터 (전체/아침/점심/저녁) -->
       <div class="guide-meal-tabs">
-        <button class="guide-meal-btn active" data-meal="all">전체 식사 (66곳 전수등록)</button>
-        <button class="guide-meal-btn" data-meal="breakfast">🌅 아침 (조식 66곳)</button>
-        <button class="guide-meal-btn" data-meal="lunch">☀️ 점심 (중식 66곳)</button>
-        <button class="guide-meal-btn" data-meal="dinner">🌙 저녁 (석식 19곳)</button>
-
-        <!-- 점심 재미 도구 (Zero-API 프론트 전용) -->
-        <div class="guide-fun-tools">
-          <button class="fun-tool-btn fun-roulette" onclick="openRouletteModal()" title="현재 필터 조건 안에서 한 곳을 무작위로 뽑아 줍니다">🎡 오늘 뭐 먹지? 룰렛</button>
-          <button class="fun-tool-btn fun-ladder" onclick="openLadderModal()" title="음료수·커피 내기 사다리 타기">🪜 음료 내기 사다리</button>
-        </div>
+        <button class="guide-meal-btn active" data-meal="all">전체(66)</button>
+        <button class="guide-meal-btn" data-meal="breakfast">아침(66)</button>
+        <button class="guide-meal-btn" data-meal="lunch">점심(66)</button>
+        <button class="guide-meal-btn" data-meal="dinner">저녁(19)</button>
       </div>
 
-      <!-- 2단: 카테고리 칩 & 검색창 & 정렬 -->
-      <div class="guide-toolbar-sub">
+      <!-- 2단: 룰렛/사다리 다음 행 왼쪽 정렬 + 우측 동그란 V 아이콘 버튼 -->
+      <div class="guide-action-row">
+        <div class="guide-fun-tools">
+          <button class="fun-tool-btn fun-roulette" onclick="openRouletteModal()" title="현재 필터 조건 안에서 한 곳을 무작위로 뽑아 줍니다">🎡 룰렛</button>
+          <button class="fun-tool-btn fun-ladder" onclick="openLadderModal()" title="음료수·커피 내기 사다리 타기">🪜 사다리</button>
+        </div>
+
+        <!-- 그냥 V에 동그란 아이콘으로 심플하게 -->
+        <button class="guide-circle-toggle-btn" id="guideToggleBtn" onclick="toggleGuideFilter()" title="상세 필터 접기/펼치기" aria-expanded="false" aria-label="필터 접기/펼치기">
+          <span class="toggle-icon" id="toggleIcon">∨</span>
+          <span class="toggle-badge" id="filterActiveBadge" style="display: none;"></span>
+        </button>
+      </div>
+
+      <!-- 거기까지 기본이고 접기 메뉴는 그 아래부터: 카테고리 / 건물 / 테마 -->
+      <div class="guide-collapse-wrap" id="guideCollapseWrap">
+        <!-- 2단: 카테고리 칩 -->
         <div class="guide-filters-left">
           <button class="guide-chip active" data-category="전체">전체메뉴</button>
           <button class="guide-chip" data-category="한식">🍚 한식</button>
@@ -63,32 +72,17 @@
           <button class="guide-chip" data-category="카페">☕ 카페</button>
         </div>
 
-        <div class="guide-filters-right">
-          <div class="guide-search-wrap">
-            <span class="guide-search-icon">🔍</span>
-            <input type="text" id="guideSearchInput" class="guide-search-input" placeholder="식당명, 메뉴, 위치 검색 (예: 서평옥, 김치찌개, 씨티스퀘어)" />
-          </div>
-
-          <select id="filterSortSelect" class="guide-select" title="정렬 기준">
-            <option value="recommend">추천순</option>
-            <option value="rating">평점 높은 순</option>
-            <option value="review">리뷰 많은 순</option>
-            <option value="name">가나다순</option>
-          </select>
+        <!-- 3단: 빌딩별 빠른 모아보기 바 -->
+        <div class="guide-building-bar" id="buildingQuickBar">
+          <button class="building-quick-btn active" data-building="all" onclick="clearBuildingFilter()">전체보기 (66곳)</button>
+          <button class="building-quick-btn" data-building="씨티스퀘어" onclick="selectBuildingQuick('씨티스퀘어')">씨티스퀘어 (9곳)</button>
+          <button class="building-quick-btn" data-building="대한상공회의소" onclick="selectBuildingQuick('대한상공회의소')">대한상공회의소 (6곳)</button>
+          <button class="building-quick-btn" data-building="퍼시픽타워" onclick="selectBuildingQuick('퍼시픽타워')">퍼시픽타워 (2곳)</button>
         </div>
-      </div>
 
-      <!-- 3단: 빌딩별 빠른 모아보기 바 -->
-      <div class="guide-building-bar" id="buildingQuickBar">
-        <span class="building-bar-label">🏢 주요 건물 모아보기:</span>
-        <button class="building-quick-btn active" data-building="all" onclick="clearBuildingFilter()">전체보기 (66곳)</button>
-        <button class="building-quick-btn" data-building="씨티스퀘어" onclick="selectBuildingQuick('씨티스퀘어')">씨티스퀘어 (9곳)</button>
-        <button class="building-quick-btn" data-building="대한상공회의소" onclick="selectBuildingQuick('대한상공회의소')">대한상공회의소 (6곳)</button>
-        <button class="building-quick-btn" data-building="퍼시픽타워" onclick="selectBuildingQuick('퍼시픽타워')">퍼시픽타워 (2곳)</button>
+        <!-- 5단: 테마 코스 필터 (국물·해장, 고기·구이, 면, 매운맛 등 음식 종류 기준 — JS 렌더링) -->
+        <div class="guide-theme-bar" id="themeBar"></div>
       </div>
-
-      <!-- 4단: 테마 코스 필터 (국물·해장, 고기·구이, 면, 매운맛 등 음식 종류 기준 — JS 렌더링) -->
-      <div class="guide-theme-bar" id="themeBar"></div>
     </div>
 
     <!-- 좌우 스플릿 뷰: 리스트 + 지도 -->
@@ -104,18 +98,6 @@
         <!-- 날씨 자동 추천 배너 (Open-Meteo, 비/더위/추위일 때만 JS 렌더링) -->
         <div id="weatherBanner" class="weather-banner" style="display: none;"></div>
 
-        <div class="guide-list-header">
-          <div class="guide-count-text">
-            가맹점 <span id="restaurantCount" class="guide-count-badge">0</span>곳
-            <span id="weatherChip" class="weather-chip" title="삼성본관 기준 현재 날씨 (Open-Meteo)"></span>
-          </div>
-          <div class="guide-header-right">
-            <div class="guide-location-tag" id="activeFilterSummary">
-              태평로 · 시청역 식당도감
-            </div>
-            <button class="link-copy-btn" onclick="copyFilterLink()" title="지금 보고 있는 필터 조건을 링크로 복사">🔗 링크 복사</button>
-          </div>
-        </div>
 
         <div id="restaurantList" style="display: flex; flex-direction: column; gap: 12px;">
           <!-- JS 렌더링 영역 -->
@@ -126,8 +108,13 @@
       <section class="guide-map-area">
         <div id="leafletMap"></div>
         <div class="map-floating-controls">
-          <button class="map-control-btn" onclick="resetMapToHQ()" title="삼성본관 중심으로 이동">🏢 본관 중심</button>
-          <button class="map-control-btn" onclick="fitAllPinsOnMap()" title="모든 식당 핀을 한눈에">🔍 핀 전체보기</button>
+          <button class="map-control-btn map-control-hq-btn" onclick="resetMapToHQ()" title="삼성본관 중심으로 이동" aria-label="본관 중심">
+            <svg viewBox="0 0 24 32" width="14" height="19" fill="none">
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 20 12 20s12-11.5 12-20c0-6.627-5.373-12-12-12z" fill="#ea4335"/>
+              <circle cx="12" cy="11" r="5" fill="#ffffff"/>
+            </svg>
+            <span class="hq-btn-text">본관</span>
+          </button>
         </div>
       </section>
     </div>

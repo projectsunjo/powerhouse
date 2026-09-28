@@ -96,7 +96,6 @@ function renderThemeBar() {
   if (!bar) return;
   const today = getTodaySuggestedThemeKey();
   bar.innerHTML = `
-    <span class="theme-bar-label">🎯 테마 코스:</span>
     <button class="theme-chip ${!activeTheme ? "active" : ""}" onclick="setActiveTheme(null)">전체</button>
     ${LUNCH_THEMES.filter(t => !t.hidden).map(t => `
       <button class="theme-chip ${activeTheme === t.key ? "active" : ""}"
