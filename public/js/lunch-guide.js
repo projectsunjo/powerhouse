@@ -438,7 +438,7 @@ function formatTreePillName(name) {
 
 // Overview Clustered Branches (Zoom < 18: 50% 이상 겹침 방지 및 지도 밖/빈 공간으로 지시선 인출)
 const OVERVIEW_CLUSTERS = [
-  // 1. 씨티스퀘어 (8곳, 북서측) -> 덕수궁/시청 방면(RIGHT) 인출
+  // 1. 씨티스퀘어 (9곳, 북서측) -> 덕수궁/시청 방면(RIGHT) 인출
   {
     key: "citysquare",
     name: "씨티스퀘어",
@@ -447,7 +447,7 @@ const OVERVIEW_CLUSTERS = [
     lng: 126.9752236,
     dir: "right",
     customClass: "callout-citysquare",
-    ids: [14, 15, 16, 17, 18, 19, 20, 66]
+    ids: [11, 14, 15, 16, 17, 18, 19, 20, 66]
   },
   // 2. 퍼시픽타워 (2곳, 서측) -> 부영 중정 방면(UP-RIGHT) 인출 (사용자 스케치 반영)
   {
@@ -471,7 +471,7 @@ const OVERVIEW_CLUSTERS = [
     customClass: "callout-chamber",
     ids: [37, 38, 44, 45, 47, 49]
   },
-  // 4. 서소문로134-6 먹자라인 (9곳, 북서측 골목) -> 서소문고가/공원 방면(LEFT)으로 인출
+  // 4. 서소문로134-6 먹자라인 (8곳, 북서측 골목) -> 서소문고가/공원 방면(LEFT)으로 인출
   {
     key: "seosomun_134",
     name: "서소문로134-6",
@@ -480,7 +480,7 @@ const OVERVIEW_CLUSTERS = [
     lng: 126.97580,
     dir: "left",
     customClass: "callout-seosomun",
-    ids: [40, 39, 30, 31, 32, 23, 24, 22, 11]
+    ids: [40, 39, 30, 31, 32, 23, 24, 22]
   },
   // 5. 세종대로11길 북측 골목 (6곳, 부영빌딩 북측) -> 서소문공원 방면(LEFT)으로 인출
   {
@@ -653,8 +653,8 @@ function buildMiniBuildingPillHtml(stores, dir = "right", customClass = "") {
 
 // Zoom-in Multi-Store Building Configurations (확대 시 겹침 원천 방지 건물 매핑)
 const ZOOMIN_BUILDING_CLUSTERS = [
-  // 1. 씨티스퀘어 (8곳: 서쪽 공원 방면 LEFT 인출로 동쪽 골목과 완벽 분리)
-  { key: "citysquare", dir: "left", customClass: "mini-citysquare", lat: 37.5631062, lng: 126.9752236, ids: [14, 15, 16, 17, 18, 19, 20, 66] },
+  // 1. 씨티스퀘어 (9곳: 서쪽 공원 방면 LEFT 인출로 동쪽 골목과 완벽 분리)
+  { key: "citysquare", dir: "left", customClass: "mini-citysquare", lat: 37.5631062, lng: 126.9752236, ids: [11, 14, 15, 16, 17, 18, 19, 20, 66] },
   // 2. 대한상공회의소 (6곳)
   { key: "chamber", dir: "right", lat: 37.5607137, lng: 126.9737753, ids: [37, 38, 44, 45, 47, 49] },
   // 3. 퍼시픽타워 (2곳)
@@ -665,8 +665,8 @@ const ZOOMIN_BUILDING_CLUSTERS = [
   { key: "kyodong_bongpyeong", dir: "right", lat: 37.56318, lng: 126.97589, ids: [23, 24] },
   // 6. 서소문로 134/136 대로변 코너 (2곳: KFC, 슬로우캘리)
   { key: "kfc_slowcali", dir: "right", lat: 37.56372, lng: 126.97595, ids: [39, 40] },
-  // 7. 서소문로 골목 안쪽 (2곳: 신의주찹쌀순대, 소문밥상 -> 서쪽 LEFT 인출로 동측 골목과 완벽 분리)
-  { key: "seosomun_alley_inner", dir: "left", lat: 37.56330, lng: 126.97565, ids: [22, 11] },
+  // 7. 서소문로 골목 안쪽 (1곳: 신의주찹쌀순대 -> 서쪽 LEFT 인출)
+  { key: "seosomun_alley_inner", dir: "left", lat: 37.56330, lng: 126.97565, ids: [22] },
   // 8. 세종대로 68 / 태평로2가 69-12 (3곳: 쪽삼상회, 써브웨이, 본도시락 -> 세종대로 방면 LEFT 인출)
   { key: "sejong_68", dir: "left", lat: 37.56225, lng: 126.97675, ids: [9, 10, 12] },
   // 9. 세종대로 74-1 (2곳: 부대찌개대사관, 김가네 -> 세종대로 방면 LEFT 인출)
@@ -1308,6 +1308,22 @@ function setupFilterEvents() {
       renderRestaurantList();
     });
   }
+
+  // Horizontal mouse wheel scrolling for filter bars
+  ['.guide-meal-tabs', '.guide-filters-left', '.guide-building-bar', '#themeBar'].forEach(sel => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    el.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+        const canScrollLeft = el.scrollLeft > 0 && e.deltaY < 0;
+        const canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 1 && e.deltaY > 0;
+        if (canScrollLeft || canScrollRight) {
+          el.scrollLeft += e.deltaY;
+          e.preventDefault();
+        }
+      }
+    }, { passive: false });
+  });
 
   // Modal Backdrop Click & ESC Key
   const modalOverlay = document.getElementById("detailModalOverlay");

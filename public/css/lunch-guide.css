@@ -39,9 +39,19 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   border-bottom: 1px solid #edf2f7;
   padding-bottom: 8px;
+}
+
+.guide-meal-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .guide-meal-btn {
@@ -57,6 +67,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .guide-meal-btn:hover {
@@ -98,14 +110,27 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .guide-filters-left {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.guide-filters-left::-webkit-scrollbar {
+  display: none;
 }
 
 .guide-chip {
@@ -121,6 +146,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .guide-chip:hover {
@@ -185,10 +212,13 @@
   align-items: center;
   gap: 6px;
   overflow-x: auto;
+  flex-wrap: nowrap;
   padding: 6px 0 2px 0;
   white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   border-top: 1px dashed var(--border);
   margin-top: 6px;
 }
@@ -202,6 +232,7 @@
   font-weight: 700;
   color: #64748b;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .building-quick-btn {
@@ -215,6 +246,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .building-quick-btn:hover {
@@ -2047,18 +2079,81 @@
 
 /* Responsive */
 @media (max-width: 900px) {
+  .guide-toolbar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  .guide-meal-tabs {
+    padding-bottom: 6px;
+    gap: 6px;
+  }
+  .guide-meal-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  .guide-toolbar-sub {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .guide-filters-left {
+    width: 100%;
+    padding: 1px 0;
+    gap: 5px;
+  }
+  .guide-chip {
+    padding: 4px 9px;
+    font-size: 12px;
+  }
+  .guide-filters-right {
+    width: 100%;
+    max-width: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .guide-search-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+  .guide-search-input {
+    padding: 6px 10px 6px 28px;
+    font-size: 12px;
+  }
+  .guide-search-icon {
+    left: 8px;
+    font-size: 12px;
+  }
+  .guide-select {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  .guide-building-bar {
+    width: 100%;
+    padding: 4px 0 2px 0;
+    margin-top: 1px;
+    gap: 5px;
+  }
+  .building-bar-label {
+    font-size: 11px;
+  }
+  .building-quick-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
   .guide-content-split {
     flex-direction: column-reverse;
   }
   .guide-map-area {
-    height: 45vh;
+    height: 48vh;
     min-height: 260px;
   }
   .guide-sidebar {
     width: 100%;
     max-width: unset;
     min-width: unset;
-    height: 55vh;
+    height: 52vh;
     border-right: none;
   }
 }

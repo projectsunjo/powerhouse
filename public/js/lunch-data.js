@@ -1,9 +1,9 @@
 // 식권대장 66개 전체 가맹점 정적 데이터베이스 (공지사항 100% 전수 반영 + 네이버/카카오 실측 좌표)
 const HQ_CONFIG = {
-  name: "삼성본관 (기준점)",
-  address: "서울 중구 세종대로 67 (태평로2가 250)",
-  lat: 37.5623905,
-  lng: 126.9755797
+  "name": "삼성본관 (기준점)",
+  "address": "서울 중구 세종대로 67 (태평로2가 250)",
+  "lat": 37.5623905,
+  "lng": 126.9755797
 };
 
 const BUILDING_CLUSTERS = {
@@ -14,6 +14,7 @@ const BUILDING_CLUSTERS = {
     "lng": 126.9752236,
     "branchDir": "right",
     "ids": [
+      11,
       14,
       15,
       16,
@@ -57,7 +58,7 @@ const RESTAURANTS_DATA = [
     "id": 1,
     "name": "커피빈 삼성본관점",
     "category": "카페",
-    "badge": "🌅 조식가능 · 🌙 저녁가능",
+    "badge": "🌙 저녁가능 · ⭐ 직장인인기",
     "rating": 4.3,
     "reviewCount": 213,
     "address": "서울 중구 세종대로 67 (삼성본관빌딩 1층)",
@@ -74,32 +75,17 @@ const RESTAURANTS_DATA = [
     "tip": "출근길 조식 식권으로 모닝세트 결제 가능. 본관 1층이라 가장 가까움.",
     "menus": [
       {
-        "name": "바닐라라떼(6",
+        "name": "바닐라라떼(6,300)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "300)",
+        "name": "아메리카노(5,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "아메리카노(5",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "베이글(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "800)",
+        "name": "베이글(3,800)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -117,7 +103,7 @@ const RESTAURANTS_DATA = [
     "id": 2,
     "name": "술술돼지",
     "category": "한식",
-    "badge": "🌅 조식가능 · ⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 116,
     "address": "서울 중구 세종대로11길 26 (1층) (세종대로11길 26 1층)",
@@ -134,32 +120,17 @@ const RESTAURANTS_DATA = [
     "tip": "반찬 가짓수가 많고 푸짐한 백반 맛집. 저녁 회식으로도 인기.",
     "menus": [
       {
-        "name": "제육백반정식(9",
+        "name": "제육백반정식(9,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "삼겹살(15,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "삼겹살(15",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "김치찌개(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "김치찌개(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -177,14 +148,14 @@ const RESTAURANTS_DATA = [
     "id": 3,
     "name": "대독장 서소문점",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 334,
     "address": "서울 중구 서소문동 120-12 (2층) (서소문동 120-12 2층)",
     "building": "서소문동 120-12 2층",
     "phone": "02-752-5500",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5623176,
@@ -194,32 +165,17 @@ const RESTAURANTS_DATA = [
     "tip": "계란후라이 셀프 무제한 + 갓 지은 귀리밥 제공. 점심 피크에 대기 있음.",
     "menus": [
       {
-        "name": "김치찌개정식(9",
+        "name": "김치찌개정식(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "두루치기(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "두루치기(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "라면사리(1",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "라면사리(1,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -237,14 +193,14 @@ const RESTAURANTS_DATA = [
     "id": 4,
     "name": "누나홀닭(시청역점)",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.7,
     "reviewCount": 300,
     "address": "서울 중구 세종대로11길 30",
     "building": "세종대로11길 30",
     "phone": "02-3789-2599",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5622975,
@@ -254,32 +210,17 @@ const RESTAURANTS_DATA = [
     "tip": "오븐에 구워 바삭하고 담백한 치킨. 저녁 식권 회식 1순위.",
     "menus": [
       {
-        "name": "바사칸닭(19",
+        "name": "바사칸닭(19,900)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "900)",
+        "name": "쌈닭(22,900)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "쌈닭(22",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "떡볶이(7",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "떡볶이(7,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -300,14 +241,14 @@ const RESTAURANTS_DATA = [
     "id": 5,
     "name": "우림정",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.3,
     "reviewCount": 213,
     "address": "서울 중구 세종대로11길 33-3",
     "building": "세종대로11길 33-3",
     "phone": "02-752-5939",
     "hours": "월-토 10:00-21:30 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5619838,
@@ -317,32 +258,17 @@ const RESTAURANTS_DATA = [
     "tip": "숯불향 가득한 언양식 따닥불고기와 칼칼한 부대찌개 조합 인기.",
     "menus": [
       {
-        "name": "따닥불고기(14",
+        "name": "따닥불고기(14,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "부대찌개(9,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "부대찌개(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "제육볶음(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "제육볶음(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -363,14 +289,14 @@ const RESTAURANTS_DATA = [
     "id": 6,
     "name": "바스버거 서소문시청역점",
     "category": "양식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.7,
     "reviewCount": 250,
     "address": "서울 중구 세종대로11길 33 (세종대로11길 33 B1)",
     "building": "세종대로11길 33 B1",
     "phone": "02-310-9188",
     "hours": "월-금 11:00-22:00, 토-일 11:00-21:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5620973,
@@ -380,28 +306,18 @@ const RESTAURANTS_DATA = [
     "tip": "매장에서 직접 튀긴 생감자칩 무제한 셀프바 이용 가능.",
     "menus": [
       {
-        "name": "바스버거(7",
+        "name": "바스버거(7,800)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "800)",
+        "name": "더블바스버거(9,800)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "더블바스버거(9",
+        "name": "감자칩(무료무한)",
         "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "800)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "감자칩",
-        "price": "무료무한",
         "isSignature": false
       }
     ],
@@ -421,14 +337,14 @@ const RESTAURANTS_DATA = [
     "id": 7,
     "name": "하나센돈까스",
     "category": "일식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 204,
     "address": "서울 중구 세종대로 70 (세종대로 70 1층)",
     "building": "세종대로 70 1층",
     "phone": "02-773-1060",
     "hours": "월-금 10:00-22:00 (토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5623635,
@@ -438,32 +354,17 @@ const RESTAURANTS_DATA = [
     "tip": "얼큰 칼칼한 뚝배기 김치돈까스가 시그니처. 쌀쌀한 날 최고.",
     "menus": [
       {
-        "name": "뚝배기김치돈까스(11",
+        "name": "뚝배기김치돈까스(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "로스가츠(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "로스가츠(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "치즈돈까스(12",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "치즈돈까스(12,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -481,14 +382,14 @@ const RESTAURANTS_DATA = [
     "id": 8,
     "name": "본뼈감자탕",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 257,
     "address": "서울 중구 세종대로11길 30 (세종대로11길 30 1층)",
     "building": "세종대로11길 30 1층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5622803,
@@ -498,32 +399,17 @@ const RESTAURANTS_DATA = [
     "tip": "살코기가 부드럽고 국물이 진한 뼈해장국. 저녁 매콤 뼈구이 별미.",
     "menus": [
       {
-        "name": "뼈해장국(10",
+        "name": "뼈해장국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "뼈구이(34,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "뼈구이(34",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "감자탕(32",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "감자탕(32,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -544,14 +430,14 @@ const RESTAURANTS_DATA = [
     "id": 9,
     "name": "쪽삼상회",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 190,
     "address": "서울 중구 세종대로 68 (1층 102호) (세종대로 68 1층)",
     "building": "세종대로 68 1층",
     "phone": "02-6953-8282",
     "hours": "매일 11:00-22:30 (브레이크 15:00-17:00)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5622675,
@@ -561,32 +447,17 @@ const RESTAURANTS_DATA = [
     "tip": "숯불 초벌구이 삼겹살과 매콤달콤한 쪽갈비 전문점.",
     "menus": [
       {
-        "name": "통삼겹살(16",
+        "name": "통삼겹살(16,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "쪽갈비(17,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "쪽갈비(17",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "김치찌개(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "김치찌개(8,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -604,7 +475,7 @@ const RESTAURANTS_DATA = [
     "id": 10,
     "name": "써브웨이(시청점)",
     "category": "양식",
-    "badge": "🌅 조식 · 🌙 저녁 · ⭐ 직장인인기",
+    "badge": "🌙 저녁가능 · ⭐ 직장인인기",
     "rating": 4.8,
     "reviewCount": 194,
     "address": "서울 중구 세종대로 68 (세종대로 68 1층)",
@@ -621,32 +492,17 @@ const RESTAURANTS_DATA = [
     "tip": "아침(조식) 모닝 샌드위치 세트 가능. 바쁜 직장인 빠른 한 끼.",
     "menus": [
       {
-        "name": "이탈리안BMT(6",
+        "name": "이탈리안BMT(6,900)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "900)",
+        "name": "에그마요(5,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "에그마요(5",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "로티세리치킨(7",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "300)",
+        "name": "로티세리치킨(7,300)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -664,67 +520,56 @@ const RESTAURANTS_DATA = [
     "id": 11,
     "name": "소문밥상",
     "category": "한식",
-    "badge": "☀️ 점심가능 · 🌙 저녁가능",
+    "badge": "🌙 저녁가능 · ⭐ 직장인인기",
     "rating": 4.3,
     "reviewCount": 326,
-    "address": "서울 중구 서소문로 인근 (위치 추정) (서소문로 일대)",
-    "building": "서소문로 일대",
+    "address": "서울 중구 서소문로 124 (씨티스퀘어 지하 1층)",
+    "building": "씨티스퀘어 지하 1층",
     "phone": "매장 확인",
     "hours": "월-금 10:00-22:00 (브레이크 15:00-17:00, 토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
-    "lat": 37.56325,
-    "lng": 126.97575,
+    "lat": 37.5631062,
+    "lng": 126.9752236,
     "imageUrl": "https://search.pstatic.net/common/?autoRotate=true&type=w560_sharpen&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260709_237%2F17835568090916lVbK_JPEG%2FKakaoTalk_20260709_090112562_06.jpg",
     "summary": "가정식백반(8,500), 제육볶음(9,500), 오징어볶음(10,000)",
-    "tip": "조식 지원 매장. 매일 바뀌는 반찬과 집밥 스타일 백반.",
+    "tip": "조식 지원 매장. 씨티스퀘어 B1F 집밥 백반과 제육·오징어볶음. 조식·중식·석식 전시간 이용 가능.",
     "menus": [
       {
-        "name": "가정식백반(8",
+        "name": "가정식백반(8,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "제육볶음(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "제육볶음(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "오징어볶음(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "오징어볶음(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
     ],
     "naverUrl": "https://map.naver.com/p/search/%EC%8B%9C%EC%B2%AD%EC%97%AD%20%EC%84%9C%EC%86%8C%EB%AC%B8%20%EC%86%8C%EB%AC%B8%EB%B0%A5%EC%83%81",
-    "kakaoUrl": "https://map.kakao.com/link/map/%EC%86%8C%EB%AC%B8%EB%B0%A5%EC%83%81%20%28%EC%8B%9C%EC%B2%AD%EC%97%AD%29,37.56325,126.97575",
+    "kakaoUrl": "https://map.kakao.com/link/map/%EC%86%8C%EB%AC%B8%EB%B0%A5%EC%83%81%20(%EC%94%A8%ED%8B%B0%EC%8A%A4%ED%80%98%EC%96%B4),37.5631062,126.9752236",
     "images": [
       "https://search.pstatic.net/common/?autoRotate=true&type=w560_sharpen&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260709_237%2F17835568090916lVbK_JPEG%2FKakaoTalk_20260709_090112562_06.jpg",
       "https://search.pstatic.net/common/?autoRotate=true&type=w560_sharpen&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260709_6%2F1783556796174BT4f4_JPEG%2FKakaoTalk_20260709_090112562_01.jpg",
       "https://search.pstatic.net/common/?autoRotate=true&type=w560_sharpen&src=https%3A%2F%2Fblogfiles.pstatic.net%2FMjAyNjA4MDdfOTAg%2FMDAxNzg2MDM0MDU4NTk1.2iL1IzIdSh4t-IigLDcLSHjEevWW2n9nsaeGfkGzxj0g.VUgxktQofZkv38vLqDG1x_2l_Bxob_WAAJXWxuMsx5Mg.JPEG%2FIMG_0839.JPG%2F3024x4032",
       "https://search.pstatic.net/common/?autoRotate=true&quality=100&type=f640_380&src=https%3A%2F%2Fldb-phinf.pstatic.net%2F20260709_237%2F17835568090916lVbK_JPEG%2FKakaoTalk_20260709_090112562_06.jpg"
-    ]
+    ],
+    "buildingCluster": "씨티스퀘어",
+    "buildingName": "씨티스퀘어",
+    "buildingLat": 37.563046,
+    "buildingLng": 126.975172
   },
   {
     "id": 12,
     "name": "본도시락 서울시청점",
     "category": "한식",
-    "badge": "🌅 조식가능 (점심 포함)",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 310,
     "address": "서울 중구 태평로2가 69-12",
@@ -741,32 +586,17 @@ const RESTAURANTS_DATA = [
     "tip": "사무실 테이크아웃이나 회의용 도시락 식권 결제 편리.",
     "menus": [
       {
-        "name": "바싹불고기제육(10",
+        "name": "바싹불고기제육(10,400)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "400)",
+        "name": "광양불고기(9,900)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "광양불고기(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "샐러드도시락(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "샐러드도시락(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -784,14 +614,14 @@ const RESTAURANTS_DATA = [
     "id": 13,
     "name": "창고43(시청점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.2,
     "reviewCount": 182,
     "address": "서울 중구 서소문동 75 (서소문동 75 B1)",
     "building": "서소문동 75 B1",
     "phone": "02-6020-7955",
     "hours": "매일 11:30-22:00 (브레이크 15:00-17:30)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5629077,
@@ -801,32 +631,17 @@ const RESTAURANTS_DATA = [
     "tip": "점심 식사 단품(육회비빔밥, 갈비탕) 훌륭. 룸 완비 고급 한우.",
     "menus": [
       {
-        "name": "창고스페셜(48",
+        "name": "창고스페셜(48,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "유자육회비빔밥(14,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "유자육회비빔밥(14",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "매운갈비찜(16",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "매운갈비찜(16,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -844,7 +659,7 @@ const RESTAURANTS_DATA = [
     "id": 14,
     "name": "씨티스퀘어 완백부대찌개삼겹살",
     "category": "한식",
-    "badge": "🌅 조식가능 · 🌙 저녁가능",
+    "badge": "🌅 조·중식 · 🌙 저녁가능",
     "rating": 4.3,
     "reviewCount": 190,
     "address": "서울 중구 서소문로 124 (씨티스퀘어 지하) (씨티스퀘어 지하 1층)",
@@ -861,28 +676,18 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 백김치가 들어간 깔끔한 부대찌개, 라면사리 무한리필.",
     "menus": [
       {
-        "name": "완백부대찌개(10",
+        "name": "완백부대찌개(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "묵은지삼겹(16,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "묵은지삼겹(16",
+        "name": "라면·밥(무한)",
         "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "라면·밥",
-        "price": "무한",
         "isSignature": false
       }
     ],
@@ -910,7 +715,7 @@ const RESTAURANTS_DATA = [
     "building": "씨티스퀘어 B1층 B1041호",
     "phone": "매장 확인",
     "hours": "월-금 10:00-22:00 (브레이크 15:00-17:00, 토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631062,
@@ -920,32 +725,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 면사리·밥 무료 리필. 바삭한 육즙 군만두 필수.",
     "menus": [
       {
-        "name": "홍콩우육탕면(9",
+        "name": "홍콩우육탕면(9,800)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "800)",
+        "name": "수제군만두(7,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "수제군만두(7",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "도가니탕면(12",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "도가니탕면(12,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -967,14 +757,14 @@ const RESTAURANTS_DATA = [
     "id": 16,
     "name": "구름산추어탕 시청점",
     "category": "한식",
-    "badge": "☀️ 점심가능 · 🌙 저녁가능",
+    "badge": "🌅 조·중식 · 🌙 저녁가능",
     "rating": 4.4,
     "reviewCount": 166,
     "address": "서울 중구 서소문로 124 (씨티스퀘어 지하) (씨티스퀘어 지하 1층)",
     "building": "씨티스퀘어 지하 1층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631062,
@@ -984,27 +774,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 추어탕 주문 시 맛보기 보쌈과 콩나물무침 기본 제공.",
     "menus": [
       {
-        "name": "구름산추어탕(11",
+        "name": "구름산추어탕(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "보쌈추가(무료제공)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "보쌈추가",
-        "price": "무료제공",
-        "isSignature": false
-      },
-      {
-        "name": "우렁추어탕(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "우렁추어탕(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1033,7 +813,7 @@ const RESTAURANTS_DATA = [
     "building": "씨티스퀘어 지하 1층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631062,
@@ -1043,32 +823,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 진한 일본식 숙성 카레. 밥과 카레 리필 가능.",
     "menus": [
       {
-        "name": "왕건카레(8",
+        "name": "왕건카레(8,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "치킨가라아게카레(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "치킨가라아게카레(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "돈까스카레(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "돈까스카레(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1097,7 +862,7 @@ const RESTAURANTS_DATA = [
     "building": "씨티스퀘어 지하 1층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631062,
@@ -1107,32 +872,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 큼직한 토핑 대왕 유부초밥. 빠르고 간편한 혼밥.",
     "menus": [
       {
-        "name": "연어유부초밥(3",
+        "name": "연어유부초밥(3,200)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "200)",
+        "name": "우삼겹유부(3,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "우삼겹유부(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "라면(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "라면(4,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1154,14 +904,14 @@ const RESTAURANTS_DATA = [
     "id": 19,
     "name": "씨티스퀘어(서평옥)",
     "category": "한식",
-    "badge": "☀️ 점심가능 · 🌙 저녁가능",
+    "badge": "🌅 조·중식 · 🌙 저녁가능",
     "rating": 4.2,
     "reviewCount": 103,
     "address": "서울 중구 서소문로 124 (씨티스퀘어 지하) (씨티스퀘어 B1층)",
     "building": "씨티스퀘어 B1층",
     "phone": "02-6250-0967",
     "hours": "평일 10:30-21:00 (토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631061,
@@ -1171,32 +921,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 맑고 담백한 이북식 곰탕. 국밥이라 회전율 가장 빠름.",
     "menus": [
       {
-        "name": "탕반/곰탕(10",
+        "name": "탕반/곰탕(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "우거지탕(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "우거지탕(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "접시만두(7",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "접시만두(7,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1225,7 +960,7 @@ const RESTAURANTS_DATA = [
     "building": "씨티스퀘어 지하 1층",
     "phone": "매장 확인",
     "hours": "평일 10:30-20:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5631061,
@@ -1235,32 +970,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 추억의 스프와 모닝빵이 나오는 경양식 돈까스.",
     "menus": [
       {
-        "name": "등심돈까스(9",
+        "name": "등심돈까스(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "안심돈까스(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "안심돈까스(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "매운돈까스(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "매운돈까스(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1282,7 +1002,7 @@ const RESTAURANTS_DATA = [
     "id": 21,
     "name": "정원소담(부영빌딩)",
     "category": "한식",
-    "badge": "🌅 조식가능 · ⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 112,
     "address": "서울 중구 세종대로9길 42 (부영빌딩, 좌표는 인접 건물 기준 추정) (부영빌딩 지하 1층)",
@@ -1299,32 +1019,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 가능. 10가지 반찬과 고기메인 무제한 한식뷔페 가성비 최고.",
     "menus": [
       {
-        "name": "점심한식뷔페(8",
+        "name": "점심한식뷔페(8,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "조식뷔페(6,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "조식뷔페(6",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "식권묶음(80",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "식권묶음(80,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1342,14 +1047,14 @@ const RESTAURANTS_DATA = [
     "id": 22,
     "name": "신의주찹쌀순대(서소문점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 298,
     "address": "서울 중구 서소문로 128-3",
     "building": "서소문로 128-3",
     "phone": "02-757-8866",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5633311,
@@ -1359,32 +1064,17 @@ const RESTAURANTS_DATA = [
     "tip": "잡내 없는 진한 사골육수 순대국. 다대기 기본 포함.",
     "menus": [
       {
-        "name": "순대국(10",
+        "name": "순대국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "뼈해장국(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "뼈해장국(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "모듬순대(25",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "모듬순대(25,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1402,14 +1092,14 @@ const RESTAURANTS_DATA = [
     "id": 23,
     "name": "교동전선생(서소문점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.3,
     "reviewCount": 95,
     "address": "서울 중구 서소문로 134-10",
     "building": "서소문로 134-10",
     "phone": "02-310-9909",
     "hours": "월-금 10:30-23:30, 토 11:00-21:30 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5633214,
@@ -1419,32 +1109,17 @@ const RESTAURANTS_DATA = [
     "tip": "점심 식사 주문 시 따끈한 모둠전 5종이 반찬으로 제공.",
     "menus": [
       {
-        "name": "순두부+모둠전정식(9",
+        "name": "순두부+모둠전정식(9,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "된장찌개+전(9,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "된장찌개+전(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "모둠전(22",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "모둠전(22,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1462,14 +1137,14 @@ const RESTAURANTS_DATA = [
     "id": 24,
     "name": "시청역 봉평막국수",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 298,
     "address": "서울 중구 서소문로 134-10 (2층) (세종대로11길 42)",
     "building": "세종대로11길 42",
     "phone": "02-777-5557",
     "hours": "평일 11:00-21:00 (브레이크 15:00-17:00, 주말 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.563321,
@@ -1479,32 +1154,17 @@ const RESTAURANTS_DATA = [
     "tip": "자가제면 메밀막국수와 수육. 여름철 직장인 최고 인기.",
     "menus": [
       {
-        "name": "물막국수(10",
+        "name": "물막국수(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "비빔막국수(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "비빔막국수(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "메밀전병(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "메밀전병(8,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1522,14 +1182,14 @@ const RESTAURANTS_DATA = [
     "id": 25,
     "name": "전주다대기",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.2,
     "reviewCount": 268,
     "address": "서울 중구 세종대로11길 42 (세종대로11길 일대)",
     "building": "세종대로11길 일대",
     "phone": "02-318-7805",
     "hours": "평일 11:00-22:00 (브레이크 15:00-17:00), 토 10:00-14:00 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5621806,
@@ -1539,32 +1199,17 @@ const RESTAURANTS_DATA = [
     "tip": "칼칼한 전주식 콩나물국밥과 수란. 전날 회식 후 해장 1순위.",
     "menus": [
       {
-        "name": "전주콩나물국밥(8",
+        "name": "전주콩나물국밥(8,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "제육정식(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "제육정식(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "황태국밥(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "황태국밥(9,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1582,14 +1227,14 @@ const RESTAURANTS_DATA = [
     "id": 26,
     "name": "함평집(서울시청점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.2,
     "reviewCount": 300,
     "address": "서울 중구 서소문동 120-14 (세종대로 72 2층)",
     "building": "세종대로 72 2층",
     "phone": "02-777-1987",
     "hours": "매일 10:00-21:30 (브레이크 15:00-17:00)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5622717,
@@ -1599,32 +1244,17 @@ const RESTAURANTS_DATA = [
     "tip": "신선한 한우 육회비빔밥과 가마솥 맑은 곰탕 맛집.",
     "menus": [
       {
-        "name": "육회비빔밥(12",
+        "name": "육회비빔밥(12,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "소고기국밥(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "소고기국밥(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "곰탕(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "곰탕(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1642,14 +1272,14 @@ const RESTAURANTS_DATA = [
     "id": 27,
     "name": "잼배옥",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.4,
     "reviewCount": 93,
     "address": "서울 중구 세종대로9길 68-9 (세종대로9길 33)",
     "building": "세종대로9길 33",
     "phone": "02-755-8106",
     "hours": "평일 10:00-21:30 (브레이크 15:00-17:00), 토 11:00-15:00 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5625022,
@@ -1659,32 +1289,17 @@ const RESTAURANTS_DATA = [
     "tip": "1933년 개업 90년 전통 노포 설렁탕. 맑고 깊은 국물.",
     "menus": [
       {
-        "name": "설렁탕(11",
+        "name": "설렁탕(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "도가니탕(17,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "도가니탕(17",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "수육(35",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "수육(35,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1702,14 +1317,14 @@ const RESTAURANTS_DATA = [
     "id": 28,
     "name": "부대찌개대사관 시청점",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 337,
     "address": "서울 중구 세종대로 74-1 (1층 103호) (세종대로11길 27)",
     "building": "세종대로11길 27",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5628167,
@@ -1719,32 +1334,17 @@ const RESTAURANTS_DATA = [
     "tip": "촙트햄과 소시지가 산더미처럼 들어가는 송탄식 부대찌개.",
     "menus": [
       {
-        "name": "대사관부대찌개(11",
+        "name": "대사관부대찌개(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "솥뚜껑삼겹살(16,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "솥뚜껑삼겹살(16",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "햄사리(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "햄사리(4,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1762,7 +1362,7 @@ const RESTAURANTS_DATA = [
     "id": 29,
     "name": "김가네(시청역점)",
     "category": "분식",
-    "badge": "🌅 조식가능 · 🌙 저녁가능",
+    "badge": "🌙 저녁가능 · ⭐ 직장인인기",
     "rating": 4.4,
     "reviewCount": 315,
     "address": "서울 중구 세종대로 74-1 (소공동)",
@@ -1779,32 +1379,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 아침 일찍 김밥 테이크아웃 및 빠른 분식 점심.",
     "menus": [
       {
-        "name": "김가네김밥(4",
+        "name": "김가네김밥(4,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "라볶이(6,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "라볶이(6",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "철판치즈김치볶음밥(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "철판치즈김치볶음밥(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1822,14 +1407,14 @@ const RESTAURANTS_DATA = [
     "id": 30,
     "name": "광화문특고기(시청점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.3,
     "reviewCount": 252,
     "address": "서울 중구 서소문로 134-6 (세종대로11길 43)",
     "building": "세종대로11길 43",
     "phone": "02-773-9222",
     "hours": "평일 11:00-24:00, 주말 11:00-22:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5634452,
@@ -1839,32 +1424,17 @@ const RESTAURANTS_DATA = [
     "tip": "점심에는 쌈채소 무한 제육쌈밥정식, 저녁에는 흑돼지 구이.",
     "menus": [
       {
-        "name": "흑돼지오겹살(17",
+        "name": "흑돼지오겹살(17,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "점심제육쌈밥(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "점심제육쌈밥(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "된장술밥(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "된장술밥(8,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1885,14 +1455,14 @@ const RESTAURANTS_DATA = [
     "id": 31,
     "name": "십원집",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.4,
     "reviewCount": 182,
     "address": "서울 중구 서소문로 134-6 (세종대로11길 38)",
     "building": "세종대로11길 38",
     "phone": "02-777-9222",
     "hours": "매일 10:00-22:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5634545,
@@ -1902,32 +1472,17 @@ const RESTAURANTS_DATA = [
     "tip": "연탄불에 초벌구이해 불향이 진하게 배어있는 연탄 불고기.",
     "menus": [
       {
-        "name": "연탄초벌삼겹살(13",
+        "name": "연탄초벌삼겹살(13,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "파불고기(12,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "파불고기(12",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "마약고추장(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "마약고추장(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -1948,14 +1503,14 @@ const RESTAURANTS_DATA = [
     "id": 32,
     "name": "조조순대 정동집",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 339,
     "address": "서울 중구 서소문로 134-6 (위치 추정) (서소문로 109)",
     "building": "서소문로 109",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5634452,
@@ -1965,32 +1520,17 @@ const RESTAURANTS_DATA = [
     "tip": "진하고 뽀얀 사골 순대국. 겉절이 김치가 일품.",
     "menus": [
       {
-        "name": "조조순대국(10",
+        "name": "조조순대국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "얼큰순대국(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "얼큰순대국(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "편육세트(14",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "편육세트(14,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2008,14 +1548,14 @@ const RESTAURANTS_DATA = [
     "id": 33,
     "name": "명동순대국(시청직영점)",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 119,
     "address": "서울 중구 세종대로11길 45 (1층) (서소문로 130)",
     "building": "서소문로 130",
     "phone": "050-71344-7461",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.561964,
@@ -2025,32 +1565,17 @@ const RESTAURANTS_DATA = [
     "tip": "건더기가 푸짐하게 들어있는 서소문 골목 대표 순대국집.",
     "menus": [
       {
-        "name": "명동순대국(10",
+        "name": "명동순대국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "머리고기수육(23,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "머리고기수육(23",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "술국(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "술국(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2068,14 +1593,14 @@ const RESTAURANTS_DATA = [
     "id": 34,
     "name": "가락",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.7,
     "reviewCount": 85,
     "address": "서울 중구 시청 인근 (위치 추정) (세종대로11길 인근)",
     "building": "세종대로11길 인근",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.56215,
@@ -2085,32 +1610,17 @@ const RESTAURANTS_DATA = [
     "tip": "진한 멸치 디포리 육수로 끓여낸 정통 가락국수 노포.",
     "menus": [
       {
-        "name": "가락우동(7",
+        "name": "가락우동(7,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "유부우동(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "유부우동(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "비빔국수(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "비빔국수(8,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2128,14 +1638,14 @@ const RESTAURANTS_DATA = [
     "id": 35,
     "name": "이자카야나무(시청점)",
     "category": "일식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 206,
     "address": "서울 중구 남대문로1길 37 (세종대로11길 35)",
     "building": "세종대로11길 35",
     "phone": "02-777-6787",
     "hours": "월-금 11:30-05:00 (브레이크 14:30-16:30), 토·일 15:30-05:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5627493,
@@ -2145,32 +1655,17 @@ const RESTAURANTS_DATA = [
     "tip": "점심 덮밥/돈카츠 정식, 저녁에는 프라이빗 룸 이자카야 회식.",
     "menus": [
       {
-        "name": "사케동/연어덮밥(12",
+        "name": "사케동/연어덮밥(12,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "돈카츠정식(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "돈카츠정식(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "모듬초밥(15",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "모듬초밥(15,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2191,14 +1686,14 @@ const RESTAURANTS_DATA = [
     "id": 36,
     "name": "시월애(모꼬지)",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 129,
     "address": "서울 중구 서소문동 120-19 (하동) (세종대로 66)",
     "building": "세종대로 66",
     "phone": "070-8654-3381",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5619703,
@@ -2208,32 +1703,17 @@ const RESTAURANTS_DATA = [
     "tip": "정갈한 한식 돌솥밥과 차돌된장찌개. 깔끔한 분위기.",
     "menus": [
       {
-        "name": "한우차돌된장(9",
+        "name": "한우차돌된장(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "제육돌솥(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "제육돌솥(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "낙지비빔밥(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "낙지비빔밥(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2258,7 +1738,7 @@ const RESTAURANTS_DATA = [
     "building": "대한상공회의소 지하 2층",
     "phone": "매장 확인",
     "hours": "평일 10:30-20:00 (브레이크 15:00-17:00), 토 11:00-15:00 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5607099,
@@ -2268,32 +1748,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 제주도 전통 쫄깃한 밀면과 담백한 수육 조합 인기.",
     "menus": [
       {
-        "name": "제주비빔밀면(9",
+        "name": "제주비빔밀면(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "제주온면(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "제주온면(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "산방수육(17",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "산방수육(17,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2315,14 +1780,14 @@ const RESTAURANTS_DATA = [
     "id": 38,
     "name": "홍대돈부리(상공회의소)",
     "category": "일식",
-    "badge": "☀️ 점심가능 · 🌙 저녁가능",
+    "badge": "🌅 조·중식 · 🌙 저녁가능",
     "rating": 4.2,
     "reviewCount": 120,
     "address": "서울 중구 세종대로 39 (대한상공회의소 지하1층) (대한상공회의소 지하 2층)",
     "building": "대한상공회의소 지하 2층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5607136,
@@ -2332,32 +1797,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 두툼한 돈카츠 덮밥과 생연어 덮밥 전문점.",
     "menus": [
       {
-        "name": "가츠동(9",
+        "name": "가츠동(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "사케동(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "사케동(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "에비동(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "에비동(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2379,14 +1829,14 @@ const RESTAURANTS_DATA = [
     "id": 39,
     "name": "KFC 시청역",
     "category": "양식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 134,
     "address": "서울 중구 서소문로 136 (세종대로 76-1)",
     "building": "세종대로 76-1",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.56356,
@@ -2396,32 +1846,17 @@ const RESTAURANTS_DATA = [
     "tip": "빠른 패스트푸드 점심. 갓 튀긴 핫크리스피 치킨.",
     "menus": [
       {
-        "name": "징거버거세트(7",
+        "name": "징거버거세트(7,900)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "900)",
+        "name": "오리지널치킨(3,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "오리지널치킨(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "트위스터(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "트위스터(4,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2439,14 +1874,14 @@ const RESTAURANTS_DATA = [
     "id": 40,
     "name": "슬로우캘리(서울시청역점)",
     "category": "양식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 191,
     "address": "서울 중구 서소문로 134 (세종대로 72 B1)",
     "building": "세종대로 72 B1",
     "phone": "02-752-3442",
     "hours": "월-금 10:00-20:30",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5635964,
@@ -2456,32 +1891,17 @@ const RESTAURANTS_DATA = [
     "tip": "현미밥과 신선한 채소, 연어가 듬뿍 들어간 다이어트 포케 샐러드.",
     "menus": [
       {
-        "name": "클래식연어포케(12",
+        "name": "클래식연어포케(12,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "스파이시참치(11,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "스파이시참치(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "부채살스테이크(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "부채살스테이크(13,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2499,7 +1919,7 @@ const RESTAURANTS_DATA = [
     "id": 41,
     "name": "청진동해장국 북창점",
     "category": "한식",
-    "badge": "🌅 조식가능 (점심 포함)",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 226,
     "address": "서울 중구 남대문로1길 18 (남대문로4가 17-4)",
@@ -2516,28 +1936,18 @@ const RESTAURANTS_DATA = [
     "tip": "칼칼하고 깊은 국물의 양선지 해장국. 24시간 스타일 노포.",
     "menus": [
       {
-        "name": "양선지해장국(10",
+        "name": "양선지해장국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "뼈다귀해장국(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "뼈다귀해장국(10",
+        "name": "선지추가(무료)",
         "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "선지추가",
-        "price": "무료",
         "isSignature": false
       }
     ],
@@ -2557,14 +1967,14 @@ const RESTAURANTS_DATA = [
     "id": 42,
     "name": "북창동순두부(본점)",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 176,
     "address": "서울 중구 세종대로 78 (세종대로 78 1층)",
     "building": "세종대로 78 1층",
     "phone": "02-318-4350",
     "hours": "평일 10:00-20:00 (브레이크 15:00-16:30)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5631376,
@@ -2574,14 +1984,9 @@ const RESTAURANTS_DATA = [
     "tip": "전국 북창동순두부의 원조 본점. 갓 지은 솥밥과 날계란 제공.",
     "menus": [
       {
-        "name": "북창동순두부(10",
+        "name": "북창동순두부(10,500)",
         "price": "대표메뉴",
         "isSignature": true
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
       },
       {
         "name": "솥밥기본제공",
@@ -2589,12 +1994,7 @@ const RESTAURANTS_DATA = [
         "isSignature": false
       },
       {
-        "name": "고등어구이정식(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "고등어구이정식(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2615,7 +2015,7 @@ const RESTAURANTS_DATA = [
     "id": 43,
     "name": "담원순대",
     "category": "한식",
-    "badge": "🌅 조식가능 · ⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 164,
     "address": "서울 중구 세종대로9길 52 (1층) (세종대로 82)",
@@ -2632,32 +2032,17 @@ const RESTAURANTS_DATA = [
     "tip": "고기 양이 많고 누린내 없이 진한 프리미엄 순대국.",
     "menus": [
       {
-        "name": "담원순대국(10",
+        "name": "담원순대국(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "얼큰순대국(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "얼큰순대국(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "오징어순대(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "오징어순대(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2682,7 +2067,7 @@ const RESTAURANTS_DATA = [
     "building": "세종대로 39 상의회관 인근",
     "phone": "매장 확인",
     "hours": "매일 11:00-21:30 (브레이크 15:00-17:00, 평일만)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5607137,
@@ -2692,32 +2077,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 이연복 셰프 추천 육즙 탕수육과 불맛 볶음밥 맛집.",
     "menus": [
       {
-        "name": "옛날볶음밥(9",
+        "name": "옛날볶음밥(9,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "육즙돼지고기탕수육(28,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "육즙돼지고기탕수육(28",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "삼선짬뽕(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "삼선짬뽕(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2746,7 +2116,7 @@ const RESTAURANTS_DATA = [
     "building": "대한상공회의소 지하 2층",
     "phone": "매장 확인",
     "hours": "11:00-21:00 (브레이크 15:00-17:00, 주말·공휴일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5607137,
@@ -2756,22 +2126,12 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 매운맛 단계와 토핑을 자유롭게 조합하는 정통 카레.",
     "menus": [
       {
-        "name": "로스까스카레(11",
+        "name": "로스까스카레(11,200)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "200)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "치킨가라아게카레(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "치킨가라아게카레(10,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
@@ -2798,14 +2158,14 @@ const RESTAURANTS_DATA = [
     "id": 46,
     "name": "북창옥",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.3,
     "reviewCount": 283,
     "address": "서울 중구 북창동 60 (남대문로4가 17)",
     "building": "남대문로4가 17",
     "phone": "02-772-9510",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5627917,
@@ -2815,32 +2175,17 @@ const RESTAURANTS_DATA = [
     "tip": "진하게 고아낸 사골 육수의 노포 탕반 전문점.",
     "menus": [
       {
-        "name": "도가니탕(16",
+        "name": "도가니탕(16,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "설렁탕(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "설렁탕(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "모듬수육(38",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "모듬수육(38,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2865,7 +2210,7 @@ const RESTAURANTS_DATA = [
     "building": "대한상공회의소 지하 2층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5607137,
@@ -2875,32 +2220,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 볶은 유부가 고기처럼 고소한 생활의달인 김밥 맛집.",
     "menus": [
       {
-        "name": "방배김밥/유부김밥(4",
+        "name": "방배김밥/유부김밥(4,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "참치김밥(5,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "참치김밥(5",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "라면(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "라면(4,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2922,14 +2252,14 @@ const RESTAURANTS_DATA = [
     "id": 48,
     "name": "누리옥",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.2,
     "reviewCount": 129,
     "address": "서울 중구 남대문로1길 26-6 (2층) (세종대로 74 인근)",
     "building": "세종대로 74 인근",
     "phone": "02-3789-6738",
     "hours": "월-금 11:00-21:00 (브레이크 15:00-17:00), 토 11:00-17:00 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5621889,
@@ -2939,32 +2269,17 @@ const RESTAURANTS_DATA = [
     "tip": "정갈한 놋그릇에 나오는 맑은 나주식 곰탕과 평양냉면.",
     "menus": [
       {
-        "name": "한우곰탕(12",
+        "name": "한우곰탕(12,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "육회비빔밥(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "육회비빔밥(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "평양냉면(13",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "평양냉면(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -2982,7 +2297,7 @@ const RESTAURANTS_DATA = [
     "id": 49,
     "name": "브알라 상공회의소점",
     "category": "카페",
-    "badge": "🌅 조식가능 · ⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 166,
     "address": "서울 중구 세종대로 39 (대한상공회의소 지하) (대한상공회의소 지하 2층)",
@@ -2999,32 +2314,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 단짠 조합 시그니처 바다소금라떼와 질소아이스크림.",
     "menus": [
       {
-        "name": "바다소금라떼(4",
+        "name": "바다소금라떼(4,800)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "800)",
+        "name": "아메리카노(3,800)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "아메리카노(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "800)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "크로플(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "크로플(4,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3053,7 +2353,7 @@ const RESTAURANTS_DATA = [
     "building": "퍼시픽타워 지하 1층",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5613584,
@@ -3063,32 +2363,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 정갈한 1인 솥밥 트레이 정식. 손님 모시기 좋은 곳.",
     "menus": [
       {
-        "name": "제철솥밥정식(13",
+        "name": "제철솥밥정식(13,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "차돌된장솥밥(12,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "차돌된장솥밥(12",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "보리굴비(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "보리굴비(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3110,14 +2395,14 @@ const RESTAURANTS_DATA = [
     "id": 51,
     "name": "굽돌집 서울시청 본점",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.7,
     "reviewCount": 91,
     "address": "서울 중구 북창동 63 (서소문로 134)",
     "building": "서소문로 134",
     "phone": "매장 확인",
     "hours": "월-금 11:00-22:30 (브레이크 14:00-16:00), 토·일 16:00-22:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5628234,
@@ -3127,32 +2412,17 @@ const RESTAURANTS_DATA = [
     "tip": "뜨거운 천연 돌판에 구워먹는 삼겹살과 푸짐한 점심 쌈밥.",
     "menus": [
       {
-        "name": "돌판삼겹살(16",
+        "name": "돌판삼겹살(16,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "제육돌판쌈밥(10,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "제육돌판쌈밥(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "김치찌개(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "김치찌개(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3170,14 +2440,14 @@ const RESTAURANTS_DATA = [
     "id": 52,
     "name": "쿠차라 서소문퍼시픽타워점",
     "category": "양식",
-    "badge": "☀️ 점심가능 · 🌙 저녁가능",
+    "badge": "🌙 저녁가능 · ⭐ 직장인인기",
     "rating": 4.2,
     "reviewCount": 297,
     "address": "서울 중구 세종대로9길 41 (퍼시픽타워 지하1층 B2호) (퍼시픽타워 1층)",
     "building": "퍼시픽타워 1층",
     "phone": "050-71474-2158",
     "hours": "매일 11:00-21:00",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": true,
     "lat": 37.5613584,
@@ -3187,32 +2457,17 @@ const RESTAURANTS_DATA = [
     "tip": "조식 지원. 한국의 치폴레. 서브웨이처럼 토핑 골라먹는 멕시칸.",
     "menus": [
       {
-        "name": "부리또볼(8",
+        "name": "부리또볼(8,900)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "900)",
+        "name": "타코(9,900)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "타코(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "까르니따스(10",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
+        "name": "까르니따스(10,900)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3234,14 +2489,14 @@ const RESTAURANTS_DATA = [
     "id": 53,
     "name": "박씨화로숯불구이",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 292,
     "address": "서울 중구 남대문로1길 26-13 (1층) (세종대로11길 40)",
     "building": "세종대로11길 40",
     "phone": "02-756-8997",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5623381,
@@ -3251,32 +2506,17 @@ const RESTAURANTS_DATA = [
     "tip": "참숯 화로에 구워먹는 소갈비살과 삼겹살. 단체 회식 완비.",
     "menus": [
       {
-        "name": "소갈비살(18",
+        "name": "소갈비살(18,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "생삼겹(16,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "생삼겹(16",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "차돌된장찌개(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "차돌된장찌개(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3297,14 +2537,14 @@ const RESTAURANTS_DATA = [
     "id": 54,
     "name": "돈우가식당",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.3,
     "reviewCount": 102,
     "address": "서울 중구 북창동 인근 (위치 추정) (세종대로11길 일대)",
     "building": "세종대로11길 일대",
     "phone": "매장 확인",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.56245,
@@ -3314,32 +2554,17 @@ const RESTAURANTS_DATA = [
     "tip": "가성비 좋은 고기 백반과 묵은지 김치찜이 맛있는 노포.",
     "menus": [
       {
-        "name": "제육백반(9",
+        "name": "제육백반(9,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "삼겹살(15,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "삼겹살(15",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "묵은지김치찜(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "묵은지김치찜(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3360,14 +2585,14 @@ const RESTAURANTS_DATA = [
     "id": 55,
     "name": "신성식당",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 127,
     "address": "서울 중구 세종대로14길 22-3 (북창동 81)",
     "building": "북창동 81",
     "phone": "02-753-5306",
     "hours": "매일 11:30-22:00 (브레이크 14:30-17:00)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5626338,
@@ -3377,32 +2602,17 @@ const RESTAURANTS_DATA = [
     "tip": "수요미식회 굴보쌈 명가. 제철 통영 굴과 보쌈김치 전국구 맛집.",
     "menus": [
       {
-        "name": "굴보쌈(39",
+        "name": "굴보쌈(39,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "간재미회무침(25,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "간재미회무침(25",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "매생이떡국(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "매생이떡국(9,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3423,7 +2633,7 @@ const RESTAURANTS_DATA = [
     "id": 56,
     "name": "장안삼계탕",
     "category": "한식",
-    "badge": "🌅 조식가능 (점심 포함)",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.4,
     "reviewCount": 162,
     "address": "서울 중구 세종대로18길 8",
@@ -3440,32 +2650,17 @@ const RESTAURANTS_DATA = [
     "tip": "1971년부터 이어온 50년 삼계탕 명가. 인삼주 1잔 서비스.",
     "menus": [
       {
-        "name": "토종삼계탕(17",
+        "name": "토종삼계탕(17,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "옻삼계탕(20,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "옻삼계탕(20",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "전기구이통닭(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "전기구이통닭(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3486,14 +2681,14 @@ const RESTAURANTS_DATA = [
     "id": 57,
     "name": "김명자굴국밥(북창점)",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.6,
     "reviewCount": 206,
     "address": "서울 중구 세종대로14길 28-3 (남대문로4가 17-10)",
     "building": "남대문로4가 17-10",
     "phone": "02-777-9003",
     "hours": "평일 11:00-22:00 (브레이크 15:00-16:30, 토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.562625,
@@ -3503,32 +2698,17 @@ const RESTAURANTS_DATA = [
     "tip": "뜨끈하고 시원한 뚝배기 굴국밥에 부추 듬뿍. 든든한 보양식.",
     "menus": [
       {
-        "name": "굴국밥(9",
+        "name": "굴국밥(9,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "매생이굴국밥(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "매생이굴국밥(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "굴전(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "굴전(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3549,14 +2729,14 @@ const RESTAURANTS_DATA = [
     "id": 58,
     "name": "천복",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 213,
     "address": "서울 중구 세종대로14길 27-4 (세종대로14길 18)",
     "building": "세종대로14길 18",
     "phone": "02-756-8524",
     "hours": "월-금 11:00-23:00 (브레이크 14:00-17:00, 토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5629879,
@@ -3566,32 +2746,17 @@ const RESTAURANTS_DATA = [
     "tip": "북창동 고급 고깃집. 점심 찌개 정식과 냉면 가성비 훌륭.",
     "menus": [
       {
-        "name": "차돌된장정식(10",
+        "name": "차돌된장정식(10,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "한우꽃등심(39,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "한우꽃등심(39",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "생삼겹살(16",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "생삼겹살(16,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3612,14 +2777,14 @@ const RESTAURANTS_DATA = [
     "id": 59,
     "name": "숭례도담",
     "category": "한식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 289,
     "address": "서울 중구 세종대로18길 14 (칠패로 27 1층)",
     "building": "칠패로 27 1층",
     "phone": "02-772-9850",
     "hours": "매일 11:00-22:00 (브레이크 15:00-17:00)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.563718,
@@ -3629,32 +2794,17 @@ const RESTAURANTS_DATA = [
     "tip": "점심 공깃밥·막걸리 무제한 셀프바 운영! 한옥 감성 요리주점.",
     "menus": [
       {
-        "name": "보쌈정식(11",
+        "name": "보쌈정식(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "낙지비빔밥(11,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "낙지비빔밥(11",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "대파전(14",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "대파전(14,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3672,14 +2822,14 @@ const RESTAURANTS_DATA = [
     "id": 60,
     "name": "북창동개성칼만두",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "🌅 조식 · ☀️ 점심가능",
     "rating": 4.3,
     "reviewCount": 140,
     "address": "서울 중구 세종대로14길 34 (세종대로14길 28)",
     "building": "세종대로14길 28",
     "phone": "050-71354-5742",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5627549,
@@ -3689,32 +2839,17 @@ const RESTAURANTS_DATA = [
     "tip": "매일 직접 빚는 큼직한 개성식 손만두와 쫄깃한 손칼국수.",
     "menus": [
       {
-        "name": "손칼만두(9",
+        "name": "손칼만두(9,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "떡만두국(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "떡만두국(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "개성손만두(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "개성손만두(8,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3735,14 +2870,14 @@ const RESTAURANTS_DATA = [
     "id": 61,
     "name": "송원스키야키샤브샤브",
     "category": "일식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 197,
     "address": "서울 중구 세종대로18길 24 (북창동) (세종대로18길 24 2층)",
     "building": "세종대로18길 24 2층",
     "phone": "02-778-7708",
     "hours": "월-금 11:00-21:00 (브레이크 14:30-16:30, 토·일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5636682,
@@ -3752,32 +2887,17 @@ const RESTAURANTS_DATA = [
     "tip": "1인 1인덕션 냄비로 각자 깔끔하게 즐기는 프리미엄 스키야키.",
     "menus": [
       {
-        "name": "스키야키1인(15",
+        "name": "스키야키1인(15,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "샤브샤브1인(15,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "샤브샤브1인(15",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "우동사리(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
+        "name": "우동사리(3,000)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3798,7 +2918,7 @@ const RESTAURANTS_DATA = [
     "id": 62,
     "name": "샐러디(서울시청점)",
     "category": "양식",
-    "badge": "🌅 조식가능 · ⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.5,
     "reviewCount": 266,
     "address": "서울 중구 세종대로18길 20 (북창동) (세종대로 72)",
@@ -3815,32 +2935,17 @@ const RESTAURANTS_DATA = [
     "tip": "신선한 곡물 웜볼과 샐러드 랩. 직장인 가벼운 점심.",
     "menus": [
       {
-        "name": "칠리베이컨웜볼(8",
+        "name": "칠리베이컨웜볼(8,600)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "600)",
+        "name": "탄단지샐러디(8,900)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "탄단지샐러디(8",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "멕시칸랩(6",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "900)",
+        "name": "멕시칸랩(6,900)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3858,14 +2963,14 @@ const RESTAURANTS_DATA = [
     "id": 63,
     "name": "쭈담(시청북창점)",
     "category": "한식",
-    "badge": "☀️ 점심 전용",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.4,
     "reviewCount": 268,
     "address": "서울 중구 북창동 인근 (위치 추정) (남대문로4가 17-18)",
     "building": "남대문로4가 17-18",
     "phone": "매장 확인",
     "hours": "월-금 11:00-22:00 (브레이크 15:00-17:00), 토 11:00-15:00 (일요일 휴무)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.56345,
@@ -3875,28 +2980,18 @@ const RESTAURANTS_DATA = [
     "tip": "직화 불향 쭈꾸미 볶음에 콩나물, 무생채 넣고 슥슥 비벼먹는 별미.",
     "menus": [
       {
-        "name": "불향쭈꾸미정식(11",
+        "name": "불향쭈꾸미정식(11,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "쭈삼볶음(13,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "쭈삼볶음(13",
+        "name": "도토리묵사발(무료)",
         "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "도토리묵사발",
-        "price": "무료",
         "isSignature": false
       }
     ],
@@ -3916,14 +3011,14 @@ const RESTAURANTS_DATA = [
     "id": 64,
     "name": "남경",
     "category": "중식",
-    "badge": "⭐ 직장인인기",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.8,
     "reviewCount": 85,
     "address": "서울 중구 북창동 11-2 (세종대로14길 일대)",
     "building": "세종대로14길 일대",
     "phone": "02-756-2286",
     "hours": "평일 운영 (식권대장 이용시간 준수)",
-    "breakfast": false,
+    "breakfast": true,
     "lunch": true,
     "dinner": false,
     "lat": 37.5634842,
@@ -3933,42 +3028,22 @@ const RESTAURANTS_DATA = [
     "tip": "빠른 스피드와 푸짐한 양의 정통 중화요리. 점심 짬뽕 인기.",
     "menus": [
       {
-        "name": "짜장면(7",
+        "name": "짜장면(7,000)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "000)",
+        "name": "짬뽕(8,500)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "짬뽕(8",
+        "name": "탕수육(18,000)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "500)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "탕수육(18",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "000)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "삼선볶음밥(9",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "삼선볶음밥(9,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -3989,7 +3064,7 @@ const RESTAURANTS_DATA = [
     "id": 65,
     "name": "킹스빈커피 태평로점",
     "category": "카페",
-    "badge": "🌅 조식가능 (점심 포함)",
+    "badge": "⭐ 직장인인기 (조·중식)",
     "rating": 4.2,
     "reviewCount": 334,
     "address": "서울 중구 세종대로 73 B102, 103호 (서소문동, 태평로빌딩) (세종대로 64 1층)",
@@ -4006,32 +3081,17 @@ const RESTAURANTS_DATA = [
     "tip": "가성비 최강 대용량 커피. 점심 테이크아웃 및 식권 잔여 결제.",
     "menus": [
       {
-        "name": "빅아메리카노(2",
+        "name": "빅아메리카노(2,500)",
         "price": "대표메뉴",
         "isSignature": true
       },
       {
-        "name": "500)",
+        "name": "바닐라빈라떼(4,200)",
         "price": "대표메뉴",
         "isSignature": false
       },
       {
-        "name": "바닐라빈라떼(4",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "200)",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "모닝토스트(3",
-        "price": "대표메뉴",
-        "isSignature": false
-      },
-      {
-        "name": "500)",
+        "name": "모닝토스트(3,500)",
         "price": "대표메뉴",
         "isSignature": false
       }
@@ -4049,7 +3109,7 @@ const RESTAURANTS_DATA = [
     "id": 66,
     "name": "베이커리(씨티스퀘어점)",
     "category": "카페",
-    "badge": "🌅 조식가능 · 🌙 저녁가능",
+    "badge": "🌅 조·중식 · 🌙 저녁가능",
     "rating": 4.4,
     "reviewCount": 178,
     "address": "서울 중구 서소문로 124 지하1층 B105호",
@@ -4096,3 +3156,7 @@ const RESTAURANTS_DATA = [
     ]
   }
 ];
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { HQ_CONFIG, BUILDING_CLUSTERS, RESTAURANTS_DATA };
+}
