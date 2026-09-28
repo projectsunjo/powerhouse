@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>회의보조 - PowerHouse</title>
+<title>회의녹음 - PowerHouse</title>
 <link rel="icon" href="/img/logo.png" type="image/png" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <link rel="stylesheet" href="/css/style.css" />
@@ -13,16 +13,19 @@
     <div class="topbar-inner">
       <div class="brand-group">
         <a class="brand" href="/"><img class="brand-mark" src="/img/logo.png" alt="PowerHouse" /> PowerHouse</a>
-        <span class="page-label-inline" id="pageLabelTop">회의보조</span>
+        <span class="page-label-inline" id="pageLabelTop">회의녹음</span>
       </div>
       <div class="nav-right">
         <nav class="nav-menu">
           <a class="nav-link" href="/">익명게시판</a>
           <a class="nav-link" href="/market-info.html">Market Info</a>
           <a class="nav-link" href="/lunch-guide.html">식당도감</a>
-          <a class="nav-link active" href="/meeting.html">회의보조</a>
+          <a class="nav-link active" href="/meeting.html">회의녹음</a>
           <a class="nav-link" href="/usage-info.html">이용정보</a>
         </nav>
+        <button type="button" class="meeting-help-btn" id="meetingHelpBtn" onclick="openMeetingHelpModal()" title="회의녹음 사용방법">
+          <span>💡 사용방법</span>
+        </button>
         <span class="nav-profile" id="navProfile"></span>
         <button class="nav-toggle" id="navToggle" aria-label="메뉴 열기"></button>
       </div>
@@ -34,12 +37,82 @@
       id="meetingFrame"
       class="meeting-frame"
       src="https://qhisper.vercel.app/recordonly"
-      title="회의보조 (Qhisper)"
+      title="회의녹음 (Qhisper)"
       allow="microphone; camera; display-capture; clipboard-read; clipboard-write; autoplay"
       allowfullscreen
     ></iframe>
   </div>
 
+  <!-- 회의녹음 사용방법 안내 모달 -->
+  <div id="helpModal" class="help-modal-overlay" style="display: none;" onclick="closeHelpModal(event)">
+    <div class="help-modal-card" onclick="event.stopPropagation()">
+      <div class="help-modal-header">
+        <h3 class="help-modal-title">🎙️ 회의녹음 사용방법</h3>
+        <button type="button" class="help-modal-close" onclick="closeHelpModal()" aria-label="닫기">✕</button>
+      </div>
+      <div class="help-modal-body">
+        <div class="help-step-item">
+          <div class="help-step-num">1</div>
+          <div class="help-step-content">
+            <strong>간편 녹음 시작 및 일시정지</strong>
+            <p>상단의 <code>[녹음]</code> 버튼을 누르면 마이크 권한 요청 후 즉시 녹음이 시작됩니다. 녹음 중 <code>[중지]</code>로 일시정지하거나 <code>[계속]</code>으로 이어갈 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="help-step-item">
+          <div class="help-step-num">2</div>
+          <div class="help-step-content">
+            <strong>실시간 타임스탬프 스탬프</strong>
+            <p>녹음 중 중요 발언이나 주요 안건 시점에 <code>[타임스탬프]</code>를 누르면 메모장 커서 위치에 현재 시간(예: <code>[05:20]</code>)이 자동 삽입됩니다.</p>
+          </div>
+        </div>
+
+        <div class="help-step-item">
+          <div class="help-step-num">3</div>
+          <div class="help-step-content">
+            <strong>회의 메모 실시간 작성</strong>
+            <p>화면 메모장에 회의 핵심 내용, 결정 사항, 액션 아이템을 자유롭게 타이핑하세요. 녹음 중 실시간으로 안전하게 보관됩니다.</p>
+          </div>
+        </div>
+
+        <div class="help-step-item">
+          <div class="help-step-num">4</div>
+          <div class="help-step-content">
+            <strong>자동 저장 및 내 PC 폴더 열기</strong>
+            <p><code>[정지]</code>를 누르면 녹음 파일과 메모 파일이 PC의 <code>Downloads\recordings</code> 폴더에 자동 저장됩니다. 우측 상단의 <code>[📁 저장폴더]</code> 또는 저장목록의 <code>[📁 폴더 가기]</code>를 누르면 내 PC 탐색기 창이 바로 열립니다.</p>
+          </div>
+        </div>
+
+        <div class="help-tip-box">
+          <span class="help-tip-icon">💡</span>
+          <span class="help-tip-text">팁 : 메모와 음성은 ai에게 정리하는데 쓰면 좋습니다</span>
+        </div>
+      </div>
+      <div class="help-modal-footer">
+        <button type="button" class="btn btn-primary help-confirm-btn" onclick="closeHelpModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/common.js"></script>
+  <script>
+    function openMeetingHelpModal() {
+      const modal = document.getElementById('helpModal');
+      if (modal) modal.style.display = 'flex';
+    }
+    function closeHelpModal(e) {
+      if (e && e.target !== e.currentTarget && !e.target.classList.contains('help-modal-close') && !e.target.classList.contains('help-confirm-btn')) {
+        return;
+      }
+      const modal = document.getElementById('helpModal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('helpModal');
+        if (modal && modal.style.display !== 'none') modal.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
