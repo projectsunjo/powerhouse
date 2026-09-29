@@ -21,7 +21,7 @@ const { handleUpload } = require('@vercel/blob/client');
 
 const router = express.Router();
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-const MAX_FILE_BYTES = 4 * 1024 * 1024;
+const MAX_FILE_BYTES = Math.floor(4.4 * 1024 * 1024); // 4.4MB (Vercel 4.5MB serverless payload limit buffer)
 const MAX_BLOB_FILE_BYTES = 100 * 1024 * 1024; // 100MB
 const PAGE_SIZE = 20;
 const RUNS_PAGE_SIZE = 20;

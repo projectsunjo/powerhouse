@@ -30,8 +30,15 @@ async function ensureBucket(supabase, bucketName = AVATAR_BUCKET) {
 
   try {
     const { data: buckets, error } = await supabase.storage.listBuckets();
-    if (!error && buckets && !buckets.some((b) => b.name === bucketName)) {
-      await supabase.storage.createBucket(bucketName, { public: true, fileSizeLimit: 104857600 });
+    if (!error && buckets) {
+      const existing = buckets.find((b) => b.name === bucketName);
+      if (!existing) {
+        await supabase.storage.createBucket(bucketName, { public: true, fileSizeLimit: 104857600 });
+      } else if (!existing.public) {
+        try {
+          await supabase.storage.updateBucket(bucketName, { public: true, fileSizeLimit: 104857600 });
+        } catch (_) {}
+      }
     }
   } catch (err) {
     console.warn(`ensureBucket(${bucketName}) warning:`, err.message);
@@ -126,10 +133,54 @@ async function uploadFileToSupabase(filename, buffer, mimeType) {
   };
 }
 
+// Downloads a file directly from Supabase Storage as a Buffer using service role
+async function downloadFileFromSupabase(urlOrPath) {
+  const supabase = getClient();
+  if (!supabase || !urlOrPath) return null;
+
+  const match = urlOrPath.match(/\/storage\/v1\/object\/(?:public|sign)\/files\/([^?#]+)/);
+  const filePath = match ? decodeURIComponent(match[1]) : (urlOrPath.startsWith('uploads/') ? urlOrPath : null);
+  if (!filePath) return null;
+
+  try {
+    const { data, error } = await supabase.storage.from(FILES_BUCKET).download(filePath);
+    if (error || !data) {
+      console.warn(`Supabase Storage download warning for ${filePath}:`, error ? error.message : 'No data');
+      return null;
+    }
+    const arrayBuffer = await data.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (err) {
+    console.warn(`Supabase Storage download exception for ${filePath}:`, err.message);
+    return null;
+  }
+}
+
+// Generates a temporary signed download URL for fallback
+async function createSignedDownloadUrl(urlOrPath, expiresInSeconds = 3600) {
+  const supabase = getClient();
+  if (!supabase || !urlOrPath) return null;
+
+  const match = urlOrPath.match(/\/storage\/v1\/object\/(?:public|sign)\/files\/([^?#]+)/);
+  const filePath = match ? decodeURIComponent(match[1]) : (urlOrPath.startsWith('uploads/') ? urlOrPath : null);
+  if (!filePath) return null;
+
+  try {
+    const { data, error } = await supabase.storage.from(FILES_BUCKET).createSignedUrl(filePath, expiresInSeconds);
+    if (error || !data) return null;
+    return data.signedUrl;
+  } catch (err) {
+    return null;
+  }
+}
+
 module.exports = {
   uploadProfileImage,
   uploadFileToSupabase,
+  downloadFileFromSupabase,
   createSignedFileUploadUrl,
+  createSignedDownloadUrl,
   deleteStoredFile,
   isSupabaseStorageConfigured,
+  getClient,
 };

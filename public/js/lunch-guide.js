@@ -1127,11 +1127,21 @@ function focusCardInList(id) {
   setTimeout(() => {
     const card = document.getElementById(`card-${id}`);
     const sidebar = document.querySelector('.guide-sidebar');
-    if (card && sidebar) {
-      const offset = card.offsetTop - sidebar.offsetTop - 80;
-      sidebar.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
-    } else if (card) {
-      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    const isMobile = window.innerWidth <= 900;
+    if (card) {
+      if (isMobile) {
+        const mapArea = document.querySelector('.guide-map-area');
+        const mapHeight = mapArea ? mapArea.offsetHeight : 250;
+        const cardRect = card.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = scrollTop + cardRect.top - mapHeight - 16;
+        window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+      } else if (sidebar && sidebar.scrollHeight > sidebar.clientHeight + 10) {
+        const offset = card.offsetTop - sidebar.offsetTop - 80;
+        sidebar.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+      } else {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   }, 50);
 }
