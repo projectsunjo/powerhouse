@@ -26,24 +26,32 @@ on:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Claude Code CLI needs the org-allowlisted IP of this self-hosted
+    # runner (GitHub-hosted runner IPs are rejected) — see scripts/generate-briefing.js:
+    # Gemini billing was disabled, so this always falls through to the
+    # Claude CLI engine now (GEMINI_API_KEY intentionally not set below).
+    runs-on: self-hosted
+    timeout-minutes: 30
+    env:
+      https_proxy: http://90.8.10.30:9090
+      http_proxy: http://90.8.10.30:9090
+      NODE_EXTRA_CA_CERTS: /home/sunjohwang/corp-ca-bundle.pem
+      SSL_CERT_FILE: /home/sunjohwang/corp-ca-bundle.pem
+      npm_config_cafile: /home/sunjohwang/corp-ca-bundle.pem
+      GIT_SSL_CAINFO: /home/sunjohwang/corp-ca-bundle.pem
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Install dependencies
         run: npm install --omit=dev
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
 
       - name: Generate briefing
         env:
           APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
           INTERNAL_API_SECRET: ${{ secrets.INTERNAL_API_SECRET }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           FORCE: ${{ github.event.inputs.force || 'false' }}
           RUN_ID: ${{ github.event.inputs.run_id }}

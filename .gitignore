@@ -7,3 +7,4 @@ corp-ca-bundle.pem
 *.log
 .env*
 .omc/
+.admin-credentials
