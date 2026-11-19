@@ -26,21 +26,21 @@ on:
 
 jobs:
   generate:
-    # Claude Code CLI needs the org-allowlisted IP of this self-hosted
-    # runner (GitHub-hosted runner IPs are rejected) — see scripts/generate-briefing.js:
+    # TEMP TEST: trying ubuntu-latest to see if Anthropic's org IP
+    # allowlist still rejects GitHub-hosted runners (it used to) — the
+    # self-hosted runner's corporate network now blocks *.anthropic.com
+    # outright, so neither path is proven to work right now.
     # Gemini billing was disabled, so this always falls through to the
     # Claude CLI engine now (GEMINI_API_KEY intentionally not set below).
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      https_proxy: http://90.8.10.30:9090
-      http_proxy: http://90.8.10.30:9090
-      NODE_EXTRA_CA_CERTS: /home/sunjohwang/corp-ca-bundle.pem
-      SSL_CERT_FILE: /home/sunjohwang/corp-ca-bundle.pem
-      npm_config_cafile: /home/sunjohwang/corp-ca-bundle.pem
-      GIT_SSL_CAINFO: /home/sunjohwang/corp-ca-bundle.pem
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Install dependencies
         run: npm install --omit=dev
