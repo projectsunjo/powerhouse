@@ -28,10 +28,13 @@ this session.
 - Postgres via Supabase (project ref `ywpgpsktmmdkzwisvrpa`).
 - Hosted on Vercel (serverless, `api/index.js` re-exports `server/index.js`).
 - `scripts/generate-briefing.js` runs the ESMI energy market briefing.
-  Powered by Google Gemini API (`GEMINI_API_KEY`) and real-time news aggregation,
-  running on GitHub Actions (`ubuntu-latest`). It communicates with the deployed app
-  over `/api/internal/*` to record the briefing and trigger email distribution.
-  (Claude Code CLI fallback is retained if `CLAUDE_CODE_OAUTH_TOKEN` is used).
+  Powered by the Claude Code CLI running the project's `esmi` skill
+  (`CLAUDE_CODE_OAUTH_TOKEN`), on a **self-hosted** GitHub Actions runner — the
+  Anthropic org IP allowlist rejects GitHub-hosted runner IPs, and
+  `api.anthropic.com` is only reachable here through the corporate proxy, so the
+  workflow sets the proxy/CA env vars. It communicates with the deployed app over
+  `/api/internal/*` to record the briefing and trigger email distribution.
+  (The earlier Google Gemini engine was removed once its project hit its billing cap.)
 - Local dev only works from WSL (Windows host has no Node toolchain),
   and this network requires `NODE_EXTRA_CA_CERTS`/`https_proxy` for
   most outbound HTTPS — see `~/corp-ca-bundle.pem` and the proxy env

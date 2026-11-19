@@ -31,8 +31,8 @@ jobs:
     # organization's allowed range"), while this runner's corporate
     # egress IP is allowlisted. api.anthropic.com is only reachable
     # from here through the proxy below, so those env vars are required.
-    # GEMINI_API_KEY is intentionally omitted (its project hit its
-    # billing cap), so generate-briefing.js uses the Claude CLI engine.
+    # generate-briefing.js runs the Claude CLI engine (the former Google
+    # Gemini engine was removed after its project hit its billing cap).
     runs-on: self-hosted
     timeout-minutes: 30
     env:
