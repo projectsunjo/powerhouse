@@ -285,7 +285,7 @@ function generateWithClaude() {
         `Run the esmi skill's full research methodology right now. Read .claude/skills/esmi/SKILL.md and .claude/skills/esmi/assets/template.html in this project for the exact methodology, watchlists, sorting rules, and the table-based inline-style HTML structure to clone. Use today's actual current date as the 조사 날짜 (do not use a stale or placeholder date). Perform the real web research (WebSearch/WebFetch) across all 7 categories per the skill. Write the final self-contained HTML directly to the file at ${outFile} using the Write tool. Do NOT save to /mnt/user-data/outputs and do NOT call present_files — this file is consumed by the web app's Market Info > 에너지 솔루션 탭, not delivered in chat.`,
         '--dangerously-skip-permissions',
       ],
-      { cwd: repoRoot, stdio: ['ignore', 'inherit', 'pipe'], timeout: 30 * 60 * 1000 }
+      { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'], timeout: 30 * 60 * 1000 }
     );
     return fs.readFileSync(outFile, 'utf8');
   } finally {
@@ -330,7 +330,8 @@ async function main() {
     const result = await callInternal('complete', { runId, html, skipEmail });
     console.log(`Briefing run ${runId} completed successfully. ${result.emailStatus || ''}`);
   } catch (e) {
-    const detail = e.stderr ? e.stderr.toString() : e.message;
+    const out = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
+    const detail = out.trim() || e.message;
     await callInternal('fail', { runId, error: detail.slice(0, 1500) }).catch((e2) => {
       console.error('Failed to report failure to app:', e2.message);
     });

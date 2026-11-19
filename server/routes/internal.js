@@ -164,7 +164,7 @@ router.post('/briefing/fail', async (req, res, next) => {
     const { runId, error } = req.body || {};
     if (!runId) return res.status(400).json({ error: 'runId required' });
     await pool.query("UPDATE briefing_runs SET completed_at = NOW(), status = 'failed', error = $1 WHERE id = $2", [
-      String(error || '알 수 없는 오류').slice(0, 500),
+      String(error || '알 수 없는 오류').slice(0, 1500),
       runId,
     ]);
     res.json({ ok: true });
