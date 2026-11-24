@@ -21,6 +21,15 @@ const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
 const FORCE = process.env.FORCE === 'true';
 const RUN_ID = process.env.RUN_ID || '';
 
+// Pinned on purpose. The workflow runs `npm install -g @anthropic-ai/claude-code`
+// on every run, so the CLI floats to whatever is newest — and so does its default
+// model. On 2026-11-24 that default became `claude-sonnet-5`, which this account
+// cannot use ("There's an issue with the selected model ... may not exist or you
+// may not have access to it"), and every scheduled run failed in ~30s. Naming the
+// model here keeps a CLI release from changing what we run. Override with
+// BRIEFING_CLAUDE_MODEL if this ID is ever retired.
+const CLAUDE_MODEL = process.env.BRIEFING_CLAUDE_MODEL || 'claude-sonnet-5-5';
+
 async function callInternal(action, body) {
   const res = await fetch(`${APP_BASE_URL}/api/internal/briefing/${action}`, {
     method: 'POST',
@@ -48,6 +57,8 @@ The layout is NOT up to you: this briefing is emailed every morning and must loo
 HARD DATE CUTOFF — this is enforced in code after you finish, so anything outside it is wasted work. The window for this run is the last ${window.hours} hours, which means the ONLY acceptable 📅 badge values are: ${allowed}. Every article you cite must have been published on one of those dates. Do not reach further back to fill a thin section: widen the search topic instead, exactly as SKILL.md's "카테고리별 연관 주제 확장 규칙" describes, and if there is still nothing inside the window, write "특이사항 없음" for that section — that is the correct outcome, not a failure. Any card whose badge falls outside the window will be stripped from the briefing automatically before it is sent.
 
 Use today's actual current date as the 조사 날짜 (do not use a stale or placeholder date). Perform the real web research (WebSearch/WebFetch) across all 7 categories per the skill. Write the final self-contained HTML document (starting at <!DOCTYPE html>, ending at </html>) directly to the file at ${outFile} using the Write tool. Do NOT save to /mnt/user-data/outputs and do NOT call present_files — this file is consumed by the web app's Market Info > 에너지 솔루션 탭 and sent as the briefing email, not delivered in chat.`,
+        '--model',
+        CLAUDE_MODEL,
         '--dangerously-skip-permissions',
       ],
       { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'], timeout: 30 * 60 * 1000 }
@@ -85,7 +96,7 @@ async function main() {
     }
     const briefingWindow = getBriefingWindow();
     console.log(
-      `[ESMI] Using Claude CLI engine. Window: last ${briefingWindow.hours}h (allowed dates: ${briefingWindow.allowedDates.join(', ')}).`
+      `[ESMI] Using Claude CLI engine (${CLAUDE_MODEL}). Window: last ${briefingWindow.hours}h (allowed dates: ${briefingWindow.allowedDates.join(', ')}).`
     );
     const rawHtml = generateWithClaude(briefingWindow);
 
