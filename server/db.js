@@ -98,6 +98,10 @@ async function init() {
     );
 
     ALTER TABLE briefing_runs ADD COLUMN IF NOT EXISTS trigger_type TEXT NOT NULL DEFAULT 'auto';
+    -- What the generator actually did (model, effort, turns, cards kept/dropped
+    -- by the date window). The Actions log is unreadable from the office
+    -- network, so this is where a run's diagnostics have to live.
+    ALTER TABLE briefing_runs ADD COLUMN IF NOT EXISTS notes TEXT;
 
     CREATE TABLE IF NOT EXISTS email_logs (
       id SERIAL PRIMARY KEY,

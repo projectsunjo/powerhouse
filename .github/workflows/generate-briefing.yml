@@ -23,6 +23,10 @@ on:
         description: 'Optional GitHub PAT to store in DB settings'
         required: false
         default: ''
+      skip_email:
+        description: 'Generate and record the briefing without emailing it (for test runs)'
+        required: false
+        default: 'false'
 
 jobs:
   generate:
@@ -34,7 +38,9 @@ jobs:
     # generate-briefing.js runs the Claude CLI engine (the former Google
     # Gemini engine was removed after its project hit its billing cap).
     runs-on: self-hosted
-    timeout-minutes: 30
+    # Opus at high effort can take 15-25 min; the script gives up at 45 so it
+    # can still report the failure to the app before Actions kills the job.
+    timeout-minutes: 50
     env:
       https_proxy: http://90.8.10.30:9090
       http_proxy: http://90.8.10.30:9090
@@ -59,4 +65,5 @@ jobs:
           FORCE: ${{ github.event.inputs.force || 'false' }}
           RUN_ID: ${{ github.event.inputs.run_id }}
           SET_GITHUB_TOKEN: ${{ github.event.inputs.set_github_token }}
+          SKIP_EMAIL: ${{ github.event.inputs.skip_email || 'false' }}
         run: node scripts/generate-briefing.js

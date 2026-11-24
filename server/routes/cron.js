@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { triggerBriefingWorkflow } = require('../utils/github');
+const { expireStaleRuns, briefingToday, runInFlight } = require('../utils/briefingRuns');
 
 const router = express.Router();
 
@@ -12,26 +13,22 @@ router.get('/briefing', async (req, res, next) => {
       return res.status(401).json({ error: 'unauthorized' });
     }
 
-    // 1. Strict 1-per-day check: Check if a briefing was already created today in KST
-    const { rows: todayBriefings } = await pool.query(`
-      SELECT id FROM briefings 
-      WHERE (created_at + INTERVAL '9 hours')::date = (NOW() + INTERVAL '9 hours')::date 
-      LIMIT 1
-    `);
-    if (todayBriefings.length > 0) {
-      console.log(`[Cron] Today's briefing (#${todayBriefings[0].id}) was already generated. Skipping.`);
-      return res.json({ ok: true, skipped: true, reason: 'Already generated today', briefingId: todayBriefings[0].id });
+    // Runs daily whether or not the runner PC is on, so it's also where rows
+    // orphaned by an offline runner get closed out.
+    await expireStaleRuns();
+
+    // 1. Strict 1-per-day check (KST)
+    const existing = await briefingToday();
+    if (existing) {
+      console.log(`[Cron] Today's briefing (#${existing.id}) was already generated. Skipping.`);
+      return res.json({ ok: true, skipped: true, reason: 'Already generated today', briefingId: existing.id });
     }
 
-    // 2. Prevent concurrent runs if one is already running within last 30 minutes
-    const { rows: runningRuns } = await pool.query(`
-      SELECT id FROM briefing_runs 
-      WHERE status = 'running' AND started_at > NOW() - INTERVAL '30 minutes' 
-      LIMIT 1
-    `);
-    if (runningRuns.length > 0) {
-      console.log(`[Cron] A briefing run (#${runningRuns[0].id}) is already in progress. Skipping.`);
-      return res.json({ ok: true, skipped: true, reason: 'Run already in progress', runId: runningRuns[0].id });
+    // 2. Don't dispatch a second run while one is still generating
+    const inFlight = await runInFlight();
+    if (inFlight) {
+      console.log(`[Cron] A briefing run (#${inFlight.id}) is already in progress. Skipping.`);
+      return res.json({ ok: true, skipped: true, reason: 'Run already in progress', runId: inFlight.id });
     }
 
     console.log('[Cron] Vercel Cron triggered daily briefing dispatch');
