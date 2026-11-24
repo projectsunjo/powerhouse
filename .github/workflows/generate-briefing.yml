@@ -54,8 +54,20 @@ jobs:
       - name: Install dependencies
         run: npm install --omit=dev
 
+      # npm installs into ~/.npm-global, which isn't on the runner's PATH, so
+      # this step used to be a no-op: every run executed an older root-owned
+      # copy in /usr/local/bin (2.1.251, installed 2026-08-31). By November the
+      # API refused models to that version ("claude_code_version_too_old"),
+      # which is what broke the scheduled runs. Put the fresh install first.
       - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          echo "$(npm prefix -g)/bin" >> "$GITHUB_PATH"
+
+      - name: Show Claude Code CLI in use
+        run: |
+          command -v claude
+          claude --version
 
       - name: Generate briefing
         env:

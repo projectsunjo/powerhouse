@@ -14,6 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const crypto = require('crypto');
 const { getBriefingWindow, filterBriefingHtml } = require('./lib/briefing-window');
 
 const APP_BASE_URL = (process.env.APP_BASE_URL || '').replace(/\/$/, '');
@@ -59,14 +60,43 @@ function summarizeCliResult(stdout) {
   try {
     const lines = String(stdout).trim().split(/\r?\n/);
     const r = JSON.parse(lines[lines.length - 1]);
-    const models = r.modelUsage ? Object.keys(r.modelUsage) : [];
     return {
-      models,
+      models: r.modelUsage ? Object.keys(r.modelUsage) : [],
       turns: typeof r.num_turns === 'number' ? r.num_turns : null,
       minutes: typeof r.duration_ms === 'number' ? +(r.duration_ms / 60000).toFixed(1) : null,
+      subtype: r.subtype || null,
+      resultText: typeof r.result === 'string' ? r.result : '',
     };
   } catch {
-    return { models: [], turns: null, minutes: null };
+    return { models: [], turns: null, minutes: null, subtype: null, resultText: String(stdout || '').slice(-600) };
+  }
+}
+
+function runClaude(args, repoRoot) {
+  const stdout = execFileSync(
+    'claude',
+    [
+      ...args,
+      '--model',
+      CLAUDE_MODEL,
+      '--fallback-model',
+      CLAUDE_FALLBACK_MODEL,
+      '--effort',
+      CLAUDE_EFFORT,
+      '--output-format',
+      'json',
+      '--dangerously-skip-permissions',
+    ],
+    { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'], timeout: GENERATION_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 }
+  );
+  return summarizeCliResult(stdout);
+}
+
+function cliVersion() {
+  try {
+    return String(execFileSync('claude', ['--version'], { stdio: ['ignore', 'pipe', 'ignore'], timeout: 30000 })).trim();
+  } catch {
+    return 'unknown';
   }
 }
 
@@ -74,33 +104,60 @@ function generateWithClaude(window) {
   const outFile = path.join(os.tmpdir(), `briefing-claude-${Date.now()}.html`);
   const repoRoot = path.join(__dirname, '..');
   const allowed = window.allowedDates.join(', ');
-  try {
-    const stdout = execFileSync(
-      'claude',
-      [
-        '-p',
-        `Run the esmi skill's full research methodology right now. Read BOTH .claude/skills/esmi/SKILL.md and .claude/skills/esmi/assets/template.html in this project before writing anything — SKILL.md has the methodology, watchlists and sorting rules; template.html is the exact email layout to reproduce.
+  // Fixed up front so the session can be resumed by id if it ends early.
+  const sessionId = crypto.randomUUID();
+  const prompt = `Run the esmi skill's full research methodology right now. Read BOTH .claude/skills/esmi/SKILL.md and .claude/skills/esmi/assets/template.html in this project before writing anything — SKILL.md has the methodology, watchlists and sorting rules; template.html is the exact email layout to reproduce.
 
 The layout is NOT up to you: this briefing is emailed every morning and must look identical each day. Clone template.html's markup and inline styles verbatim and only swap in the content. Specifically: the dark #0F172A header with "ESMI · Energy Solution Market Info" and 조사 날짜; every section as an "■ 제목" h2 with the underline (#0F172A for sections with news, the tone-down #64748B/#94A3B8 variant for "특이사항 없음" sections, which go at the bottom); and EVERY article rendered as the #F7F8FA article card containing, without exception, all four parts — (1) the grey 📅 M.DD date badge plus the outlet name, (2) the bold teal title link pointing at the real publisher URL you actually found, (3) a 1~2 sentence Korean summary, (4) the 💡 시사점 box with the left teal border. Subgroups are "[용인]"-style bracketed region names. Close with the template's footer. No <style> blocks, no CSS variables, no flexbox/grid, no invented comparison tables, and do not design an alternative layout.
+
+HOW TO RESEARCH — this is a non-interactive, single-shot run: the moment you end your turn, the process exits and anything unfinished is lost. Splitting the sections across subagents (the Agent tool) to research them in parallel is encouraged — that is how the best briefings have been produced — but run every subagent in the foreground and collect all of their results before you continue. Never launch background agents or tasks, and never end your turn to "wait" for one. Your turn ends only after the HTML file has been written.
 
 RESEARCH DEPTH — this is the part that matters most. A good briefing carries roughly 20-30 article cards in total, typically 2-4 per section. Get there by searching harder, not by lowering the bar: follow SKILL.md's 검색 깊이 규칙 — run at least 3 distinct searches per section (more for the semiconductor subgroups 용인/평택/호남권/기타 and the watchlist companies), mix Korean and English queries, and open articles to confirm the publication date, the figures (MW/GW, 금액) and the real publisher URL before writing a card. Do not stop after the first result that fits. A section with no qualifying news after that effort is still "특이사항 없음" — never pad with off-topic or out-of-window items to reach the count.
 
 HARD DATE CUTOFF — this is enforced in code after you finish, so anything outside it is wasted work. The window for this run is the last ${window.hours} hours, which means the ONLY acceptable 📅 badge values are: ${allowed}. Every article you cite must have been published on one of those dates. Do not reach further back to fill a thin section: widen the search topic instead, exactly as SKILL.md's "카테고리별 연관 주제 확장 규칙" describes, and if there is still nothing inside the window, write "특이사항 없음" for that section — that is the correct outcome, not a failure. Any card whose badge falls outside the window will be stripped from the briefing automatically before it is sent.
 
-Use today's actual current date as the 조사 날짜 (do not use a stale or placeholder date). Perform the real web research (WebSearch/WebFetch) across all 7 categories per the skill. Write the final self-contained HTML document (starting at <!DOCTYPE html>, ending at </html>) directly to the file at ${outFile} using the Write tool. Do NOT save to /mnt/user-data/outputs and do NOT call present_files — this file is consumed by the web app's Market Info > 에너지 솔루션 탭 and sent as the briefing email, not delivered in chat.`,
-        '--model',
-        CLAUDE_MODEL,
-        '--fallback-model',
-        CLAUDE_FALLBACK_MODEL,
-        '--effort',
-        CLAUDE_EFFORT,
-        '--output-format',
-        'json',
-        '--dangerously-skip-permissions',
-      ],
-      { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'], timeout: GENERATION_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 }
-    );
-    return { html: fs.readFileSync(outFile, 'utf8'), run: summarizeCliResult(stdout) };
+Use today's actual current date as the 조사 날짜 (do not use a stale or placeholder date). Perform the real web research (WebSearch/WebFetch) across all 7 categories per the skill. Write the final self-contained HTML document (starting at <!DOCTYPE html>, ending at </html>) directly to the file at ${outFile} using the Write tool. Do NOT save to /mnt/user-data/outputs and do NOT call present_files — this file is consumed by the web app's Market Info > 에너지 솔루션 탭 and sent as the briefing email, not delivered in chat.`;
+
+  try {
+    const runs = [runClaude(['-p', prompt, '--session-id', sessionId], repoRoot)];
+
+    // A print-mode session ends the moment the model ends its turn. On
+    // 2026-11-24 a run farmed sections out to background agents, said it was
+    // "waiting on that before writing", and exited with nothing written —
+    // 17 minutes of research lost. Give that session exactly one chance to
+    // finish from where it stopped.
+    if (!fs.existsSync(outFile)) {
+      console.warn(`[ESMI] Session ended without writing ${outFile} (${runs[0].subtype || 'no subtype'}). Resuming it once to finish.`);
+      runs.push(
+        runClaude(
+          [
+            '-p',
+            `The session ended before the briefing file was written, and any background agents you were waiting on are gone. Do not wait for anything. Using the research already in this conversation — doing any remaining searches yourself, in the foreground — write the complete briefing HTML to ${outFile} with the Write tool now, following the same rules as before (template.html layout, allowed 📅 dates ${allowed} only). Writing that file is the only thing that counts.`,
+            '--resume',
+            sessionId,
+          ],
+          repoRoot
+        )
+      );
+    }
+
+    if (!fs.existsSync(outFile)) {
+      const last = runs[runs.length - 1];
+      throw new Error(
+        `Claude CLI가 브리핑 파일을 쓰지 않고 종료했습니다 (시도 ${runs.length}회, ${last.subtype || '?'}, ${last.turns ?? '?'} turns, models ${last.models.join('+') || '?'}). 마지막 응답: ${last.resultText.slice(-700)}`
+      );
+    }
+
+    return {
+      html: fs.readFileSync(outFile, 'utf8'),
+      run: {
+        models: [...new Set(runs.flatMap((r) => r.models))],
+        turns: runs.every((r) => r.turns === null) ? null : runs.reduce((n, r) => n + (r.turns || 0), 0),
+        minutes: runs.every((r) => r.minutes === null) ? null : +runs.reduce((n, r) => n + (r.minutes || 0), 0).toFixed(1),
+        resumed: runs.length > 1,
+        cliVersion: cliVersion(),
+      },
+    };
   } finally {
     fs.rmSync(outFile, { force: true });
   }
@@ -153,9 +210,11 @@ async function main() {
 
     // Recorded on the run row, because the Actions log can't be downloaded from
     // the office network — this is the only place a run's depth is visible.
-    const { models, turns, minutes } = generated.run;
+    const { models, turns, minutes, resumed, cliVersion: version } = generated.run;
     const notes = [
       `model ${models.length ? models.join('+') : CLAUDE_MODEL} (requested ${CLAUDE_MODEL}, effort ${CLAUDE_EFFORT})`,
+      `cli ${version}`,
+      resumed ? 'resumed once to finish writing' : null,
       turns !== null ? `${turns} turns` : null,
       minutes !== null ? `${minutes} min` : null,
       `cards ${filtered.total} generated -> ${filtered.kept} kept` +
